@@ -1,3 +1,17 @@
+#!/bin/bash
+
+# Read flags.
+HELP=
+ROOT=
+while [ $# -gt 0 ]; do
+  ARG=$1
+  if [ ${ARG:0:2} = -- ]; then
+    FLG=${ARG:2}
+  else
+    break
+  fi
+done
+
 TAG=${1:-latest}
 RUNVER=${2:-c0}
 NAME=$(basename $PWD)
@@ -5,5 +19,5 @@ FROM=$NAME:$TAG
 CNAME=$NAME-$RUNVER
 
 echo Starting $CNAME with $FROM
-docker run --name $CNAME --rm -it $FROM
+docker run --name $CNAME --rm -p 5001:5000 -it $FROM
 
