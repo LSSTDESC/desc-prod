@@ -1,0 +1,18 @@
+FROM ubuntu:latest
+LABEL maintainer="David Adams dladams@bnl.gov"
+
+RUN apt-get update
+RUN apt-get install -y python3
+RUN apt-get install -y python-is-python3
+RUN apt-get install -y python3-pip
+RUN apt-get install -y git
+RUN apt-get install -y vim
+
+RUN pip3 install workqueue
+RUN pip3 install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
+RUN pip3 install git+https://github.com/LSSTDESC/desc-wfmon.git
+
+RUN useradd descprod
+
+USER descprod
+WORKDIR /home/descprod

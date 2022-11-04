@@ -1,0 +1,9 @@
+TAG=${1:-latest}
+RUNVER=${2:-c0}
+NAME=$(basename $PWD)
+FROM=$NAME:$TAG
+CNAME=$NAME-$RUNVER
+
+echo Starting $CNAME with $FROM
+docker run --name $CNAME --rm -it $FROM
+
