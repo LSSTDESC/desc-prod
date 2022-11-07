@@ -33,6 +33,7 @@ def hello(a_name):
 def req():
     msg = ''
     msg += f"   url: {request.url}<br><br>"
+    msg += f"method: {request.method}<br><br>"
     msg += f"  endp: {request.endpoint}<br><br>"
     msg += f"  args: {request.args}<br><br>"
     msg += f"  form: {request.form}<br><br>"
