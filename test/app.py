@@ -7,14 +7,18 @@ import os
 
 app = Flask(__name__)
 
-class Msg:
+class Data:
     msg = ''
+    fnam = 'job.log'
+    fout = None
+    sjob = None
+    ret = None
 
 @app.route("/help")
 def help():
     msg = '<H1>Hello help</H1>'
     msg +=      '          help - This message.'
-    msg += '<br>            bye - Clears page.'
+    msg += '<br>            bye - Restarts the server.'
     msg += '<br>     hello?John - Says hello to John'
     msg += '<br> hello?John&Doe - Says hello to John Doe'
     msg += '<br>        request - Parses a request'
@@ -26,14 +30,6 @@ def bye():
     os.kill(os.getpid(), 9)
     return ""
 
-@app.route("/restart")
-def restart():
-    msg = str(datetime.now)
-    fout = open('/home/descprod/restart', 'a')
-    fout.write(msg)
-    fout.close()
-    return "Restarting server."
-
 @app.route("/hello")
 def hello():
     name = ''
@@ -42,10 +38,10 @@ def hello():
             name += ' ' + snam
     else:
         name = ' NOONE'
-    if len(Msg.msg) == 0:
-        Msg.msg = "<h1>Hellos from desc-prod</h1>"
-    Msg.msg += f"hello{name}</br>"
-    return Msg.msg
+    if len(Data.msg) == 0:
+        Data.msg = "<h1>Hellos from desc-prod</h1>"
+    Data.msg += f"hello{name}</br>"
+    return Data.msg
 
 @app.route("/request")
 @app.route("/<path:path>")
@@ -64,4 +60,28 @@ def req(path):
         msg += f"{request.get_json()}"
     msg += f"<br><br>"
     msg += f" get data: {request.get_data().decode('UTF-8')}<br><br>"
+    return msg
+
+@app.route('/parsltest/<args>')
+def run_parsltest(args):
+    fout = Data.fout
+    if Data.sjob is not None and Data.ret is None:
+        return f"Job is already running: {sjob}"
+    Data.sjob = args
+    Data.ret = None
+    com = ['desc-wfmon-parsltest', args]
+    if fout is not None:
+        fout.close() 
+    fout = open(Data.fnam, 'w')
+    Data.ret = subprocess.Popen(com, stdout=fout, stderr=fout)
+    return f"Started {com[0]} {com[1]}"
+
+@app.route('/status/<args>')
+def status(args):
+    if Data.sjob is None:
+        msg = "No job is started."
+    elif Data.ret is None:
+        msg = f"Job {Data.sjob} is running."
+    else:
+        msg = f"Job {Data.sjob} returned {Data.ret}."
     return msg
