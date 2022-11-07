@@ -65,10 +65,12 @@ def run_parsltest():
 def status():
     if Data.sjob is None:
         msg = "No job is started."
-    elif Data.ret is None:
+    else:
+       rcode = Data.ret.poll()
+    elif rcode is None:
         msg = f"Job {Data.sjob} is running."
     else:
-        msg = f"Job {Data.sjob} returned {Data.ret}."
+        msg = f"Job {Data.sjob} returned {rcode}."
     return msg
 
 @app.route("/request")
