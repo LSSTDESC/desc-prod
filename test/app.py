@@ -35,4 +35,5 @@ def req():
     msg += f"  args: {request.args}<br><br>"
     msg += f"  form: {request.form}<br><br>"
     msg += f"  data: {request.data}<br><br>"
+    msg += f"  gdat: {request.get_data()}<br><br>"
     return msg
