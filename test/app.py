@@ -45,7 +45,7 @@ def hello():
 
 @app.route('/parsltest')
 def run_parsltest():
-    if not request.args.has_key('config'):
+    if 'config' not in request.args.keys():
           return "Invalid job description"
     args = request.args.get['config']
     fout = Data.fout
