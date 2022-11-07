@@ -66,7 +66,7 @@ def status():
     if Data.sjob is None:
         msg = "No job is started."
     else:
-       rcode = Data.ret.poll()
+        rcode = Data.ret.poll()
         if rcode is None:
             msg = f"Job {Data.sjob} is running."
         else:
