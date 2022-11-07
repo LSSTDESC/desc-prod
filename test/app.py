@@ -36,7 +36,8 @@ def hello():
     return Msg.msg
 
 @app.route("/request")
-def req():
+@app.route("/<path:path>")
+def request():
     msg = ''
     msg += f"   url: {request.url}<br><br>"
     msg += f"method: {request.method}<br><br>"
