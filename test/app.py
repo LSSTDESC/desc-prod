@@ -32,7 +32,7 @@ def hello(a_name):
 @app.route("/req")
 def req():
     msg = ''
-    msg += f"  args: {request.args()}")
-    msg += f"  form: {request.form()}")
-    msg += f"  data: {request.data()}")
+    msg += f"  args: {request.args()}"
+    msg += f"  form: {request.form()}"
+    msg += f"  data: {request.data()}"
     return msg
