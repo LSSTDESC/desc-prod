@@ -3,6 +3,7 @@ from flask import Flask
 from flask import request
 from markupsafe import escape
 import sys
+inport os
 
 app = Flask(__name__)
 
@@ -22,8 +23,7 @@ def help():
 @app.route("/bye")
 def bye():
     print("Shutting down.")
-    sys.exit(0)
-    Msg.msg = ''
+    os.kill(os.pid(), 9)
     return ""
 
 @app.route("/restart")
