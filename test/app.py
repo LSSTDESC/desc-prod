@@ -39,15 +39,17 @@ def hello():
 @app.route("/<path:path>")
 def req(path):
     msg = ''
-    msg += f"   url: {request.url}<br><br>"
-    msg += f"method: {request.method}<br><br>"
-    msg += f"  endp: {request.endpoint}<br><br>"
-    msg += f"  args: {request.args}<br><br>"
-    msg += f"  form: {request.form}<br><br>"
-    msg += f"  data: {request.data.decode('UTF-8')}<br><br>"
-    msg += f"  json:"
+    msg += f"      url: {request.url}<br><br>"
+    msg += f"root path: {request.root_path}<br><br>"
+    msg += f"     path: {request.path}<br><br>"
+    msg += f"   method: {request.method}<br><br>"
+    msg += f"     endp: {request.endpoint}<br><br>"
+    msg += f"     args: {request.args}<br><br>"
+    msg += f"     form: {request.form}<br><br>"
+    msg += f"     data: {request.data.decode('UTF-8')}<br><br>"
+    msg += f"     json:"
     if request.is_json:
         msg += f"{request.get_json()}"
     msg += f"<br><br>"
-    msg += f"  gdat: {request.get_data().decode('UTF-8')}<br><br>"
+    msg += f" get data: {request.get_data().decode('UTF-8')}<br><br>"
     return msg
