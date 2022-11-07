@@ -1,8 +1,8 @@
-cd $HOME/dev/desc-prod
-git pull
-APP=$HOME/dev/desc-prod/test/app.py
 MSG='Starting server.'
 while true; do
+  cd $HOME/dev/desc-prod
+  git pull
+  APP=$HOME/dev/desc-prod/test/app.py
   echo $MSG
   flask --debug --app $APP run --host=0.0.0.0 --extra-files $HOME/restart
   MSG='Restarting server'
