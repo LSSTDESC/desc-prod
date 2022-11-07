@@ -34,5 +34,9 @@ RUN chsh --shell /bin/bash descprod
 USER descprod
 WORKDIR /home/descprod
 RUN mkdir .ssh
+RUN mkdir dev
+WORKDIR /home/descprod/dev
+RUN git clone https://github.com/LSSTDESC/desc-prod.git
 RUN mkdir bin
+RUN ln -s /home/descprod/dev/desc-prod/test/run-server /home/descprod/bin
 COPY nersc-proxy bin

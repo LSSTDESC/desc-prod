@@ -1,4 +1,4 @@
 cd $HOME/dev/desc-prod
 git pull
 APP=$HOME/dev/desc-prod/test/app.py
-flask --debug --app $APP run --host=0.0.0.0
+flask --debug --app $APP run --host=0.0.0.0 --extra_files $HOME/restart

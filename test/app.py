@@ -1,6 +1,8 @@
+from datetime import datetime
 from flask import Flask
 from flask import request
 from markupsafe import escape
+import sys
 
 app = Flask(__name__)
 
@@ -19,8 +21,17 @@ def help():
 
 @app.route("/bye")
 def bye():
+    sys.exit(0)
     Msg.msg = ''
     return ""
+
+@app.route("/restart")
+def bye():
+    msg = str(datetime.now)
+    fout = open('/home/descprod/restart', 'a')
+    fout.write(msg)
+    fout.close()
+    return "Restarting server.""
 
 @app.route("/hello")
 def hello():
