@@ -45,9 +45,9 @@ def hello():
 
 @app.route('/parsltest')
 def run_parsltest():
-    args = request.args[0]
-    if len(request.args) != 1:
+    if not request.args.has_key('config'):
           return "Invalid job description"
+    args = request.args.get['config']
     fout = Data.fout
     if Data.sjob is not None and Data.ret is None:
         return f"Job is already running: {sjob}"
