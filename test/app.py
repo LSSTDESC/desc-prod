@@ -21,9 +21,13 @@ def bye():
     Msg.msg = ''
     return ""
 
-@app.route("/hello/<a_name>")
+@app.route("/hello")
 def hello(a_name):
-    name = escape(a_name)
+    if len(args):
+        for snam in request.args[1:]
+            name = ' ' + snam
+    else
+        name = NOONE
     if len(Msg.msg) == 0:
         Msg.msg = "<h1>Hellos from desc-prod</h1>"
     Msg.msg += f"hello {name}</br>"
