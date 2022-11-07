@@ -27,8 +27,8 @@ def hello(a_name):
     if len(args):
         for snam in request.args:
             name = ' ' + snam
-    else
-        name = NOONE
+    else:
+        name = 'NOONE'
     if len(Msg.msg) == 0:
         Msg.msg = "<h1>Hellos from desc-prod</h1>"
     Msg.msg += f"hello {name}</br>"
