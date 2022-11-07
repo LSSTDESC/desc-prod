@@ -67,10 +67,10 @@ def status():
         msg = "No job is started."
     else:
        rcode = Data.ret.poll()
-    elif rcode is None:
-        msg = f"Job {Data.sjob} is running."
-    else:
-        msg = f"Job {Data.sjob} returned {rcode}."
+        if rcode is None:
+            msg = f"Job {Data.sjob} is running."
+        else:
+            msg = f"Job {Data.sjob} returned {rcode}."
     return msg
 
 @app.route("/request")
