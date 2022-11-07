@@ -23,7 +23,7 @@ def bye():
     return ""
 
 @app.route("/hello")
-def hello(a_name):
+def hello():
     if len(args):
         for snam in request.args:
             name = ' ' + snam
