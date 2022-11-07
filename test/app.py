@@ -23,7 +23,7 @@ def help():
 @app.route("/bye")
 def bye():
     print("Shutting down.")
-    os.kill(os.pid(), 9)
+    os.kill(os.getpid(), 9)
     return ""
 
 @app.route("/restart")
