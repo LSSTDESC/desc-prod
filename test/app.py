@@ -11,6 +11,6 @@ def hello():
 
 @app.route("/hello/<username>")
 def hello_hello(username):
-    Msg.msg += f"hello {username},"
+    Msg.msg += f"hello {username}\n"
     return Msg.msg
 
