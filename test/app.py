@@ -31,7 +31,7 @@ def bye():
     fout = open('/home/descprod/restart', 'a')
     fout.write(msg)
     fout.close()
-    return "Restarting server.""
+    return "Restarting server."
 
 @app.route("/hello")
 def hello():
