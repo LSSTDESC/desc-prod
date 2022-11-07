@@ -47,7 +47,7 @@ def hello():
 def run_parsltest():
     if 'config' not in request.args.keys():
           return "Invalid job description"
-    args = request.args.get['config']
+    args = request.args.get('config')
     fout = Data.fout
     if Data.sjob is not None and Data.ret is None:
         return f"Job is already running: {sjob}"
