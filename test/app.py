@@ -6,7 +6,7 @@ class Msg:
     msg = ''
 
 @app.route("/help")
-def bye():
+def help():
     Msg.msg = '<H1>Hello help</H1>'
     Msg.msg += '<br> help - This message.'
     Msg.msg += '<br> bye - Clears page.'
