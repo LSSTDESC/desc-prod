@@ -43,25 +43,6 @@ def hello():
     Data.msg += f"hello{name}</br>"
     return Data.msg
 
-@app.route("/request")
-@app.route("/<path:path>")
-def req(path):
-    msg = ''
-    msg += f"      url: {request.url}<br><br>"
-    msg += f"root path: {request.root_path}<br><br>"
-    msg += f"     path: {request.path}<br><br>"
-    msg += f"   method: {request.method}<br><br>"
-    msg += f"     endp: {request.endpoint}<br><br>"
-    msg += f"     args: {request.args}<br><br>"
-    msg += f"     form: {request.form}<br><br>"
-    msg += f"     data: {request.data.decode('UTF-8')}<br><br>"
-    msg += f"     json:"
-    if request.is_json:
-        msg += f"{request.get_json()}"
-    msg += f"<br><br>"
-    msg += f" get data: {request.get_data().decode('UTF-8')}<br><br>"
-    return msg
-
 @app.route('/parsltest')
 def run_parsltest():
     args = request.args[0]
@@ -88,3 +69,23 @@ def status():
     else:
         msg = f"Job {Data.sjob} returned {Data.ret}."
     return msg
+
+@app.route("/request")
+@app.route("/<path:path>")
+def req(path):
+    msg = ''
+    msg += f"      url: {request.url}<br><br>"
+    msg += f"root path: {request.root_path}<br><br>"
+    msg += f"     path: {request.path}<br><br>"
+    msg += f"   method: {request.method}<br><br>"
+    msg += f"     endp: {request.endpoint}<br><br>"
+    msg += f"     args: {request.args}<br><br>"
+    msg += f"     form: {request.form}<br><br>"
+    msg += f"     data: {request.data.decode('UTF-8')}<br><br>"
+    msg += f"     json:"
+    if request.is_json:
+        msg += f"{request.get_json()}"
+    msg += f"<br><br>"
+    msg += f" get data: {request.get_data().decode('UTF-8')}<br><br>"
+    return msg
+
