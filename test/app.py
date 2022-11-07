@@ -37,9 +37,9 @@ def req():
     msg += f"  args: {request.args}<br><br>"
     msg += f"  form: {request.form}<br><br>"
     msg += f"  data: {request.data.decode('UTF-8')}<br><br>"
-    try:
+    if request.is_json:
         msg += f"  json: {request.get_json()}<br><br>"
-    except:
-        pass
+    else:
+        msg += f"  json: <not json><br><br>"
     msg += f"  gdat: {request.get_data().decode('UTF-8')}<br><br>"
     return msg
