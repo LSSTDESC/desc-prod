@@ -21,7 +21,7 @@ def bye():
     Msg.msg = ''
     return ""
 
-@app.route("/hello/<name>")
+@app.route("/hello/<a_name>")
 def hello(a_name):
     name = escape(a_name)
     if len(Msg.msg) == 0:
