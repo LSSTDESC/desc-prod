@@ -37,7 +37,7 @@ def hello():
 
 @app.route("/request")
 @app.route("/<path:path>")
-def req():
+def req(path):
     msg = ''
     msg += f"   url: {request.url}<br><br>"
     msg += f"method: {request.method}<br><br>"
