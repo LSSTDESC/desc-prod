@@ -7,10 +7,13 @@ class Msg:
 
 @app.route("/")
 def hello():
-    return "<h1>Hello again from desc-prod</h1>"
+    return "<h1>Hellos from desc-prod</h1>"
 
 @app.route("/hello/<username>")
 def hello_hello(username):
-    Msg.msg += f"hello {username}\n"
+    if len(username) == 0:
+        Msg.msg = "<h1>Hellos from desc-prod</h1>"
+    else:
+        Msg.msg += f"hello {username}</br>"
     return Msg.msg
 
