@@ -7,13 +7,13 @@ class Msg:
 
 @app.route("/help")
 def help():
-    Msg.msg = '<H1>Hello help</H1>'
-    Msg.msg += '<br> help - This message.'
-    Msg.msg += '<br> bye - Clears page.'
-    Msg.msg += '<br> hello/John - Says hello to John'
-    Msg.msg += '<br> hello/John - Says hello to John'
-    Msg.msg += '<br> hello/John?Doe - Says hello to John Doe'
-    return ""
+    msg = '<H1>Hello help</H1>'
+    msg += '<br> help - This message.'
+    msg += '<br> bye - Clears page.'
+    msg += '<br> hello/John - Says hello to John'
+    msg += '<br> hello/John - Says hello to John'
+    msg += '<br> hello/John?Doe - Says hello to John Doe'
+    return msg
 
 @app.route("/bye")
 def bye():
