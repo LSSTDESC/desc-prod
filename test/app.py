@@ -76,8 +76,8 @@ def run_parsltest(args):
     Data.ret = subprocess.Popen(com, stdout=fout, stderr=fout)
     return f"Started {com[0]} {com[1]}"
 
-@app.route('/status/<args>')
-def status(args):
+@app.route('/status')
+def status():
     if Data.sjob is None:
         msg = "No job is started."
     elif Data.ret is None:
