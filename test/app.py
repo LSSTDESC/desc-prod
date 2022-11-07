@@ -1,4 +1,6 @@
 from flask import Flask
+from flask import request
+from markupsafe import escape
 
 app = Flask(__name__)
 
@@ -8,10 +10,9 @@ class Msg:
 @app.route("/help")
 def help():
     msg = '<H1>Hello help</H1>'
-    msg += '<br> help - This message.'
-    msg += '<br> bye - Clears page.'
-    msg += '<br> hello/John - Says hello to John'
-    msg += '<br> hello/John - Says hello to John'
+    msg +=      '          help - This message.'
+    msg += '<br>            bye - Clears page.'
+    msg += '<br>     hello/John - Says hello to John'
     msg += '<br> hello/John?Doe - Says hello to John Doe'
     return msg
 
@@ -20,10 +21,18 @@ def bye():
     Msg.msg = ''
     return ""
 
-@app.route("/hello/<username>")
-def hello_hello(username):
+@app.route("/hello/<name>")
+def hello_hello(a_name):
+    name = escape(a_name)
     if len(Msg.msg) == 0:
         Msg.msg = "<h1>Hellos from desc-prod</h1>"
-    Msg.msg += f"hello {username}</br>"
+    Msg.msg += f"hello {name}</br>"
     return Msg.msg
 
+@app.route("/req")
+def hello()
+    msg = ''
+    msg += f"  args: {request.args()}")
+    msg += f"  form: {request.form()}")
+    msg += f"  data: {request.data()}")
+    return msg
