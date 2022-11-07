@@ -12,8 +12,9 @@ def help():
     msg = '<H1>Hello help</H1>'
     msg +=      '          help - This message.'
     msg += '<br>            bye - Clears page.'
-    msg += '<br>     hello/John - Says hello to John'
-    msg += '<br> hello/John?Doe - Says hello to John Doe'
+    msg += '<br>     hello?John - Says hello to John'
+    msg += '<br> hello?John&Doe - Says hello to John Doe'
+    msg += '<br>            req - Parses a request'
     return msg
 
 @app.route("/bye")
@@ -33,7 +34,7 @@ def hello(a_name):
     Msg.msg += f"hello {name}</br>"
     return Msg.msg
 
-@app.route("/req")
+@app.route("/")
 def req():
     msg = ''
     msg += f"   url: {request.url}<br><br>"
