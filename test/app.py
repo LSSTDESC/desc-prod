@@ -25,7 +25,7 @@ def bye():
 @app.route("/hello")
 def hello(a_name):
     if len(args):
-        for snam in request.args[1:]
+        for snam in request.args:
             name = ' ' + snam
     else
         name = NOONE
