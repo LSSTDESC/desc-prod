@@ -9,8 +9,8 @@ class Msg:
 def hello():
     return "<h1>Hello again from desc-prod</h1>"
 
-@app.route("/hello")
-def hello_hello():
-    Msg.msg += 'hello '
+@app.route("/hello/<username>")
+def hello_hello(username):
+    Msg.msg += f"hello {username},"
     return Msg.msg
 
