@@ -32,8 +32,9 @@ def hello(a_name):
 @app.route("/req")
 def req():
     msg = ''
-    msg += f"  gdat: {request.get_data().decode('UTF-8')}<br><br>"
     msg += f"  args: {request.args}<br><br>"
     msg += f"  form: {request.form}<br><br>"
     msg += f"  data: {request.data.decode('UTF-8')}<br><br>"
+    msg += f"  json: {request.get_json().decode('UTF-8')}<br><br>"
+    msg += f"  gdat: {request.get_data().decode('UTF-8')}<br><br>"
     return msg
