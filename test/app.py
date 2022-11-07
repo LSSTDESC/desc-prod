@@ -21,6 +21,7 @@ def help():
 
 @app.route("/bye")
 def bye():
+    print("Shutting down.")
     sys.exit(0)
     Msg.msg = ''
     return ""
