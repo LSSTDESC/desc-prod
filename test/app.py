@@ -26,7 +26,7 @@ def bye():
     return ""
 
 @app.route("/restart")
-def bye():
+def restart():
     msg = str(datetime.now)
     fout = open('/home/descprod/restart', 'a')
     fout.write(msg)
