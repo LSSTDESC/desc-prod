@@ -22,7 +22,7 @@ def bye():
     return ""
 
 @app.route("/hello/<name>")
-def hello_hello(a_name):
+def hello(a_name):
     name = escape(a_name)
     if len(Msg.msg) == 0:
         Msg.msg = "<h1>Hellos from desc-prod</h1>"
@@ -30,7 +30,7 @@ def hello_hello(a_name):
     return Msg.msg
 
 @app.route("/req")
-def hello()
+def req()
     msg = ''
     msg += f"  args: {request.args()}")
     msg += f"  form: {request.form()}")
