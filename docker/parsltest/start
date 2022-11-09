@@ -7,17 +7,18 @@ while [ $# -gt 0 ]; do
   ARG=$1
   if [ ${ARG:0:2} = -- ]; then
     FLG=${ARG:2}
+    shift
   else
     break
   fi
 done
 
-TAG=${1:-latest}
-RUNVER=${2:-c0}
-NAME=$(basename $PWD)
+TAG=$1
+shift
+NAME=$(basename $(pwd))
 FROM=$NAME:$TAG
-CNAME=$NAME-$RUNVER
+CNAME=$NAME
 
 echo Starting $CNAME with $FROM
-docker run --name $CNAME --rm -p 80:5000 -it $FROM
+docker run --name $CNAME --rm -p 80:5000 -it $FROM $*
 

@@ -1,10 +1,11 @@
+$HOME/dev/desc-prod/server/install
+RUNDIR=$HOME/rundir
+if [ ! -r $RUNDIR ]; then mkdir $RUNDIR; fi
+cd $RUNDIR
 MSG='Starting server.'
+APP=$HOME/dev/desc-prod/test/app.py
 while true; do
-  cd $HOME/dev/desc-prod
-  git pull
-  APP=$HOME/dev/desc-prod/test/app.py
   echo $MSG
-  cd $HOME/rundir
   flask --debug --app $APP run --host=0.0.0.0 --extra-files $HOME/restart
   MSG='Restarting server'
   sleep 5

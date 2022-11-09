@@ -5,19 +5,31 @@
 linkit() {
   FROM=$1
   TO=$2/$(basename $FROM)
-  rm -f $TO
-  ln -s $1 $2
+  if [ ! -r $TO ]; then
+    ln -s $FROM $TO
+  fi
 }
 
+copyit() {
+  FROM=$1
+  TO=$2/$(basename $FROM)
+  if [ ! -r $TO ]; then
+    ln -s $FROM $TO
+  fi
+}
+
+# Make sure we are in a descprod server.
 USER=$(whoami)
 if [ $USER != descprod ]; then
   echo User is $USER instead of descprod. Exiting.
   exit 1
 fi
 
+# Make sure the bin directory exists.
 BINDIR=$HOME/bin
 if [ ! -r $BINDIR ]; then mkdir $BINDIR; fi
 
+# Update the desc-prod package.
 PKGDIR=$HOME/dev/desc-prod
 SRCDIR=$PKGDIR/server
 TSTDIR=$PKGDIR/test
@@ -26,8 +38,4 @@ git pull
 cd $HOME
 
 linkit $TSTDIR/run-server $BINDIR
-cp $SRCDIR/nersc-proxy $BINDIR
-
-RUNDIR=$HOME/rundir
-cd $RUNDIR
-run-server
+copyit $SRCDIR/nersc-proxy $BINDIR
