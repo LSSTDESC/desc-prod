@@ -9,6 +9,7 @@ linkit() {
   ln -s $1 $2
 }
 
+USER=$(whoami)
 if [ $USER != descprod ]; then
   echo User is $USER instead of descprod. Exiting.
   exit 1
