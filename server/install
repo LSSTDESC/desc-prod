@@ -20,7 +20,7 @@ if [ ! -r $BINDIR ]; then mkdir $BINDIR; fi
 
 PKGDIR=$HOME/dev/desc-prod
 SRCDIR=$PKGDIR/server
-TSTDIR=$PKGDIR/server
+TSTDIR=$PKGDIR/test
 cd $PKGDIR
 git pull
 cd $HOME
