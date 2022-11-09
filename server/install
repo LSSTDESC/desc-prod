@@ -5,7 +5,7 @@
 linkit() {
   FROM=$1
   TO=$2/$(basename $FROM)
-  rm -f $2
+  rm -f $TO
   ln -s $1 $2
 }
 
