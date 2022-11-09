@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 class Data:
     msg = ''
-    fnam = 'job.log'
+    fnam = '/home/descprod/job.log'
     fout = None
     sjob = None
     ret = None
@@ -23,6 +23,7 @@ def help():
     msg += '<br>     hello?John - Says hello to John'
     msg += '<br> hello?John&Doe - Says hello to John Doe'
     msg += '<br>        request - Parses a request'
+    msg += '<br>      parsltest - Parses a request'
     return msg
 
 @app.route("/bye")
@@ -46,6 +47,7 @@ def hello():
 
 @app.route('/parsltest')
 def run_parsltest():
+    myname = 'run_parsltest'
     if 'config' not in request.args.keys():
           return "Invalid job description"
     args = request.args.get('config')
@@ -57,6 +59,7 @@ def run_parsltest():
     com = ['desc-wfmon-parsltest', args]
     if fout is not None:
         fout.close() 
+    print(f"{myname}: Opening {Data.fnam}")
     fout = open(Data.fnam, 'w')
     Data.ret = subprocess.Popen(com, stdout=fout, stderr=fout)
     return f"Started {com[0]} {com[1]}"

@@ -24,6 +24,7 @@ ENV PATH=$CONDA_DIR/bin:$PATH
 RUN conda install -y -c conda-forge ndcctools --no-deps
 
 RUN pip install flask
+RUN pip install mysql-connector-python
 RUN pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
 RUN pip install git+https://github.com/LSSTDESC/desc-wfmon.git
 

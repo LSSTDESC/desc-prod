@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Install and configure a desc-prod web server.
+
+linkit() {
+  FROM=$1
+  TO=$2/$(basename $FROM)
+  rm -f $2
+  ln -s $1 $2
+}
+
+if [ $USER != descprod ]; then
+  echo User is $USER instead of descprod. Exiting.
+  exit 1
+fi
+
+BINDIR=$HOME/bin
+if [ ! -r $BINDIR ]; then mkdir $BINDIR; fi
+
+PKGDIR=$HOME/dev/desc-prod
+SRCDIR=$PKGDIR/server
+TSTDIR=$PKGDIR/server
+cd $PKGDIR
+git pull
+cd $HOME
+
+linkit $TSTDIR/run-server $BINDIR
+cp $SRCDIR/nersc-proxy $BINDIR
