@@ -20,5 +20,5 @@ FROM=$NAME:$TAG
 CNAME=$NAME
 
 echo Starting $CNAME with $FROM
-docker run --name $CNAME --rm -p 80:5000 -it $FROM $*
+docker run --name $CNAME --rm -p 3306:3306 -p 80:5000 -it $FROM $*
 
