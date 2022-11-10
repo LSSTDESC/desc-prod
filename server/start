@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Container entry point.
+
+/home/descprod/dev/test/run-service
