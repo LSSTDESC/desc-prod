@@ -49,3 +49,5 @@ On perlmutter or cori, install with shifter:
 02 - 01 plus pip workqueue, parsl and desc-wfmon  
 03 - 02 plus python-is-python3, vim, user descprod  
 04 - 03 plus sudo, wget, conda, ndcctools. Drop pip workqueue.  
+05 - 04 plus flas, nginx, mysql-connector and more
+06 - 05 shuffled so cond and pipi install are done by user. Now can run parsltest from browseer.

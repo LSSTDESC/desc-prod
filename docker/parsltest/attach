@@ -1,0 +1,6 @@
+#!/bin/bash
+
+NAM=${!:-parsltest}
+
+echo Attaching to $NAM...
+docker exec -it $NAM /bin/bash
