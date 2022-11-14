@@ -1,4 +1,4 @@
-$HOME/dev/desc-prod/server/install
+/home/descprod/dev/desc-prod/server/install
 RUNDIR=$HOME/rundir
 if [ ! -r $RUNDIR ]; then mkdir $RUNDIR; fi
 cd $RUNDIR
