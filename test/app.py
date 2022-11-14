@@ -14,6 +14,10 @@ class Data:
     fout = None
     sjob = None
     ret = None
+    njob = 0
+    def current_jobid():
+        if njob: return njob-1
+        return None
 
 @app.route("/help")
 def help():
@@ -55,7 +59,12 @@ def run_parsltest():
     if Data.sjob is not None and Data.ret is None:
         return f"Job is already running: {sjob}"
     Data.sjob = args
-    Data.ret = None
+    if Data.ret is not None:
+        rcode = Data.ret.poll()
+        if rcode is None:
+            msg = f"Earlier job {Data.sjob} is still running."
+            return msg
+        Data.ret = None
     com = ['desc-wfmon-parsltest', args]
     if fout is not None:
         fout.close() 

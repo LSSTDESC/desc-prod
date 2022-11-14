@@ -3,6 +3,7 @@ LABEL maintainer="David Adams dladams@bnl.gov"
 
 RUN apt-get update
 RUN apt-get install -y sudo
+RUN apt-get install -y dnsutils
 RUN apt-get install -y wget
 RUN apt-get install -y curl
 RUN apt-get install -y python3
