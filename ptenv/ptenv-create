@@ -1,0 +1,176 @@
+#!/bin/sh
+
+# Create conda environment for CESC parsl testing.
+#
+# David Adams
+# November 2022
+#
+# It is created following the instructions in
+#   python/desc/gen3_workflow/README.md
+
+# Give help,
+if [ -z "$1" -o "$1" == "-h" ]; then
+  echo Usage: $0 LOC VER
+  echo "  Creates ptenv environment LOCptenvVER."
+  echo "  LOC hom is installed on home directory"
+  echo "  LOC cfs is installed on CFS"
+  echo "  LOC shm is installed on /dev/shm/$USERT"
+  echo "  LOC cmn is installed on common"
+  echo "  LOC scr is installed on perlmutter scratch"
+  exit 0
+fi
+LOC=$1
+shift
+VER=${1:none}
+shift
+ENVNAME=${LOC}ptenv$VER
+MYNAME=$(basename $0)
+BASDIR=
+
+PATH=$(dirname $(readlink -f $0)):$PATH
+
+set -e
+
+echo
+date
+echo Checking for miniconda
+# This will untar miniconda if absent and tar is available.
+CONDIR=$(ptenv-find -n $LOC)
+
+# If miniconda is not yet installed, install it and exit.
+INSDIR=$(ptenv-dir -c $LOC)
+TARDIR=$(ptenv-dir -c -t $LOC)
+
+# Following instructions at https://waylonwalker.com/install-miniconda
+# except do NOT do cond init which writes to .bashrc and 
+# causes problems if we do no use this conda installation.
+# Instead we create a setup file by hand.
+if [ -r $CONDIR/setup.sh ]; then
+  echo Found miniconda at $CONDIR
+else
+  rm -rf $CONDIR
+  mkdir $CONDIR
+  echo
+  echo Fetching miniconda3
+  wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $CONDIR/miniconda3.sh
+  echo
+  echo Installing miniconda3
+  bash $CONDIR/miniconda3.sh -b -u -p $CONDIR | tee $CONDIR/install.log
+  echo
+  echo Creating miniconda3 setup.
+  echo 'PATH='$CONDIR'/bin:$PATH' >> $CONDIR/setup.sh
+  echo
+  #echo Updating conda.
+  #echo source $CONDIR/setup.sh; conda update -n base -c defaults conda
+  #echo
+  echo Tarring miniconda3.
+  echo "  Source: $INSDIR miniconda3"
+  TARFIL=$TARDIR/miniconda3.tz
+  echo "    Dest: $TARFIL"
+  tar -czf $TARFIL -C $INSDIR miniconda3
+  date
+  echo Installation complete.
+  echo Please rerun to build environment $ENVNAME.
+  exit 0
+fi
+
+echo
+if [ -z "$VER" ]; then
+  echo Version must be supplied to build ptenv.
+  exit 1
+fi
+source ptenv-config $VER
+if [ "$PTENV_VERSION" != $VER ]; then
+  echo Unable to find config for version $VER
+  echo Please check $THISDIR/pyenv-config
+  exit 1
+fi
+
+echo
+date
+echo Building ptenv environment $ENVNAME
+ptenv-config
+
+source $INSDIR/miniconda3/setup.sh
+cd $INSDIR
+
+# The path is created in the current directory.
+# Find the absolute path to the environment.
+# On mac, we settle for pwd.
+THISDIR=$(pwd)
+if ABSDIR=$(readlink -f $THISDIR 2>/dev/null); then
+  ENVPATH=$ABSDIR/$ENVNAME
+else
+  ENVPATH=$THISDIR/$ENVNAME
+fi
+  
+if [ -d $ENVPATH -o -r $ENVPATH ]; then
+  echo Conda environment $ENVPATH already exists.
+  echo Remove it to rebuild
+  exit 2
+fi
+
+echo Creating conda environment $ENVPATH
+
+ARG=
+if [ -n $PTENV_PYTHON ]; then
+  ARG="python=$PTENV_PYTHON"
+fi
+conda create -y --prefix $ENVPATH $ARG
+
+echo
+echo Creating setup
+echo User need only source this file to be in the environment.
+SFILE=$ENVPATH/setup.sh
+rm -f $SFILE
+GPPATH=$ENVPATH/lib/python*/site-packages
+echo "# Automatically generated $(date)" >>$SFILE
+echo "source $CONDIR/etc/profile.d/conda.sh" >>$SFILE
+echo "ENVNAME=$ENVNAME" >> $SFILE
+echo "conda activate $ENVPATH" >>$SFILE
+echo Created conda environment $ENVPATH
+echo Set up with: source $SFILE
+
+source $SFILE
+
+EQVER=
+if [ -n "$PTENV_NDCCTOOLS" ]; then
+  EQVER="=$PTENV_NDCCTOOLS"
+fi
+echo
+echo ">>>>>>>>> Installing work_queue $EQVER"
+conda install -y -c conda-forge ndcctools$EQVER
+
+SRC="parsl[monitoring,workqueue]@git+https://github.com/parsl/parsl"
+if [ -n "$PTENV_PARSL" ]; then
+  if [ ${PTENV_PARSL:0:1} = / ]; then
+    SRC=$PTENV_PARSL
+  else
+    SRC=${SRC}@$PTENV_PARSL
+  fi
+fi
+echo
+echo ">>>>>>>>>> Installing parsl from $SRC"
+pip install $SRC
+
+SRC=git+https://github.com/LSSTDESC/desc-wfmon.git
+if [ -n "$PTENV_DESCWFMON" ]; then
+  if [ ${PTENV_DESCWFMON:0:1} = / ]; then
+    SRC=$PTENV_DESCWFMON
+  else
+    SRC=$DSRC@$PTENV_DESCWFMON
+  fi
+fi
+echo ">>>>>>>>> Installing desc-wfmon from $SRC"
+pip install $SRC
+
+# Tar up the build.
+TARFIL=$TARDIR/$ENVNAME.tz
+echo Old tar: $TARDIR/$ENVNAME.tz
+TARFIL=$(ptenv-find -t $LOC $VER)
+echo Creating Tar file: $TARFIL
+tar -czf $TARFIL -C $INSDIR $ENVNAME
+
+echo
+echo Done.
+date

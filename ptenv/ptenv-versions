@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo $(python --version)
+work_queue_worker -v | head -1
+python -c 'import parsl; print(f"parsl {parsl.__version__}")'
+echo parsltest $(desc-wfmon-parsltest -v | tail -1)

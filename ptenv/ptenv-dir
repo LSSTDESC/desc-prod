@@ -1,0 +1,99 @@
+#!/bin/bash
+#
+# ptenv-dir
+#
+# David Adams
+# December 2022
+#
+# Return the directory where a ptenv conda env is or would
+# be installed.
+# Note that minconda is installed at the same location.
+
+# Read flags.
+DOHELP=
+DOTAR=
+DOCREATE=
+NAM=
+while [ $# -gt 0 ]; do
+  ARG=$1
+  if [ ${ARG:0:1} = '-' ]; then
+    FLG=${ARG:1}
+    if [ $FLG = h ]; then
+      DOHELP=true
+    elif [ $FLG = t ]; then
+      DOTAR=true
+    elif [ $FLG = c ]; then
+      DOCREATE=true
+    else
+      echo ERROR: Invalid flag: $ARG >&2
+      exit 1
+    fi
+  else
+    if [ -n "$NAM" ]; then
+      echo ERROR: Too many locations: $NAM $ARG >&2
+      exit 1
+    fi
+    NAM=$ARG
+  fi
+  shift
+done
+
+if [ -n "$DOHELP" -o -z "$NAM" ]; then
+  echo Usage $(basename $0): [-h] [-t] [-c] LOC >&2
+  echo Return directory where ptenv conda envs for location type LOC are installed. >&2
+  echo Flags: >&2
+  echo "  -h - Show help and return nothing." >&2
+  echo "  -t - Return the tar directory instead of the env directory" >&2
+  echo "  -c - Create the directory if not existing" >&2
+  echo Full env names are LOCptenvVER where VER is a VERSION tag. >&2
+  exit 0
+fi
+
+HOMDIR=$HOME/ptenv
+TARBAS=$HOMEDIR/tar
+CONDIR=
+TARCEN=
+TARDIR=
+LOC=${NAM:0:3}
+if [ $LOC = hom ]; then
+  CONDIR=$HOMDIR
+elif [ $LOC = cfs ]; then
+  CONDIR=/global/cfs/cdirs/desc-co/$USER/ptenv
+elif [ $LOC = shm ]; then
+  CONDIR=/dev/shm/$USER/ptenv
+  TARDIR=$TARBAS/$NAM
+elif [ $LOC = cmn ]; then
+  CONDIR=/global/common/software/lsst/users/$USER/ptenv
+elif [ $LOC = scr ]; then
+  CONDIR=/pscratch/sd/d/$USER/ptenv
+elif [ $LOC = tmp ]; then
+  CONDIR=/tmp/$USER/ptenv
+  TARDIR=$TARBAS/$NAM
+elif [ $LOC = tmi ]; then
+  CONDIR=/tmp/$USER/install-dir/ptenv
+  TARDIR=$TARBAS/$NAM
+elif [ $LOC = scr ]; then
+  CONDIR=/pscratch/sd/d/$USER/ptenv
+else
+  echo ERROR: Invalid ptenv location: $LOC >&2
+  exit 1
+fi
+
+if [ -z "$TARDIR" ]; then
+  TARDIR=$CONDIR/tar
+fi
+
+if [ -n "$DOTAR" ]; then
+  OUTDIR=$TARDIR
+else
+  OUTDIR=$CONDIR
+fi
+
+if [ -n "$DOCREATE" -a ! -r $OUTDIR ]; then
+  echo Creating directory $OUTDIR >&2
+  if ! mkdir -p $OUTDIR; then
+    exit 1
+  fi
+fi
+
+echo $OUTDIR

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DIR=$(dirname $(readlink -f $0))
+
+LOC=$1
+VER=$2
+
+if [ "$LOC" = -h -o -z "$VER" ]; then
+  echo Usage: $0 LOC VER
+  exit 0
+fi
+
+bash -init-file <(echo . $DIR/ptenv-setup $LOC $VER)
+
+echo Exited ptenv $LOC $VER

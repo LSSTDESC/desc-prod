@@ -1,0 +1,117 @@
+#!/bin/bash
+#
+# ptenv-find
+#
+# David Adams
+# November 2022
+#
+# Return the directory holding the ptenv conda env for
+# a specified file system and version.
+# Caller can the setup the env with source DIR/setup.sh
+#
+# If version is not supplied, then the location of miniconda is
+# returned.
+
+DOHELP=
+DOTAR=
+DOCREATE=
+NOCHECK=
+LOC=
+VER=
+while [ $# -gt 0 ]; do
+  ARG=$1
+  if [ ${ARG:0:1} = '-' ]; then
+    FLG=${ARG:1}
+    if [ $FLG = h ]; then
+      DOHELP=true
+    elif [ $FLG = t ]; then
+      DOTAR=true
+    elif [ $FLG = n ]; then
+      NOCHECK=true
+    else
+      echo ERROR: Invalid flag: $ARG >&2
+      exit 1
+    fi
+  else
+    if [ -z "$LOC" ]; then
+      LOC=$ARG
+    elif [ -z "$VER" ]; then
+      VER=$ARG
+    else
+      echo ERROR: Too many locations: $LOC $LOC $ARG >&2
+      exit 1
+    fi
+  fi
+  shift
+done
+
+if [ -n "$DOHELP" -o -z "$LOC" ]; then
+  echo Usage $(basename $0): [-h] [-t] LOC VER >&2
+  echo "  -h: Show this message." >&2
+  echo "  -t: Return the tar file for for the env." >&2
+  echo "  -n: Return directory path without checking." >&2
+  echo "If -n is not given, try to untar if the env is missing and" >&2
+  echo "return the name only if it is found." >&2
+  exit 0
+fi
+
+PATH=$(dirname $(readlink -f $0)):$PATH
+
+if [ -n "$DOTAR" ]; then
+  TARDIR=$(ptenv-dir -t $LOC)
+  if [ -z "$TARDIR" ]; then
+    exit 1
+  fi
+  echo $TARDIR/${LOC}ptenv$VER.tz
+  exit 0
+fi
+
+CONDIR=$(ptenv-dir $LOC)
+if [ -z "$CONDIR" ]; then
+  exit 1
+fi
+
+DIRNAM=miniconda3
+DIRNAMS=($DIRNAM)
+if [ -n "$VER" ]; then
+  DIRNAM=${LOC}ptenv${VER}
+  DIRNAMS="$DIRNAMS $DIRNAM"
+fi
+
+if [ -n "$NOCHECK" ]; then
+  echo $CONDIR/$DIRNAM
+  exit 0
+fi
+
+for DIRNAM in $DIRNAMS; do
+  INSDIR=$CONDIR/$DIRNAM
+  NOTFOUNDS=
+  if [ ! -r $INSDIR ]; then
+    TARNAM=$DIRNAM.tz
+    TARDIR=$(ptenv-dir -t $LOC)
+    TARFIL=$TARDIR/$TARNAM
+    if [ -r $TARFIL ]; then
+      if [ ! -r $CONDIR ]; then
+        if ! mkdir -p $CONDIR; then
+          echo "ERROR: Unable to create $CONDIR" >&2
+          exit 1
+        fi
+      fi
+      echo "Untarring $TARFIL on $(hostname)" >&2
+      if ! tar -xzf $TARFIL -C $CONDIR; then
+        echo "ERROR: Unable to untar $TARFIL in $CONDIR" >&2
+        exit 1
+      fi
+    else
+      NOTFOUNDS="$NOTFOUNDS $INSDIR $TARFIL"
+    fi
+  fi
+  if [ -n "$NOTFOUNDS" ]; then
+    echo "Unable to find $INSDIR or its tar at any of" >&2
+    for FNAM in $NOTFOUNDS; do
+      echo "  $FNAM" >&2
+    done
+    exit 1
+  fi
+done
+echo $INSDIR

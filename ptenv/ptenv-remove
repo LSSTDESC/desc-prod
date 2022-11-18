@@ -1,0 +1,31 @@
+#!/bin/bash
+
+PATH=$(dirname $(readlink -f $0)):$PATH
+
+set -e
+
+LOC=$1
+VER=$2
+
+if [ "$LOC" = -h -o -z "$VER" ]; then
+  echo Usage: $0 LOC VER
+  exit 0
+fi
+
+DIR=$(ptenv-find $LOC $VER)
+
+if [ ! -r $DIR ]; then
+  echo Installation not found: $DIR
+  exit 1
+fi
+
+echo -n "Remove $DIR ?> "
+read RESP
+
+if [ ${RESP:0:1} = y ]; then
+  echo Removing $DIR
+  rm -rf $DIR
+else
+  echo Not removing $DIR
+fi
+
