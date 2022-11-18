@@ -38,8 +38,8 @@ def bye():
 
 @app.route("/versions")
 def versions():
-    output = subprocess.getoutput('/home/descproc/dev/desc-prod/pyenv/pyenv-versions')
-    return output
+    output = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions')
+    return output.replace('\n', '<br>')
 
 @app.route("/hello")
 def hello():
