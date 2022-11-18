@@ -36,6 +36,11 @@ def bye():
     os.kill(os.getpid(), 9)
     return ""
 
+@app.route("/versions")
+def versions():
+    output = subprocess.getoutput('/home/descproc/dev/desc-prod/pyenv/pyenv-versions')
+    return output
+
 @app.route("/hello")
 def hello():
     name = ''
