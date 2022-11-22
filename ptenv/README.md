@@ -22,7 +22,7 @@ Supported locations are identified by the following location tags:
 
 See [ptenv-dir](ptenv/ptenv-dir) for the full path used for each of these.
 
-A conda env for version tag VER at location LOC is installed at the location in this table with name LOC-ptenv-VER.
+A conda env for version tag VER at location LOC is installed at the location in this table with name LOCptenvVER.
 The env includes file *setup.sh* that may be sourced (from bash) to set up the env.
 Each env is tarred up and automatically installed so it does not have to be recreated on transient or non-shared file systems
 like shm and tmp.
