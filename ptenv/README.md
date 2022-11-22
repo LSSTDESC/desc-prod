@@ -35,6 +35,8 @@ The following scripts are provided:
 * [ptenv-find](ptenv/ptenv-find) - Return the directory for an env with given location and version tag
 * [ptenv-create](ptenv/ptenv-create) - Create an env and its tar file.
 * [ptenv-remove](ptenv/ptenv-remove) - Remove an env (but not its tar).
-* [ptenv-setup](ptenv/ptenv-setup] - Set up an env in the current shell.
+* [ptenv-setup](ptenv/ptenv-setup) - Set up an env in the current shell.
 * [ptenv-shell](ptenv/ptenv-shell) - Start a new shell with the env.
 * [ptenv-versions](ptenv/ptenv-versions) - Displays the versions of the installed SW in the current env.
+
+The scripts may be run from this directory (*./ptenvXXX ...*) or by adding the directory to your PATH.
