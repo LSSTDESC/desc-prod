@@ -2,7 +2,7 @@
 DESC production service
 
 ## Contents
-[docker](docker) - Configuration files and supporting scripts for building docker images.
+[docker](docker) - Configuration files and supporting scripts for building docker images.  
 [service](service) - Scripts useful for building the production service.
 
 ## More information
