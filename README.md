@@ -3,7 +3,8 @@ DESC production service
 
 ## Contents
 [docker](docker) - Configuration files and supporting scripts for building docker images.  
-[service](service) - Scripts useful for building the production service.
+[service](service) - Scripts useful for building the production service.  
+[ptenv](ptenv) - Scripts to build and use parsltest conda envs at NERC.  
 
 ## More information
 
