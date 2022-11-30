@@ -19,6 +19,10 @@ class Data:
         if njob: return njob-1
         return None
 
+@app.route("/")
+def home:
+    return render_template('index.html')
+
 @app.route("/help")
 def help():
     msg = '<H1>Hello help</H1>'
