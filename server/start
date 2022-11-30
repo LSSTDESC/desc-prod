@@ -2,9 +2,16 @@
 
 # Container entry point.
 
-# Update parsl and desc-wfmon.
+# start the parsltest server
+if [ $1 = server ]; then
+  /home/descprod/dev/desc-prod/test/run-server
+  exit 0
+fi
+
+# Update parsl, desc-wfmon and desc-prod.
 pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
 RUN pip install git+https://github.com/LSSTDESC/desc-wfmon.git
-
-# start the parsltest server
-/home/descprod/dev/desc-prod/test/run-server
+cd /home/descprod/dev/desc-prod
+git pull
+cd /home/parsldev
+/home/descprod/dev/desc-prod/server/start server
