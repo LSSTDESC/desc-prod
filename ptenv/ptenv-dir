@@ -72,8 +72,6 @@ elif [ $LOC = tmp ]; then
 elif [ $LOC = tmi ]; then
   CONDIR=/tmp/$USER/install-dir/ptenv
   TARDIR=$TARBAS/$NAM
-elif [ $LOC = scr ]; then
-  CONDIR=/pscratch/sd/d/$USER/ptenv
 else
   echo ERROR: Invalid ptenv location: $LOC >&2
   exit 1
