@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# batch-worker
+#
+# David Adams
+# November 2022
+#
+# Slurm script to start a descprod worker.
+#
+# sbatch batch-worker
+
+#SBATCH --nodes=1
+#SBATCH --time=0:20:00
+#SBATCH --constraint=cpu
+#SBATCH --qos=debug
+#SBATCH --account=m1727
+
+BASDIR=/pscratch/sd/d/dladams/slurmout
+THIS=$(readlink -f $0)
+
+# If not called with sbatch, do so.
+if [ -z "$SLURM_JOB_ID" ]; then
+  echo $(date): Submitting batch job with sbatch $0 $*
+  cd $BASDIR
+  sbatch $THIS $*
+  exit $?
+fi
+
+echo Start: $(date)
+echo Host: $(hostname)
+
+TIME=60
+STIME=0:20:00
+CTIMEOUT=60
+ITIMEOUT=10
+#SERVER=128.55.212.163:3306
+SERVER=128.55.212.163:9123
+
+PTELOC=scr
+PTEVER=01
+
+BASDIR=/pscratch/sd/d/dladams/slurmout
+JOBDIR=$BASDIR/$SLURM_JOB_ID
+mkdir $JOBDIR
+cd $JOBDIR
+set | grep SLURM_ slurmenv.log
+NCORE=100
+RUNDIR=$JOBDIR/run
+mkdir $RUNDIR
+echo $(date): Setting up ptenv $PTELOC $PTEVER.
+. $HOME/desc/dev/desc-prod/ptenv/ptenv-setup $PTELOC $PTEVER
+echo $(date) Starting worker.
+date > $RUNDIR/time-start
+work_queue_worker --workdir=$JOBDIR/run --connect-timeout=$CTIMEOUT --idle-timeout=$ITIMEOUT --cores=$NCORE $SERVER
+echo Worker exited at $(date)
+date > $RUNDIR/time-stop
+echo End: $(date)

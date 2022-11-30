@@ -1,0 +1,10 @@
+#!/bin/bash
+
+THIS=$(readlink -f $0)
+WKRDIR=$(dirname $THIS)
+IPNAM=$($WKRDIR/worker-ipname)
+if [ -n "$1" ]; then
+  nslookup $IPNAM
+else
+  nslookup $IPNAM | grep "Address: 128" | sed 's/Address: //g'
+fi

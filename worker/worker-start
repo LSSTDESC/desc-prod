@@ -1,0 +1,13 @@
+PORT=$WKRDIR/worker-port
+THIS=$(readlink -f $0)
+WKRDIR=$(dirname $THIS)
+PTELOC=scr
+PTEVER=01
+NCORE=4
+SERVER=$($WKRDIR/worker-getip):$($WKRDIR/worker-port)
+
+THIS=$(readlink -f $0)
+PTEDIR=$(dirname $THIS)/../ptenv
+. $PTEDIR/ptenv-setup $PTELOC $PTEVER
+echo Starting worker for $SERVER
+work_queue_worker --cores=$NCORE --timeout=60 $SERVER

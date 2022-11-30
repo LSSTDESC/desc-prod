@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# worker-port
+#
+# David Adams
+# November 2022
+#
+# Return the prot on which the descprod parsl
+# service listens for workers.
+
+echo 3306; exit 0
+echo 9123
