@@ -51,3 +51,5 @@ On perlmutter or cori, install with shifter:
 04 - 03 plus sudo, wget, conda, ndcctools. Drop pip workqueue.  
 05 - 04 plus flas, nginx, mysql-connector and more
 06 - 05 shuffled so cond and pipi install are done by user. Now can run parsltest from browseer.
+08 - Used for succesful communication with perlmutter login and batch workers.
+09 - Update with new versions of parsl, parsltest and desc-prod with suto update for all.
