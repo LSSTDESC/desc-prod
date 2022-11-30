@@ -2,16 +2,31 @@
 
 # Container entry point.
 
+OPT=${1:-update}
+
 # start the parsltest server
-if [ $1 = server ]; then
+if [ $OPT = server ]; then
+  echo start: Starting server.
   /home/descprod/dev/desc-prod/test/run-server
+  echo start: Server exited.
   exit 0
 fi
 
-# Update parsl, desc-wfmon and desc-prod.
-pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
-RUN pip install git+https://github.com/LSSTDESC/desc-wfmon.git
-cd /home/descprod/dev/desc-prod
-git pull
-cd /home/parsldev
-/home/descprod/dev/desc-prod/server/start server
+# Update parsl, desc-wfmon and desc-prod and then start the server.
+if [ $OPT = update ]; then
+  echo start: Updating parsl, desc-wfmon and desc-prod.
+  pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
+  RUN pip install git+https://github.com/LSSTDESC/desc-wfmon.git
+  cd /home/descprod/dev/desc-prod
+  git pull
+  cd /home/parsldev
+  /home/descprod/dev/desc-prod/server/start server
+fi
+
+# Keep container open for shell exec.
+if [ $OPT = wait ]; then
+  echo start: Keeping container open.
+  tail -f /dev/null
+fi
+
+echo start: Invalid option $OPT. Exiting.
