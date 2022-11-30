@@ -16,10 +16,10 @@ fi
 if [ $OPT = update ]; then
   echo start: Updating parsl, desc-wfmon and desc-prod.
   pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
-  RUN pip install git+https://github.com/LSSTDESC/desc-wfmon.git
+  pip install git+https://github.com/LSSTDESC/desc-wfmon.git
   cd /home/descprod/dev/desc-prod
   git pull
-  cd /home/parsldev
+  cd /home/descprod
   /home/descprod/dev/desc-prod/server/start server
 fi
 
