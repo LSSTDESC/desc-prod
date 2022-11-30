@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Flask
+from flask import Flask, render_template
 from flask import request
 from markupsafe import escape
 import sys
