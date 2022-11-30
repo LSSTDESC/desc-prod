@@ -27,6 +27,7 @@ def help():
     msg += '<br>     hello?John - Says hello to John'
     msg += '<br> hello?John&Doe - Says hello to John Doe'
     msg += '<br>        request - Parses a request'
+    msg += '<br>       versions - Show software versions'
     msg += '<br>      parsltest - Parses a request'
     return msg
 

@@ -1,0 +1,48 @@
+FROM ubuntu/mysql:latest
+LABEL maintainer="David Adams dladams@bnl.gov"
+
+RUN apt-get update
+RUN apt-get install -y sudo
+RUN apt-get install -y dnsutils
+RUN apt-get install -y wget
+RUN apt-get install -y curl
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get install -y python3.8
+RUN apt-get install -y python-is-python3
+RUN apt-get install -y python3-pip
+RUN apt-get install -y git
+RUN apt-get install -y vim
+RUN apt-get install -y nginx
+RUN apt-get install -y net-tools
+RUN apt-get install -y lsof
+
+RUN useradd -m descprod -g users -G sudo
+RUN echo 'descprod ALL=NOPASSWD: ALL' >>/etc/sudoers
+RUN chsh --shell /bin/bash descprod
+
+USER descprod
+WORKDIR /home/descprod
+ENV PATH=$HOME/bin:$PATH
+RUN mkdir .ssh
+RUN mkdir dev
+
+# Install conda
+ENV CONDA_DIR /home/descprod/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /home/descprod/conda
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+# Install work_queue
+RUN conda install -y -c conda-forge ndcctools --no-deps
+
+# Install python packages
+RUN pip install flask
+RUN pip install mysql-connector-python
+RUN pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
+RUN pip install git+https://github.com/LSSTDESC/desc-wfmon.git
+
+WORKDIR /home/descprod/dev
+RUN git clone https://github.com/LSSTDESC/desc-prod.git
+WORKDIR /home/descprod
+#CMD /home/descprod/dev/desc-prod/server/start
