@@ -21,7 +21,16 @@ class Data:
 
 @app.route("/")
 def home():
-    return render_template('index.html')
+    #return render_template('index.html')
+    msg = '<h2>DESCprod</h2>'
+    if Data.sjob is not None:
+        msg += f"\nCurrent job: {Data.sjob}"
+    msg += f"\n<br>Status: {status()}<br><br>"
+    if ready():
+        msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
+    msg += '\n<form action="/bye" method="get"><input type="submit" value="Restart"></form>'
+    msg += '\n<form action="/help" method="get"><input type="submit" value="Help"></form>'
+    return msg
 
 @app.route("/help")
 def help():
@@ -65,6 +74,18 @@ def run_parsltest():
     if 'config' not in request.args.keys():
           return "Invalid job description"
     args = request.args.get('config')
+    print(args)
+    return do_parsltest(args)
+
+@app.route('/form_parsltest/', methods=['POST', 'GET'])
+def run_form_parsltest():
+    if request.method == 'GET':
+        return 'Got GET instead of POST!!'
+    print(request.form['config'])
+    return do_parsltest(request.form['config'])
+
+def do_parsltest(args):
+    myname = 'do_parsltest'
     fout = Data.fout
     if Data.sjob is not None and Data.ret is None:
         return f"Job is already running: {sjob}"
@@ -83,16 +104,23 @@ def run_parsltest():
     Data.ret = subprocess.Popen(com, stdout=fout, stderr=fout)
     return f"Started {com[0]} {com[1]}"
 
+def ready():
+    if Data.sjob is None: return True
+    rcode = Data.ret.poll()
+    if rcode is None: return False
+    # Post job actions go here.
+    return True
+
 @app.route('/status')
 def status():
     if Data.sjob is None:
         msg = "No job is started."
     else:
         rcode = Data.ret.poll()
-        if rcode is None:
-            msg = f"Job {Data.sjob} is running."
+        if ready():
+            msg = f"Job {Data.sjob} returned {Data.ret.poll()}."
         else:
-            msg = f"Job {Data.sjob} returned {rcode}."
+            msg = f"Job {Data.sjob} is running."
     return msg
 
 @app.route("/request")
