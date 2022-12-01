@@ -23,6 +23,18 @@ if [ ! -r $EXTDIR ]; then
     echo start: Creating $EXTDIR 
     ln -s $EXTMNT $EXTDIR
   fi
+  SITFIL=$EXTDIR/etc/site.txt
+  if [ -r $SITFIL ]; then
+    echo start: Site is $(cat $SITFIL)
+  else
+    echo start: ERROR: Site file not found: $SITFIL
+    echo start: Please add this with a shot and unique site name.
+  fi
+  JIDFIL=$EXTDIR/etc/jobid.txt
+  if [ ! -r $JIDFIL* ]; then
+    echo start: WARNING: Creating missing job ID file: $JIDFIL
+  fi
+  echo start: Current/next job ID is $(cat $JIDFIL) else
 fi
 
 # start the parsltest server
