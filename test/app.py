@@ -23,8 +23,6 @@ class Data:
 def home():
     #return render_template('index.html')
     msg = '<h2>DESCprod</h2>'
-    if Data.sjob is not None:
-        msg += f"\nCurrent job: {Data.sjob}"
     msg += f"\n<br>Status: {status()}<br><br>"
     if ready():
         msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''

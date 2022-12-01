@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# worker-local
+#
+# Start a worker on the server or any machine with env.
+
+PORT=9123
+THIS=$(readlink -f $0)
+NCORE=4
+SERVER=localhiost:9123
+
+echo Starting worker for $SERVER
+work_queue_worker --cores=$NCORE --timeout=60 $SERVER

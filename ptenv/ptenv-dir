@@ -66,6 +66,9 @@ elif [ $LOC = cmn ]; then
   CONDIR=/global/common/software/lsst/users/$USER/ptenv
 elif [ $LOC = scr ]; then
   CONDIR=/pscratch/sd/d/$USER/ptenv
+  if [ ! -r $CONDIR ]; then
+    CONDIR=$HOME/scratch/$USER/ptenv
+  fi
 elif [ $LOC = tmp ]; then
   CONDIR=/tmp/$USER/ptenv
   TARDIR=$TARBAS/$NAM
