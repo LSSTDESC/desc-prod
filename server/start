@@ -2,6 +2,22 @@
 
 # Container entry point.
 
+linkit() {
+  FROM=$1
+  TO=$2/$(basename $FROM)
+  if [ ! -r $TO ]; then
+    ln -s $FROM $TO
+  fi
+}
+
+copyit() {
+  FROM=$1
+  TO=$2/$(basename $FROM)
+  if [ ! -r $TO ]; then
+    ln -s $FROM $TO
+  fi
+}
+
 OPT=${1:-update}
 
 # Update parsl, desc-wfmon and desc-prod and then start the server.
@@ -45,7 +61,25 @@ if [ ! -r $LOGDIR ]; then
 fi
 echo $(date): $HOSTNAME >> $LOGDIR/host.log
 PKGDIR=$HOME/dev/desc-prod
-cp $PKGDIR/server/descprod-* $HOME/bin
+BINDIR=$HOME/bin
+if [ ! -r $BINDIR ]; then
+  mkdir $BINDIR
+fi
+PKGDIR=$HOME/dev/desc-prod
+SRCDIR=$PKGDIR/server
+TSTDIR=$PKGDIR/test
+linkit $TSTDIR/run-server $BINDIR
+for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid descprod-current-jobid; do
+  copyit $SRCDIR/$FIL $BINDIR
+done
+DATRUNDIR=$HOME/data/rundir
+if [ ! -r $DATRUNDIR ]; then
+  mkdir $DATRUNDIR
+fi
+HOMRUNDIR=$HOME/rundir
+if [ ! -r $HOMRUNDIR ]; then
+  mkdir $HOMRUNDIR
+fi
 
 # start the parsltest server
 if [ $OPT = server ]; then
