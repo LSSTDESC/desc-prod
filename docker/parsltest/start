@@ -19,6 +19,12 @@ NAME=$(basename $(pwd))
 FROM=$NAME:$TAG
 CNAME=$NAME
 
+# Create external directory.
+EXTDIR=$HOME/desc/dpvol01
+if [ ! -r $EXTDIR ]; then
+  mkdir -p $EXTDIR
+fi
+
 echo Starting $CNAME with $FROM
-docker run --name $CNAME --rm -p 3306:3306 -p 80:5000 -it $FROM $*
+docker run --name $CNAME --rm -p 3306:3306 -p 80:5000 -v $EXTDIR:/mnt/dpvol01 -it $FROM $*
 

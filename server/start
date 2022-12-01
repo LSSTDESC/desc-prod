@@ -4,14 +4,6 @@
 
 OPT=${1:-update}
 
-# start the parsltest server
-if [ $OPT = server ]; then
-  echo start: Starting server.
-  /home/descprod/dev/desc-prod/test/run-server
-  echo start: Server exited.
-  exit 0
-fi
-
 # Update parsl, desc-wfmon and desc-prod and then start the server.
 if [ $OPT = update ]; then
   echo start: Updating parsl, desc-wfmon and desc-prod.
@@ -21,6 +13,24 @@ if [ $OPT = update ]; then
   git pull
   cd /home/descprod
   /home/descprod/dev/desc-prod/server/start server
+fi
+
+# Link external drives.
+EXTMNT=/mnt/dpvol01
+EXTDIR=$HOME/data
+if [ ! -r $EXTDIR ]; then
+  if [ -r $EXTMNT ]; then
+    echo Creating $EXTDIR 
+    ln -s $EXTMNT $EXTDIR
+  fi
+fi
+
+# start the parsltest server
+if [ $OPT = server ]; then
+  echo start: Starting server.
+  /home/descprod/dev/desc-prod/test/run-server
+  echo start: Server exited.
+  exit 0
 fi
 
 # Keep container open for shell exec.
