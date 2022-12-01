@@ -20,7 +20,7 @@ EXTMNT=/mnt/dpvol01
 EXTDIR=$HOME/data
 if [ ! -r $EXTDIR ]; then
   if [ -r $EXTMNT ]; then
-    echo Creating $EXTDIR 
+    echo start: Creating $EXTDIR 
     ln -s $EXTMNT $EXTDIR
   fi
 fi
