@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# descprod-current-jobid
+#
+# David Adams
+# November 2022
+#
+# Return the current (or last) job ID.
+
+JIDFIL=$HOME/data/etc/jobid.txt
+COUNT=0
+while [ $COUNT -lt 20 ]; do
+  if JOBID=$(cat $JIDFIL 2>/dev/null); then
+    echo $JOBID
+    exit 0
+  fi
+  COUNT=$((COUNT+1))
+done
+echo jobid-not-found
+exit 1

@@ -35,7 +35,7 @@ if [ ! -r $EXTDIR ]; then
   if [ ! -r $JIDFIL* ]; then
     echo start: WARNING: Creating missing job ID file: $JIDFIL
   fi
-  echo start: Current/next job ID is $(cat $JIDFIL)
+  echo start: Current/last job ID is $(cat $JIDFIL)
 fi
 
 # Startup config.
@@ -44,6 +44,8 @@ if [ ! -r $LOGDIR ]; then
   mkdir $LOGDIR
 fi
 echo $(date): $HOSTNAME >> $LOGDIR/host.log
+PKGDIR=$HOME/dev/desc-prod
+cp $PKGDIR/server/descprod-* $HOME/bin
 
 # start the parsltest server
 if [ $OPT = server ]; then
