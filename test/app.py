@@ -23,7 +23,7 @@ class Data:
 def home():
     #return render_template('index.html')
     msg = '<h2>DESCprod</h2>'
-    msg += f"\n<br>Status: {status()}<br><br>"
+    msg += f"\nStatus: {status()}<br><br>"
     if ready():
         msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
     msg += '\n<form action="/bye" method="get"><input type="submit" value="Restart"></form>'
