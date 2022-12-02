@@ -126,7 +126,7 @@ def do_parsltest(args):
     Data.com = ['desc-wfmon-parsltest', args]
     if fout is not None:
         fout.close() 
-    data.lognam = f"{Data.rundir}/job{Data.sjobid}.log"
+    Data.lognam = f"{Data.rundir}/job{Data.sjobid}.log"
     print(f"{myname}: Opening {Data.lognam}")
     Data.logfil = open(Data.lognam, 'w')
     Data.ret = subprocess.Popen(Data.com, cwd=Data.rundir, stdout=Data.logfil, stderr=Data.logfil)
