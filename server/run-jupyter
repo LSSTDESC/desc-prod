@@ -1,0 +1,7 @@
+MSG='Starting jupyter.'
+while true; do
+  echo $MSG
+  .jupyter/jupyter_notebook_config.py
+  MSG='Restarting jupyter'
+  sleep 5
+done
