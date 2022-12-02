@@ -14,7 +14,7 @@ copyit() {
   FROM=$1
   TO=$2/$(basename $FROM)
   if [ ! -r $TO ]; then
-    ln -s $FROM $TO
+    cp $FROM $TO
   fi
 }
 
