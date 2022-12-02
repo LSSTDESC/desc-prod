@@ -2,11 +2,14 @@
 
 # Container entry point.
 #
-# start [update] OPT
+# start [UP1 [UP2 ...]] OPT
 #   OPT = server - Start parsltets server
 #         jupyter - Start singl-user jupyter service
 #         wait - Do nothing without exiting
-#   If update is given, parsl, desc-wfmon and desc-prod are updated
+#   UPi is any of
+#     update-parsl - updat parsl
+#     update-desc-wfmon - Update desc-wfmon
+#     update-desc-wfmon - Update desc-wfmon
 # start - update server
 
 linkit() {
@@ -25,6 +28,7 @@ copyit() {
   fi
 }
 
+echo start: Called with args: $*
 OPT=${1:-update}
 shift
 
