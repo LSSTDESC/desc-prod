@@ -94,13 +94,9 @@ linkit $TSTDIR/run-server $BINDIR
 for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid descprod-current-jobid; do
   copyit $SRCDIR/$FIL $BINDIR
 done
-DATRUNDIR=$HOME/data/rundir
+DATRUNDIR=$HOME/data/rundirs
 if [ ! -r $DATRUNDIR ]; then
   mkdir $DATRUNDIR
-fi
-HOMRUNDIR=$HOME/rundir
-if [ ! -r $HOMRUNDIR ]; then
-  mkdir $HOMRUNDIR
 fi
 JUPCFGDIR=$HOME/.jupyter
 if [ ! -r $JUPCFGDIR ]; then

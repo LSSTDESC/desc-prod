@@ -8,22 +8,22 @@ import subprocess
 
 app = Flask(__name__)
 
-def get_jobid() {
+def get_jobid():
     fnam  = '/home/descprod/data/etc/jobid.txt'
-    jobid = int(subprocess.getoutput(f"cat {fnam}"))
-    fout = open(fnam, 'w')
-    fout.write(f"{jobid + 1}\n")
+    jobid = int(subprocess.getoutput(f"descprod-next-jobid"))
     return jobid
 
 class Data:
     msg = ''
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
-    site = 
-    fnam = '/home/descprod/job.log'
+    lognam = None
+    logfil = None
+    jobid = 0
     fout = None
     sjob = None
+    rundir = None
+    com = None
     ret = None
-    njob = 0
     def current_jobid():
         if njob: return njob-1
         return None
@@ -112,20 +112,29 @@ def do_parsltest(args):
     fout = Data.fout
     if Data.sjob is not None and Data.ret is None:
         return f"Job is already running: {sjob}"
-    Data.sjob = args
     if Data.ret is not None:
         rcode = Data.ret.poll()
         if rcode is None:
             msg = f"Earlier job {Data.sjob} is still running."
             return msg
         Data.ret = None
-    com = ['desc-wfmon-parsltest', args]
+    sjobid = string(get_jobid())
+    while len(sjobid) < 6: sjobid = '0' + sjobid
+    Data.rundir = f"/home/workdir/data/rundirs/job{sjobid}"
+    os.mkdir(rundir)
+    Data.sjob = args
+    Data.com = ['desc-wfmon-parsltest', args]
     if fout is not None:
         fout.close() 
-    print(f"{myname}: Opening {Data.fnam}")
-    fout = open(Data.fnam, 'w')
-    Data.ret = subprocess.Popen(com, stdout=fout, stderr=fout)
-    return f"Started {com[0]} {com[1]}"
+    data.lognam = f"{rundir}/job{sjobid}.log"
+    print(f"{myname}: Opening {Data.lognam}")
+    Data.logfil = open(Data.lognam, 'w')
+    Data.ret = subprocess.Popen(Data.com, cwd=Data.rundir, stdout=Data.logfil, stderr=Data.logfil)
+    sep = '<br>\n'
+    msg = f"Started {com[0]} {com[1]} in {Data.rundir}"
+    msg += sep
+    msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
+    return msg
 
 def ready():
     if Data.sjob is None: return True
