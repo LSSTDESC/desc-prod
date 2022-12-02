@@ -28,6 +28,7 @@ def home():
         msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
     msg += '\n<form action="/bye" method="get"><input type="submit" value="Restart"></form>'
     msg += '\n<form action="/help" method="get"><input type="submit" value="Help"></form>'
+    msg += '\n<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
     return msg
 
 @app.route("/help")
@@ -50,8 +51,9 @@ def bye():
 
 @app.route("/versions")
 def versions():
-    output = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions')
-    return output.replace('\n', '<br>')
+    msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions')
+    msg += '\n<form action="/version" method="get"><input type="submit" value="Versions"></form>'
+    return msg.replace('\n', '<br>')
 
 @app.route("/hello")
 def hello():
