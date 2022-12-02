@@ -120,7 +120,7 @@ def do_parsltest(args):
         Data.ret = None
     Data.sjobid = str(get_jobid())
     while len(Data.sjobid) < 6: Data.sjobid = '0' + Data.sjobid
-    Data.rundir = f"/home/workdir/data/rundirs/job{Data.sjobid}"
+    Data.rundir = f"/home/descprod/data/rundirs/job{Data.sjobid}"
     os.mkdir(Data.rundir)
     Data.sjob = args
     Data.com = ['desc-wfmon-parsltest', args]
