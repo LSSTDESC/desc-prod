@@ -114,7 +114,7 @@ def do_parsltest(args):
             msg = f"Earlier job {Data.sjob} is still running."
             return msg
         Data.ret = None
-    sjobid = string(get_jobid())
+    sjobid = str(get_jobid())
     while len(sjobid) < 6: sjobid = '0' + sjobid
     Data.rundir = f"/home/workdir/data/rundirs/job{sjobid}"
     os.mkdir(rundir)
