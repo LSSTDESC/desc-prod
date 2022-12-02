@@ -10,6 +10,8 @@ app = Flask(__name__)
 
 class Data:
     msg = ''
+    site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
+    site = 
     fnam = '/home/descprod/job.log'
     fout = None
     sjob = None
@@ -22,13 +24,22 @@ class Data:
 @app.route("/")
 def home():
     #return render_template('index.html')
+    sep = '<br>\n'
     msg = '<h2>DESCprod</h2>'
-    msg += f"\nStatus: {status()}<br><br>"
+    msg += sep
+    msg += f"Site: {Data.site}"
+    msg += sep
+    msg += f"Status: {status()}"
+    msg += sep
+    msg += sep
     if ready():
         msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
-    msg += '\n<form action="/bye" method="get"><input type="submit" value="Restart"></form>'
-    msg += '\n<form action="/help" method="get"><input type="submit" value="Help"></form>'
-    msg += '\n<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
+        msg += sep
+    msg += '<form action="/bye" method="get"><input type="submit" value="Restart"></form>'
+    msg += sep
+    msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
+    msg += sep
+    msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
     return msg
 
 @app.route("/help")
@@ -52,8 +63,8 @@ def bye():
 @app.route("/versions")
 def versions():
     sep = '<br>\n'
-    msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions').replace('\n', sep)
     msg += sep
+    msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions').replace('\n', sep)
     msg += 'desc-prod ' + subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt')
     msg += sep
     msg += sep

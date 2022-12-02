@@ -1,6 +1,13 @@
 #!/bin/bash
 
 # Container entry point.
+#
+# start [update] OPT
+#   OPT = server - Start parsltets server
+#         jupyter - Start singl-user jupyter service
+#         wait - Do nothing without exiting
+#   If update is given, parsl, desc-wfmon and desc-prod are updated
+# start - update server
 
 linkit() {
   FROM=$1
@@ -19,16 +26,22 @@ copyit() {
 }
 
 OPT=${1:-update}
+shift
 
 # Update parsl, desc-wfmon and desc-prod and then start the server.
 if [ $OPT = update ]; then
-  echo start: Updating parsl, desc-wfmon and desc-prod.
+  echo start: Updating parsl
   pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
   pip install git+https://github.com/LSSTDESC/desc-wfmon.git
+  echo start: Updating desc-wfmon
+  cd /home/descprod/dev/desc-wfmon
+  git pull
+  pip install .
+  echo start: Updating desc-prod.
   cd /home/descprod/dev/desc-prod
   git pull
   cd /home/descprod
-  /home/descprod/dev/desc-prod/server/start server
+  /home/descprod/dev/desc-prod/server/start $*
 fi
 
 # Link external drives.
@@ -80,12 +93,25 @@ HOMRUNDIR=$HOME/rundir
 if [ ! -r $HOMRUNDIR ]; then
   mkdir $HOMRUNDIR
 fi
+JUPCFGDIR=$HOME/.jupyter
+if [ ! -r $JUPCFGDIR ]; then
+  mkdir $JUPCFGDIR
+fi
+copyit $SRCDIR/jupyter/jupyter_notebook_config.py $JUPCFGDIR
 
 # start the parsltest server
 if [ $OPT = server ]; then
   echo start: Starting server.
   /home/descprod/dev/desc-prod/test/run-server
   echo start: Server exited.
+  exit 0
+fi
+
+# start single-user jupyter server
+if [ $OPT = jupyter ]; then
+  echo start: Starting jupyter.
+  /home/descprod/dev/desc-prod/server/run-jupyter
+  echo start: Jupyter exited.
   exit 0
 fi
 
