@@ -29,17 +29,22 @@ OPT=${1:-update}
 shift
 
 # Update parsl, desc-wfmon and desc-prod and then start the server.
-if [ $OPT = update ]; then
-  echo start: Updating parsl
-  pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
-  pip install git+https://github.com/LSSTDESC/desc-wfmon.git
-  echo start: Updating desc-wfmon
-  cd /home/descprod/dev/desc-wfmon
-  git pull
-  pip install .
-  echo start: Updating desc-prod.
-  cd /home/descprod/dev/desc-prod
-  git pull
+if [ ${OPT:0:6} = update ]; then
+  if [ $OPT = update -o $OPT = update-parsl ]; then
+    echo start: Updating parsl
+    pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
+  fi
+  if [ $OPT = update -o $OPT = update-desc-wfmon ]; then
+    echo start: Updating desc-wfmon
+    cd /home/descprod/dev/desc-wfmon
+    git pull
+    pip install .
+  fi
+  if [ $OPT = update -o $OPT = update-desc-prod ]; then
+    echo start: Updating desc-prod.
+    cd /home/descprod/dev/desc-prod
+    git pull
+  fi
   cd /home/descprod
   /home/descprod/dev/desc-prod/server/start $*
 fi
