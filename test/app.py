@@ -18,15 +18,12 @@ class Data:
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
     lognam = None
     logfil = None
-    jobid = 0
+    sjobid = None
     fout = None
     sjob = None
     rundir = None
     com = None
     ret = None
-    def current_jobid():
-        if njob: return njob-1
-        return None
 
 @app.route("/")
 def home():
@@ -36,6 +33,13 @@ def home():
     msg += f"Site: {Data.site}"
     msg += sep
     msg += f"Status: {status()}"
+    if Data.sjobid is not None:
+      msg += sep
+      msg += f"Job: {Data.sjobid}"
+      msg += sep
+      msg += f"Command: {Data.com}"
+      msg += sep
+      msg += f"Run dir: {Data.rundir}"
     msg += sep
     msg += sep
     if ready():
@@ -114,15 +118,15 @@ def do_parsltest(args):
             msg = f"Earlier job {Data.sjob} is still running."
             return msg
         Data.ret = None
-    sjobid = str(get_jobid())
-    while len(sjobid) < 6: sjobid = '0' + sjobid
-    Data.rundir = f"/home/workdir/data/rundirs/job{sjobid}"
-    os.mkdir(rundir)
+    Data.sjobid = str(get_jobid())
+    while len(Data.sjobid) < 6: Data.sjobid = '0' + Data.sjobid
+    Data.rundir = f"/home/workdir/data/rundirs/job{Data.sjobid}"
+    os.mkdir(Data.rundir)
     Data.sjob = args
     Data.com = ['desc-wfmon-parsltest', args]
     if fout is not None:
         fout.close() 
-    data.lognam = f"{rundir}/job{sjobid}.log"
+    data.lognam = f"{Data.rundir}/job{Data.sjobid}.log"
     print(f"{myname}: Opening {Data.lognam}")
     Data.logfil = open(Data.lognam, 'w')
     Data.ret = subprocess.Popen(Data.com, cwd=Data.rundir, stdout=Data.logfil, stderr=Data.logfil)
