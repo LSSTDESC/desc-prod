@@ -51,10 +51,10 @@ def bye():
 
 @app.route("/versions")
 def versions():
-    msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions').replace('\n', '/n<br>')
-    msg += 'desc-prod: ' + subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt') + '/n<br>'
+    msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions').replace('\n', '<br>\n')
+    msg += 'desc-prod: ' + subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt') + '<br>\n'
     msg += '<br><br><form action="/" method="get"><input type="submit" value="Home"></form>'
-    return msg.replace('\n', '<br>')
+    return msg
 
 @app.route("/hello")
 def hello():
