@@ -102,7 +102,7 @@ JUPCFGDIR=$HOME/.jupyter
 if [ ! -r $JUPCFGDIR ]; then
   mkdir $JUPCFGDIR
 fi
-copyit $SRCDIR/jupyter/jupyter_notebook_config.py $JUPCFGDIR
+copyit $SRCDIR/jupyter_notebook_config.py $JUPCFGDIR
 
 # start the parsltest server
 if [ $OPT = server ]; then

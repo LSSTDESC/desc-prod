@@ -8,6 +8,13 @@ import subprocess
 
 app = Flask(__name__)
 
+def get_jobid() {
+    fnam  = '/home/descprod/data/etc/jobid.txt'
+    jobid = int(subprocess.getoutput(f"cat {fnam}"))
+    fout = open(fnam, 'w')
+    fout.write(f"{jobid + 1}\n")
+    return jobid
+
 class Data:
     msg = ''
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
