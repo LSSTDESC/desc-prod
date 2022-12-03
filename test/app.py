@@ -131,7 +131,7 @@ def do_parsltest(args):
     Data.logfil = open(Data.lognam, 'w')
     Data.ret = subprocess.Popen(Data.com, cwd=Data.rundir, stdout=Data.logfil, stderr=Data.logfil)
     sep = '<br>\n'
-    msg = f"Started {com[0]} {com[1]} in {Data.rundir}"
+    msg = f"Started {Data.com[0]} {Data.com[1]} in {Data.rundir}"
     msg += sep
     msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
     return msg
