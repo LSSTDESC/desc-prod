@@ -111,7 +111,7 @@ def do_parsltest(args):
     myname = 'do_parsltest'
     fout = Data.fout
     if Data.sjob is not None and Data.ret is None:
-        return f"Job is already running: {sjob}"
+        return f"Job is already running: {Data.sjob}"
     if Data.ret is not None:
         rcode = Data.ret.poll()
         if rcode is None:
@@ -127,7 +127,7 @@ def do_parsltest(args):
     if fout is not None:
         fout.close() 
     rout = open(f"{Data.rundir}/README.txt", 'w')
-    rout.write(f"{sjob}\n")
+    rout.write(f"{Data.sjob}\n")
     rout.close()
     Data.lognam = f"{Data.rundir}/job{Data.sjobid}.log"
     print(f"{myname}: Opening {Data.lognam}")
