@@ -4,7 +4,6 @@
 #
 # Start a worker on the server or any machine with env.
 
-PORT=9123
 THIS=$(readlink -f $0)
 NCORE=4
 SERVER=localhost:9123

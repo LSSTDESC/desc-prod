@@ -1,0 +1,11 @@
+#!/bin/bash
+
+SJOB=$1
+JOBDIR=$HOME/data/rundirs/$SJOB
+NBKDIR=$HOME/dev/desc-wfmon/ipynb
+cp $NBKDIR/monexp* $JOBDIR
+#echo $SJOB > $JOBDIR/README.txt
+if [ ! -r $HOME/desc ]; then
+  mkdir $HOME/desc
+  ln -s $HOME/dev $HOME/desc
+fi

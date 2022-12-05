@@ -126,6 +126,9 @@ def do_parsltest(args):
     Data.com = ['desc-wfmon-parsltest', args]
     if fout is not None:
         fout.close() 
+    rout = open(f"{rundir}/README.txt", 'w')
+    rout.write(f"{sjob}\n")
+    rout.close()
     Data.lognam = f"{Data.rundir}/job{Data.sjobid}.log"
     print(f"{myname}: Opening {Data.lognam}")
     Data.logfil = open(Data.lognam, 'w')

@@ -91,7 +91,8 @@ PKGDIR=$HOME/dev/desc-prod
 SRCDIR=$PKGDIR/server
 TSTDIR=$PKGDIR/test
 linkit $TSTDIR/run-server $BINDIR
-for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid descprod-current-jobid; do
+for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid \
+           descprod-current-jobid setup-jupyter-job; do
   copyit $SRCDIR/$FIL $BINDIR
 done
 DATRUNDIR=$HOME/data/rundirs
