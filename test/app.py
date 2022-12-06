@@ -37,7 +37,7 @@ def home():
         sjstat = 'Not found'
         jsin = open(Data.stanam, 'r')
         sjtext = jsin.readlines()
-        if len(sjtext) sjstat = sjtext[-1]
+        if len(sjtext): sjstat = sjtext[-1]
         msg += f"Status: {sjstat}"
     if Data.sjobid is not None:
       msg += sep
