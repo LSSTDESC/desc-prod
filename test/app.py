@@ -32,10 +32,16 @@ def home():
     msg = '<h2>DESCprod</h2>'
     msg += f"Site: {Data.site}"
     msg += sep
-    msg += f"Status: {status()}"
+    msg += f"{status()}"
+    if Data.stafil is not None:
+        sjstat = 'Not found'
+        jsin = open(Data.stanam, 'r')
+        sjtext = jsin.readlines()
+        if len(sjtext) sjstat = sjtext[-1]
+        msg += f"Status: {sjstat}"
     if Data.sjobid is not None:
       msg += sep
-      msg += f"Job: {Data.sjobid}"
+      msg += f"Config: {Data.sjob}"
       msg += sep
       msg += f"Command: {Data.com}"
       msg += sep
@@ -45,9 +51,10 @@ def home():
     if ready():
         msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
         msg += sep
-    msg += '<form action="/bye" method="get"><input type="submit" value="Restart"></form>'
+    msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
     msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
     msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
+    msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>'
     return msg
 
 @app.route("/help")
@@ -153,9 +160,9 @@ def status():
     else:
         rcode = Data.ret.poll()
         if ready():
-            msg = f"Job {Data.sjob} returned {Data.ret.poll()}."
+            msg = f"Job {Data.sjobid} returned {Data.ret.poll()}."
         else:
-            msg = f"Job {Data.sjob} is running."
+            msg = f"Job {Data.sjobid} is running."
     return msg
 
 @app.route("/request")
