@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# batch-worker
+# worker-submit
 #
 # David Adams
 # November 2022
@@ -15,14 +15,19 @@
 #SBATCH --qos=debug
 #SBATCH --account=m1727
 
+export TZ=UTC
+
 BASDIR=/pscratch/sd/d/dladams/slurmout
 THIS=$(readlink -f $0)
 
 # If not called with sbatch, do so.
 if [ -z "$SLURM_JOB_ID" ]; then
+  THIS=$(readlink -f $0)
+  WKRDIR=$(dirname $THIS)
+  export SERVER=$($WKRDIR/worker-getip):$($WKRDIR/worker-port)
   echo $(date): Submitting batch job with sbatch $0 $*
   cd $BASDIR
-  sbatch $THIS $*
+  sbatch $THIS
   exit $?
 fi
 
@@ -33,8 +38,6 @@ TIME=60
 STIME=0:20:00
 CTIMEOUT=60
 ITIMEOUT=10
-#SERVER=128.55.212.163:3306
-SERVER=128.55.212.163:9123
 
 PTELOC=scr
 PTEVER=01
@@ -49,7 +52,7 @@ RUNDIR=$JOBDIR/run
 mkdir $RUNDIR
 echo $(date): Setting up ptenv $PTELOC $PTEVER.
 . $HOME/desc/dev/desc-prod/ptenv/ptenv-setup $PTELOC $PTEVER
-echo $(date) Starting worker.
+echo $(date) Starting worker for $SERVER
 date > $RUNDIR/time-start
 work_queue_worker --workdir=$JOBDIR/run --connect-timeout=$CTIMEOUT --idle-timeout=$ITIMEOUT --cores=$NCORE $SERVER
 echo Worker exited at $(date)
