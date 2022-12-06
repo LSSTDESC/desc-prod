@@ -16,7 +16,8 @@ def get_jobid():
 class Data:
     msg = ''
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
-    lognam = None
+    lognam = None   # Job log file
+    stanam = None   # Last line is status or processing
     logfil = None
     sjobid = None
     fout = None
@@ -33,7 +34,7 @@ def home():
     msg += f"Site: {Data.site}"
     msg += sep
     msg += f"{status()}"
-    if Data.stafil is not None:
+    if Data.stanam is not None:
         sjstat = 'Not found'
         jsin = open(Data.stanam, 'r')
         sjtext = jsin.readlines()
@@ -137,6 +138,7 @@ def do_parsltest(args):
     rout.write(f"{Data.sjob}\n")
     rout.close()
     Data.lognam = f"{Data.rundir}/job{Data.sjobid}.log"
+    Data.stanam = f"{Data.rundir}/current-status.txt"
     print(f"{myname}: Opening {Data.lognam}")
     Data.logfil = open(Data.lognam, 'w')
     Data.ret = subprocess.Popen(Data.com, cwd=Data.rundir, stdout=Data.logfil, stderr=Data.logfil)
