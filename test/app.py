@@ -36,10 +36,13 @@ def home():
     msg += f"{status()}"
     if Data.stanam is not None:
         sjstat = 'Not found'
-        jsin = open(Data.stanam, 'r')
-        sjtext = jsin.readlines()
-        if len(sjtext): sjstat = sjtext[-1]
-        msg += f"Status: {sjstat}"
+        try:
+            jsin = open(Data.stanam, 'r')
+            sjtext = jsin.readlines()
+            if len(sjtext): sjstat = sjtext[-1]
+            msg += f"Status: {sjstat}"
+        except: FileNotFoundError:
+            pass
     if Data.sjobid is not None:
       msg += sep
       msg += f"Config: {Data.sjob}"
