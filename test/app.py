@@ -41,7 +41,7 @@ def home():
             sjtext = jsin.readlines()
             if len(sjtext): sjstat = sjtext[-1]
             msg += f"Status: {sjstat}"
-        except: FileNotFoundError:
+        except FileNotFoundError:
             pass
     if Data.sjobid is not None:
       msg += sep
