@@ -1,3 +1,4 @@
+from time import time
 from datetime import datetime
 from flask import Flask, render_template
 from flask import request
@@ -18,6 +19,7 @@ class Data:
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
     lognam = None   # Job log file
     stanam = None   # Last line is status or processing
+    cfgnam = 'config.txt'   # Name for config file describing ther job
     logfil = None
     sjobid = None
     fout = None
@@ -25,6 +27,27 @@ class Data:
     rundir = None
     com = None
     ret = None
+    @classmethod
+    def write_config(cls):
+        myname = 'Data.write_config'
+        if cls.rundir is None:
+            print(f"{myname}: Cannot write config without rundir")
+            return None
+        msg = ""
+        sep = "\n"
+        msg += f"Time: {time.time()}"
+        msg += sep
+        msg += f"Command: {cls.com}"
+        msg += sep
+        msg += f"Site: {cls.site}"
+        msg += sep
+        msg += f"Rundir: {cls.rundir}"
+        msg += sep
+        cpat = f"{self.rundir}/{self.cfgnam}"
+        cout = open(cpat, 'w')
+        cout.write(msg)
+        cout.close()
+        return 0
 
 @app.route("/")
 def home():
@@ -143,6 +166,7 @@ def do_parsltest(args):
     rout.close()
     Data.lognam = f"{Data.rundir}/job{Data.sjobid}.log"
     Data.stanam = f"{Data.rundir}/current-status.txt"
+    data.write_config()
     print(f"{myname}: Opening {Data.lognam}")
     Data.logfil = open(Data.lognam, 'w')
     Data.ret = subprocess.Popen(Data.com, cwd=Data.rundir, stdout=Data.logfil, stderr=Data.logfil)
