@@ -29,6 +29,11 @@ elif [ $PTENV_VERSION == 01 ]; then
   PTENV_NDCCTOOLS=7.4.14
   PTENV_PARSL=6c46a2bde02e9027d0fc33aee5596eda2e253ce9    # 1.3.0-dev+desc-2022.11.15a
   PTENV_DESCWFMON=
+elif [ $PTENV_VERSION == 02 ]; then
+  PTENV_PYTHON=3.9.12
+  PTENV_NDCCTOOLS=7.4.14
+  PTENV_PARSL=f4f5326c9b17325ddc2c70b649b47f4f70d4716d    # 1.3.0-dev+desc-2022.11.30a (I hope)
+  PTENV_DESCWFMON=
 elif [ $PTENV_VERSION != none ]; then
   echo ptenv-config: ERROR: Invalid version: $PTENV_VERSION
   PTENV_VERSION=
