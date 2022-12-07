@@ -9,33 +9,76 @@
 #
 # sbatch batch-worker
 
-#SBATCH --nodes=1
-#SBATCH --time=0:20:00
-#SBATCH --constraint=cpu
-#SBATCH --qos=debug
-#SBATCH --account=m1727
-
-export TZ=UTC
-
-BASDIR=/pscratch/sd/d/dladams/slurmout
-THIS=$(readlink -f $0)
-
-# If not called with sbatch, do so.
+# If not called with sbatch, then build and call the batch script.
 if [ -z "$SLURM_JOB_ID" ]; then
+
+  NNOD=1
+  TMIN=30
+  OPT=$1
+  shift
+  RESUB=
+  while [ -n "$OPT" ]; do
+    VAL=$1
+    shift
+    if [ $OPT = -n ]; then
+      if [ -z "$VAL" ]; then
+        echo ERROR: Option $OPT requires an argument
+        exit 1
+      fi
+      NNOD=$VAL
+    elif [ $OPT = -t ]; then
+      if [ -z "$VAL" ]; then
+        echo ERROR: Option $OPT requires an argument
+        exit 1
+      fi
+      TMIN=$VAL
+    else
+      echo ERROR: Invalid flag: $OPT
+      exit 1
+    fi
+    OPT=$1
+    shift
+  done
+  
+  NMIN=$((TMIN%60))
+  if [ ${#NMIN} -lt 2 ]; then TMIN=0$TMIN; fi
+  NHOU=$((TMIN/60))
+  STIM=$NHOU:$NMIN:00
+  QOS=regular
+  if [ $TMIN -le 30 ]; then
+    QOS=debug
+  fi
+
+  BASDIR=/pscratch/sd/d/dladams/slurmout
   THIS=$(readlink -f $0)
+
+  THIS=$(readlink -f $0)
+  BFIL=$BASDIR/$(basename $THIS).sbatch
   WKRDIR=$(dirname $THIS)
-  export SERVER=$($WKRDIR/worker-getip):$($WKRDIR/worker-port)
-  echo $(date): Submitting batch job with sbatch $0 $*
+  echo '#!/bin/bash' > $BFIL
+  echo >>$BFIL
+  echo "#SBATCH --nodes=$NNOD" >>$BFIL
+  echo "#SBATCH --time=$STIM" >>$BFIL
+  echo "#SBATCH --constraint=cpu" >>$BFIL
+  echo "#SBATCH --qos=$QOS" >>$BFIL
+  echo "#SBATCH --account=m1727" >>$BFIL
+  echo >>$BFIL
+  echo 'if [ -z "$SLURM_JOB_ID" ]; then echo SLURM job ID is not set; exit 1; fi' >>$BFIL
+  echo >>$BFIL
+  echo "export SERVER=$($WKRDIR/worker-getip):$($WKRDIR/worker-port)" >> $BFIL
+  mv $BFIL $BFIL.tmp
+  cat $BFIL.tmp $THIS >$BFIL
+  echo $(date): Submitting batch job with sbatch $BFIL
   cd $BASDIR
-  sbatch $THIS
+  sbatch $BFIL
   exit $?
 fi
 
 echo Start: $(date)
 echo Host: $(hostname)
 
-TIME=60
-STIME=0:20:00
+export TZ=UTC
+
 CTIMEOUT=60
 ITIMEOUT=10
 
@@ -52,9 +95,9 @@ RUNDIR=$JOBDIR/run
 mkdir $RUNDIR
 echo $(date): Setting up ptenv $PTELOC $PTEVER.
 . $HOME/desc/dev/desc-prod/ptenv/ptenv-setup $PTELOC $PTEVER
-echo $(date) Starting worker for $SERVER
+echo $(date) Starting workers for $SERVER
 date > $RUNDIR/time-start
-work_queue_worker --workdir=$JOBDIR/run --connect-timeout=$CTIMEOUT --idle-timeout=$ITIMEOUT --cores=$NCORE $SERVER
+srun work_queue_worker --workdir=$JOBDIR/run --connect-timeout=$CTIMEOUT --idle-timeout=$ITIMEOUT --cores=$NCORE $SERVER
 echo Worker exited at $(date)
 date > $RUNDIR/time-stop
 echo End: $(date)
