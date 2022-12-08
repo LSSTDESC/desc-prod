@@ -35,7 +35,7 @@ class Data:
             return None
         msg = ""
         sep = "\n"
-        msg += f"Time: {time.time()}"
+        msg += f"Time: {time()}"
         msg += sep
         msg += f"Command: {cls.com}"
         msg += sep
