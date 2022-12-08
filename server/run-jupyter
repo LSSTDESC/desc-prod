@@ -1,3 +1,14 @@
+#!/bin/bash
+
+# desc-wfmon notebooks expect to find desc-wfmon at
+# $HOME/desc/dev/desc-wfmon
+if [ ! -r $HOME/desc/dev ]; then
+  if [ ! -r $HOME/desc ]; then
+    mkdir $HOME/desc
+  fi
+  ln -s $HOME/dev $HOME/desc
+fi
+
 MSG='Starting jupyter.'
 while true; do
   echo $MSG
