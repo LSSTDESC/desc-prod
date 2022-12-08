@@ -166,7 +166,7 @@ def do_parsltest(args):
     rout.close()
     Data.lognam = f"{Data.rundir}/job{Data.sjobid}.log"
     Data.stanam = f"{Data.rundir}/current-status.txt"
-    data.write_config()
+    Data.write_config()
     print(f"{myname}: Opening {Data.lognam}")
     Data.logfil = open(Data.lognam, 'w')
     Data.ret = subprocess.Popen(Data.com, cwd=Data.rundir, stdout=Data.logfil, stderr=Data.logfil)
