@@ -43,7 +43,7 @@ class Data:
         msg += sep
         msg += f"Rundir: {cls.rundir}"
         msg += sep
-        cpat = f"{self.rundir}/{self.cfgnam}"
+        cpat = f"{cls.rundir}/{cls.cfgnam}"
         cout = open(cpat, 'w')
         cout.write(msg)
         cout.close()
