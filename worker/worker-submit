@@ -45,7 +45,7 @@ if [ -z "$SLURM_JOB_ID" ]; then
   NHOU=$((TMIN/60))
   STIM=$NHOU:$NMIN:00
   QOS=regular
-  if [ $TMIN -le 30 ]; then
+  if [ $TMIN -le 30 -a $NNOD -le 2 ]; then
     QOS=debug
   fi
 
