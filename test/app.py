@@ -107,6 +107,7 @@ def bye():
 def versions():
     sep = '<br>\n'
     msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions').replace('\n', sep)
+    msg += sep
     msg += 'desc-prod ' + subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt')
     msg += sep
     msg += sep
