@@ -8,7 +8,7 @@ The package in each conda env include versioned builds of
 * parsl
 * desc-wfmon
 
-The versions for each of these are specified by version tags listed in [ptenv-config](ptenv/ptenv-config).
+The versions for each of these are specified by version tags listed in [ptenv-config](ptenv-config).
 
 Supported locations are identified by the following location tags:
 
