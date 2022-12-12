@@ -123,10 +123,12 @@ def login():
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     redirect_uri=request.base_url + "/callback",
     print(f"URI: {redirect_uri}")
+    scope=["openid", "email", "profile"]
+    scope=["openid"]
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=redirect_uri,
-        scope=['openid', 'email', 'profile'],
+        scope=scope
     )
     print(f"Request: {request_uri}")
     res = redirect(request_uri)
