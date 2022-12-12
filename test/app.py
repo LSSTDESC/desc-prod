@@ -121,7 +121,7 @@ def home():
 def login():
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-    redirect_uri=request.base_url + "/callback",
+    redirect_uri=request.base_url + "/callback"
     print(f"URI: {redirect_uri}")
     scope=["openid", "email", "profile"]
     scope=["openid"]
@@ -130,6 +130,7 @@ def login():
         redirect_uri=redirect_uri,
         scope=scope
     )
+    print(f"Auth: {authorization_endpoint}")
     print(f"Request: {request_uri}")
     res = redirect(request_uri)
     print(f"Result: {res}")
