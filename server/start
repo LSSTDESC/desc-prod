@@ -104,9 +104,23 @@ if [ ! -r $JUPCFGDIR ]; then
   mkdir $JUPCFGDIR
 fi
 copyit $SRCDIR/jupyter_notebook_config.py $JUPCFGDIR
+export GOOGLE_CLIENT_ID=528828744373-04i7f42vvajs1612c2ph1n9gi3s112vn.apps.googleusercontent.com
+export GOOGLE_CLIENT_SECRET=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
+GSUP=/home/descprod/data/etc/setup_google.sh
+if [ -r $GSUP ]; then
+  source $GSUP
+fi
 
 # start the parsltest server
 if [ $OPT = server ]; then
+  if [ -z "$GOOGLE_CLIENT_ID" ]; then
+    echo GOOGLE client ID not found
+    exit 1
+  fi
+  if [ -z "$GOOGLE_CLIENT_SECRET" ]; then
+    echo GOOGLE client secret not found
+    exit 1
+  fi
   echo start: Starting server.
   /home/descprod/dev/desc-prod/test/run-server
   echo start: Server exited.
