@@ -5,7 +5,7 @@ MSG='Starting server.'
 APP=$HOME/dev/desc-prod/test/app.py
 while true; do
   echo $MSG
-  if false; then
+  if true; then
     flask --debug --app $APP run --host=0.0.0.0 --cert=/home/descprod/cert.pem --key=/home/descprod/key.pem --extra-files $HOME/restart
   else
     flask --debug --app $APP run --host=0.0.0.0 --extra-files $HOME/restart

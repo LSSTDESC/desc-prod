@@ -166,7 +166,8 @@ def callback():
         data=body,
         auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
     )
-    client.parse_request_body_response(json.jumps(token_response.json()))
+    client.parse_request_body_response(json.dumps(token_response.json()))
+    return "Done"
 
 @app.route("/versions")
 def versions():
