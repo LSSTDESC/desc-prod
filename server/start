@@ -121,6 +121,19 @@ if [ $OPT = jupyter ]; then
   exit 0
 fi
 
+# Start rp test.
+if [ $OPT = rptest ]; then
+  echo starting rp test...
+  cd data/dev/materials-flask-google-login
+  pip install -r requirements.txt
+  while true; do
+    echo Running app
+    python app.py
+    sleep 10
+  done
+  exit 0
+fi
+
 # Keep container open for shell exec.
 if [ $OPT = wait ]; then
   echo start: Keeping container open.
