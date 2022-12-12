@@ -1,6 +1,6 @@
-RUNDIR=$HOME/rundir
-if [ ! -r $RUNDIR ]; then mkdir $RUNDIR; fi
-cd $RUNDIR
+if [ ! -r cert.pem -o ! -r key.pem ]; then
+  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 --nodes -subj '/CN=descprod'
+fi
 MSG='Starting server.'
 APP=$HOME/dev/desc-prod/test/app.py
 while true; do
