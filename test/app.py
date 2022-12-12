@@ -124,7 +124,6 @@ def login():
     redirect_uri=request.base_url + "/callback"
     print(f"URI: {redirect_uri}")
     scope=["openid", "email", "profile"]
-    scope=["openid"]
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=redirect_uri,
