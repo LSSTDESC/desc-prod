@@ -9,6 +9,7 @@ while true; do
     flask --debug --app $APP run --host=0.0.0.0 --cert=/home/descprod/cert.pem --key=/home/descprod/key.pem --extra-files $HOME/restart
   else:
     flask --debug --app $APP run --host=0.0.0.0 --extra-files $HOME/restart
+  fi
   MSG='Restarting server'
   sleep 5
 done
