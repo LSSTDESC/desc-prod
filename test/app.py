@@ -1,13 +1,41 @@
 from time import time
 from datetime import datetime
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 from flask import request
 from markupsafe import escape
 import sys
 import os
 import subprocess
 
+import json
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user
+)
+from oauthlib.oauth2 import WebApplicationClient
+import requests
+
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
+GOOGLE_DISCOVERY_URL = ("https://accounts.google.com/.well-known/openid-configuration")
+client = WebApplicationClient(GOOGLE_CLIENT_ID)
+
+def get_google_provider_cfg():
+    return requests.get(GOOGLE_DISCOVERY_URL).json()
+
 app = Flask(__name__)
+if __name__ == '__main__':
+    app.run(ssl_context=('/home/descprod/cert.pem', 'key.pem'))
+app.secret_key = os.urandom(24)
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
 
 def get_jobid():
     fnam  = '/home/descprod/data/etc/jobid.txt'
@@ -80,10 +108,27 @@ def home():
         msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
         msg += sep
     msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
+    if current_user.is_authenticated:
+        pass
+    else:
+        msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
     msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
     msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
     msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>'
     return msg
+
+@app.route("/login")
+def login():
+    google_provider_cfg = get_google_provider_cfg()
+    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
+    redirect_uri=request.base_url + "/callback",
+    print(f"URI: {redirect_uri}")
+    request_uri = client.prepare_request_uri(
+        authorization_endpoint,
+        redirect_uri=redirect_uri,
+        scope=['openid', 'email', 'profile'],
+    )
+    return redirect(request_uri)
 
 @app.route("/help")
 def help():
@@ -102,6 +147,25 @@ def bye():
     print("Shutting down.")
     os.kill(os.getpid(), 9)
     return ""
+
+@app.route("/login/callback")
+def callback():
+    code = request.args.get("code")
+    google_provider_cfg = get_google_provider_cfg()
+    token_endpoint = google_provider_cfg["token_endpoint"]
+    token_url, headers, body = client.prepare_token_request(
+        token_endpoint,
+        authorization_responase=request.url,
+        redirect_url=request.base_url,
+        code=code
+    )
+    token_response = requests.post(
+        token_url,
+        headers=headers,
+        data=body,
+        auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
+    )
+    client.parse_request_body_response(json.jumps(token_response.json()))
 
 @app.route("/versions")
 def versions():
