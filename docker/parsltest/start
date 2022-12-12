@@ -26,5 +26,6 @@ if [ ! -r $EXTDIR ]; then
 fi
 
 echo Starting $CNAME with $FROM
-docker run --name $CNAME --rm -p 3306:3306 -p 80:5000 -p 8888:8888 -v $EXTDIR:/mnt/dpvol01 -it $FROM $*
+#docker run --name $CNAME --rm -p 3306:3306 -p 80:5000 -p 8888:8888 -v $EXTDIR:/mnt/dpvol01 -it $FROM $*
+docker run --name $CNAME --rm -p 88:5000 -v $EXTDIR:/mnt/dpvol01 -it $FROM $*
 
