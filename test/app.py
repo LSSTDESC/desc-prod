@@ -121,7 +121,7 @@ def home():
 def login():
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-    redirect_uri=request.base_url + "/callback",
+    redirect_uri=request.base_url + "-callback",
     print(f"URI: {redirect_uri}")
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
