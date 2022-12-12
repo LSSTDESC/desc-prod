@@ -1,11 +1,14 @@
-if [ ! -r cert.pem -o ! -r key.pem ]; then
-  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 --nodes -subj '/CN=descprod'
+DOSSL=false
+if [ $DOSSL = true ]; then
+  if [ ! -r cert.pem -o ! -r key.pem ]; then
+    openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 --nodes -subj '/CN=descprod'
+  fi
 fi
 MSG='Starting server.'
 APP=$HOME/dev/desc-prod/test/app.py
 while true; do
   echo $MSG
-  if true; then
+  if [ $DOSSL = true ]; then
     flask --debug --app $APP run --host=0.0.0.0 --cert=/home/descprod/cert.pem --key=/home/descprod/key.pem --extra-files $HOME/restart
   else
     flask --debug --app $APP run --host=0.0.0.0 --extra-files $HOME/restart
