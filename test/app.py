@@ -128,7 +128,10 @@ def login():
         redirect_uri=redirect_uri,
         scope=['openid', 'email', 'profile'],
     )
-    return redirect(request_uri)
+    print(f"Request: {request_uri}")
+    res = redirect(request_uri)
+    print(f"Result: {res}")
+    return res
 
 @app.route("/help")
 def help():
