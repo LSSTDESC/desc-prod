@@ -33,18 +33,35 @@ app.secret_key = os.urandom(24)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.get(user_id)
-
 def get_jobid():
     fnam  = '/home/descprod/data/etc/jobid.txt'
     jobid = int(subprocess.getoutput(f"descprod-next-jobid"))
     return jobid
 
+# Return map of authorized user IDs and names.
+def get_google_ids():
+    gids = {}
+    fnam = '/home/descprod/data/etc/google_ids.txt'
+    try:
+        fids = open(fnam)
+        for line in fids.readlines():
+            words = line.split()
+            if len(words):
+                gid = words[0]
+                nam = line.replace(gid, '').strip()
+                gids[gid] = nam
+        fids.close()
+    except FileNotFoundError:
+        print(f"ERROR: Google ID list not found: {fnam}")
+    return gids
+
 class Data:
-    msg = ''
+    dbg = False      # Noisy if true.
+    msg = ''         # Error message show once on  home page.
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
+    google_ids = get_google_ids()
+    user_info = None
+    user_name = None
     lognam = None   # Job log file
     stanam = None   # Last line is status or processing
     cfgnam = 'config.txt'   # Name for config file describing ther job
@@ -78,11 +95,20 @@ class Data:
         return 0
 
 @app.route("/")
+def top():
+    return redirect(url_for('home'))
+
+@app.route("/home")
 def home():
     #return render_template('index.html')
     sep = '<br>\n'
     msg = '<h2>DESCprod</h2>'
+    if Data.msg is not None:
+        msg += f"<h4>{Data.msg}</h4>"
+        Data.msg = None
     msg += f"Site: {Data.site}"
+    msg += sep
+    msg += f"User: {Data.user_name}"
     msg += sep
     msg += f"{status()}"
     if Data.stanam is not None:
@@ -104,14 +130,14 @@ def home():
       msg += f"Run dir: {Data.rundir}"
     msg += sep
     msg += sep
-    if ready():
+    if Data.user_info is not None and ready():
         msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
         msg += sep
     msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
-    if current_user.is_authenticated:
-        pass
-    else:
+    if Data.user_info is None:
         msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
+    else:
+        msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>'
     msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
     msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
     msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>'
@@ -122,18 +148,24 @@ def login():
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     redirect_uri=request.base_url + "/callback"
-    print(f"URI: {redirect_uri}")
+    if Data.dbg: print(f"URI: {redirect_uri}")
     scope=["openid", "email", "profile"]
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=redirect_uri,
         scope=scope
     )
-    print(f"Auth: {authorization_endpoint}")
-    print(f"Request: {request_uri}")
+    if Data.dbg: print(f"Auth: {authorization_endpoint}")
+    if Data.dbg: print(f"Request: {request_uri}")
     res = redirect(request_uri)
-    print(f"Result: {res}")
+    if Data.dbg: print(f"Result: {res}")
     return res
+
+@app.route("/logout")
+def logout():
+    Data.user_info = None
+    Data.user_name = None
+    return redirect(url_for('home'))
 
 @app.route("/help")
 def help():
@@ -155,7 +187,10 @@ def bye():
 
 @app.route("/login/callback")
 def callback():
-    print('called back')
+    if Data.dbg: print('Handling google callback')
+    Data.user_info = None
+    Data.user_name = None
+    # Fetch tokens.
     code = request.args.get("code")
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
@@ -171,8 +206,28 @@ def callback():
         data=body,
         auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
     )
+    # Parse tokens and fetch user profile.
     client.parse_request_body_response(json.dumps(token_response.json()))
-    return "Done"
+    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
+    uri, headers, body = client.add_token(userinfo_endpoint)
+    userinfo_response = requests.get(uri, headers=headers, data=body)
+    user_info = userinfo_response.json()
+    user_id      = user_info["sub"]
+    user_name    = user_info["name"]
+    user_label = f"{user_name} ({user_id})"
+    #print(f"User info: {user_info")
+    if userinfo_response.json().get("email_verified"):
+        if user_id in Data.google_ids:
+            Data.user_info    = userinfo_response.json()
+            Data.user_name    = user_name
+            print(f"Authorizing  {user_label}")
+        else:
+            print(f"Denying unauthorized user {user_label}")
+            Data.msg = f"User not authorized: {user_id} {user_name}"
+    else:
+        print(f"Denying unverified user {user_label}")
+        Data.msg = "User is not verified Google: {user_label}"
+    return redirect(url_for('home'))
 
 @app.route("/versions")
 def versions():
