@@ -39,7 +39,7 @@ if [ ${OPT:0:6} = update ]; then
     echo start: Updating parsl
     pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
   fi
-
+  # Update desc-wfmon
   if [ $OPT = update -o $OPT = update-desc-wfmon ]; then
     echo start: Updating desc-wfmon
     cd /home/descprod/dev/desc-wfmon
@@ -52,10 +52,12 @@ if [ ${OPT:0:6} = update ]; then
     cd /home/descprod/dev/desc-prod
     git pull
   fi
+  # Use SSL.
+  if [ $OPT = ssl ]; then
+    export USESSL=true
+  fi
   cd /home/descprod
-  /home/descprod/dev/desc-prod/server/start $* &
-  disown
-  exit 0
+  /home/descprod/dev/desc-prod/server/start $*
 fi
 
 # Link external drives.
