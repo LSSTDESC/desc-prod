@@ -66,7 +66,7 @@ if [ $# -gt 0 ]; then
     echo start: WARNING: Ignoring unknown flag: $OPT
   fi
   cd /home/descprod
-  ( /home/descprod/dev/desc-prod/server/start $ARGS & )
+  /home/descprod/dev/desc-prod/server/start $ARGS
   exit
 fi
 
