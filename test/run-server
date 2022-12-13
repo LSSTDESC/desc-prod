@@ -1,4 +1,14 @@
-DOSSL=false
+#!/bin/bash
+
+# run-server
+#
+# David Adams
+# December 2022
+#
+# Start (and restart on failure) the flask app that currently provides the
+# DESCprod service.
+
+DOSSL={$DOSSL:-false}
 if [ $DOSSL = true ]; then
   if [ ! -r cert.pem -o ! -r key.pem ]; then
     openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 --nodes -subj '/CN=descprod'
