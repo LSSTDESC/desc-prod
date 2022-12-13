@@ -53,7 +53,8 @@ if [ ${OPT:0:6} = update ]; then
     git pull
   fi
   cd /home/descprod
-  (/home/descprod/dev/desc-prod/server/start $* &)
+  /home/descprod/dev/desc-prod/server/start $* &
+  disown
   exit 0
 fi
 
