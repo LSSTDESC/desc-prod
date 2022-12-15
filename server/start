@@ -28,7 +28,11 @@ copyit() {
   fi
 }
 
+THISR=$(readlink -f $0)
+THISDIR=$(basename $THIS)
+THISVER=$(cat $THISDIR/../version.txt)
 echo start: Called with args: $*
+echo start: desc-prod version $THISVER
 OPT=${1:-update}
 shift
 ARGS="$*"
@@ -61,7 +65,7 @@ if [ $# -gt 0 ]; then
   # Disable SSL.
   elif [ $OPT = nossl ]; then
     echo start: Disabling SSL.
-    export USESSL=true
+    export USESSL=false
   else
     echo start: WARNING: Ignoring unknown flag: $OPT
   fi
