@@ -14,7 +14,7 @@ THISDIR=$(dirname $THIS)
 if [ $USESSL = true ]; then
   if [ ! -r cert.pem -o ! -r private-key.pem ]; then
     echo Creating new-style certificate.
-    $THISDIR/make-cert
+    $THISDIR/../cert/make-cert
     cp private-key.pem key.pem
   fi
 elif [ $USESSL = old ]; then
