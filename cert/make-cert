@@ -1,4 +1,10 @@
-openssl genrsa -out private-key.pem 3072
+#!/bin/bash
+
+NODE=descprod.descprod.production.svc.spin.nersc.org
+OPT="-subj '/CN=$NODE'"
+
+# generate key
+openssl genrsa -out private-key.pem $OPT 3072
 
 # generate corresponding public key
 openssl rsa -in private-key.pem -pubout -out public-key.pem

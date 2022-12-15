@@ -12,6 +12,7 @@ USESSL=${USESSL:-false}
 THIS=$(readlink -f $0)
 THISDIR=$(dirname $THIS)
 if [ $USESSL = true ]; then
+  cp 
   if [ ! -r cert.pem -o ! -r private-key.pem ]; then
     echo Creating new-style certificate.
     $THISDIR/../cert/make-cert
