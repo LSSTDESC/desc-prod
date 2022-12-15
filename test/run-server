@@ -12,11 +12,11 @@ USESSL=${USESSL:-false}
 THIS=$(readlink -f $0)
 THISDIR=$(dirname $THIS)
 if [ $USESSL = true ]; then
-  cp 
-  if [ ! -r cert.pem -o ! -r private-key.pem ]; then
-    echo Creating new-style certificate.
-    $THISDIR/../cert/make-cert
-    cp private-key.pem key.pem
+  SRCDIR=$HOME/data/etc
+  if [ ! -r cert.pem -o ! -r key.pem ]; then
+    echo Installing certificate from data disk.
+    cp $SRCDIR/cert.pem $HOME
+    cp $SRCDIR/private-key.pem $HOME/key.pem
   fi
 elif [ $USESSL = old ]; then
   if [ ! -r cert.pem -o ! -r key.pem ]; then
