@@ -9,10 +9,20 @@
 # DESCprod service.
 
 USESSL=${USESSL:-false}
+THIS=$(readlink -f $0)
+THISDIR=$(dirname $THIS)
 if [ $USESSL = true ]; then
+  if [ ! -r cert.pem -o ! -r private-key.pem ]; then
+    echo Creating new-style certificate.
+    $THISDIR/make-cert
+    cp private-key.pem key.pem
+  fi
+elif [ $USESSL = old ]; then
   if [ ! -r cert.pem -o ! -r key.pem ]; then
+    echo Generating old-style certificate.
     openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 --nodes -subj '/CN=descprod'
   fi
+  USESSL=true
 fi
 MSG='Starting server.'
 APP=$HOME/dev/desc-prod/test/app.py
