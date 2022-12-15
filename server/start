@@ -29,7 +29,7 @@ copyit() {
 }
 
 THIS=$(readlink -f $0)
-THISDIR=$(basename $THIS)
+THISDIR=$(dirname $THIS)
 THISVER=$(cat $THISDIR/../version.txt)
 echo start: Called with args: $*
 echo start: desc-prod version $THISVER
