@@ -28,7 +28,7 @@ copyit() {
   fi
 }
 
-THISR=$(readlink -f $0)
+THIS=$(readlink -f $0)
 THISDIR=$(basename $THIS)
 THISVER=$(cat $THISDIR/../version.txt)
 echo start: Called with args: $*
