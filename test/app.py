@@ -91,7 +91,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 opts=os.environ['SERVER_OPTS'].split()
 for opt in opts:
-    print('Processing server option {opt}')
+    print(f"Processing server option {opt}")
     if opt == 'debug':
         Data.dbg = True
     else:
@@ -211,6 +211,14 @@ def callback():
         redirect_url=request.base_url,
         code=code
     )
+    if Data.dbg:
+        print('--------- BEGIN Token post')
+        print(f"token_url: {token_url}")
+        print(f"headers: {headers}")
+        print(f"token_url: {token_url}")
+        print(f"data: {body}")
+        print(f"auth: {GOOGLE_CLIENT_ID}, *****")
+        print('--------- END Token response')
     token_response = requests.post(
         token_url,
         headers=headers,
@@ -219,7 +227,7 @@ def callback():
     )
     if Data.dbg:
         print('--------- BEGIN Token response')
-        print(token_reponse.json())
+        print(token_response.json())
         print('--------- END Token response')
     # Parse tokens and fetch user profile.
     client.parse_request_body_response(json.dumps(token_response.json()))
