@@ -276,8 +276,8 @@ def versions():
     tbl = {}
     msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions').replace('\n', sep)
     for line in msg.split('\n'):
-        words = line.split():
-            tbl[words[0]] = words[1:]
+        words = line.split()
+        tbl[words[0]] = words[1:]
     return tbl
     msg += sep
     msg += 'desc-prod ' + subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt')
