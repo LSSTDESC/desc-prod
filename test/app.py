@@ -281,8 +281,14 @@ def versions():
         vers = line[len(prod):]
         tbl[prod.strip()] = vers.strip()
     tbl['desc-prod'] = subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt')
-    return render_template('index.html', t=tbl)
+    msg='<table>'
     msg += sep
+    for prod in tbl:
+        msg += f"<tr><td>{prod}</td><td>{tbl[prod}</td></tr>"
+        msg += sep
+    msg += sep
+    msg='</table>'
+    #return render_template('index.html', t=tbl)
     msg += sep
     msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
     return msg
