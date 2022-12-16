@@ -58,10 +58,13 @@ if [ $# -gt 0 ]; then
     echo start: Updating desc-prod.
     cd /home/descprod/dev/desc-prod
     git pull
-  # Enable SSL.
+  # Enable SSL with cert and key on data disk.
   elif [ $OPT = ssl ]; then
     echo start: Enabling SSL.
-    export USESSL=true
+  # Enable SSL with cert and key generated.
+  elif [ $OPT = sslgen ]; then
+    echo start: Enabling SSL.
+    export USESSL=generate
   # Disable SSL.
   elif [ $OPT = nossl ]; then
     echo start: Disabling SSL.
