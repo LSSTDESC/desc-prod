@@ -98,15 +98,16 @@ if __name__ == '__main__':
 app.secret_key = os.urandom(24)
 login_manager = LoginManager()
 login_manager.init_app(app)
-opts=os.environ['SERVER_OPTS'].split()
-for opt in opts:
-    print(f"Processing server option {opt}")
-    if opt == 'debug':
-        Data.dbg = True
-    elif opt == 'force-https':
-        Data.force_https = True
-    else:
-        print(f"Ignoring invalid option {opt}")
+if 'SERVER_OPTS' in os.environ:
+    opts=os.environ['SERVER_OPTS'].split()
+    for opt in opts:
+        print(f"Processing server option {opt}")
+        if opt == 'debug':
+            Data.dbg = True
+        elif opt == 'force-https':
+            Data.force_https = True
+        else:
+            print(f"Ignoring invalid option {opt}")
 
 def get_jobid():
     fnam  = '/home/descprod/data/etc/jobid.txt'
