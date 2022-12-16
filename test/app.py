@@ -216,9 +216,9 @@ def callback():
     code = request.args.get("code")
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
-    if request.is_secure
+    if request.is_secure:
         authresp = fixurl(request.url)
-    else
+    else:
         authresp = None
     print(f"**************** authresp: {authresp})
     token_url, headers, body = client.prepare_token_request(
