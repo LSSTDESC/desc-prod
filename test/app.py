@@ -275,8 +275,8 @@ def versions():
     sep = '<br>\n'
     tbl = {}
     msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions').replace('\n', sep)
-        words = line.split()
-        prod = words[0]
+    for line in msg.split('\n'):
+        prod = line.split()[0]
         vers = line[len(prod):]
         tbl[prod.strip()] = vers.strip()
     tbl['desc-prod'] = subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt')
