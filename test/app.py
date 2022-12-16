@@ -44,7 +44,7 @@ def get_google_ids():
         print(f"ERROR: Google ID list not found: {fnam}")
     return gids
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/home/descprod/static')
 
 class Data:
     dbg = False      # Noisy if true.
@@ -272,6 +272,7 @@ def callback():
 
 @app.route("/versions")
 def versions():
+    #return f"{os.getcwd()}<br>{__file__}"
     sep = '<br>\n'
     tbl = {}
     msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions').replace('\n', sep)
@@ -280,7 +281,7 @@ def versions():
         vers = line[len(prod):]
         tbl[prod.strip()] = vers.strip()
     tbl['desc-prod'] = subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt')
-    return render_template('table.html', t=tbl)
+    return render_template('index.html', t=tbl)
     msg += sep
     msg += sep
     msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
