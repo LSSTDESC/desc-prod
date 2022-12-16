@@ -35,7 +35,7 @@ login_manager.init_app(app)
 opts=os.environ['SERVER_OPTS'].split()
 for opt in opts:
     print('Processing server option {opt}')
-    if opt == debug:
+    if opt == 'debug':
         Data.dbg = True
     else:
         print(f"Ignoring invalid option {opt}")
