@@ -166,7 +166,7 @@ def home():
 def login():
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-    redirect_uri = fixurl(base_url.request) + "/callback"
+    redirect_uri = fixurl(request.base_url) + "/callback"
     # For anything but local host, make sure redirect is https.
     if redirect_uri[0:5] == 'http:' and redirect_uri.find('localhost') < 0 and redirect_uri.find('127.0.0.1') < 0:
         redirect_uri = redirect_uri.replace('http:', 'https:')
@@ -219,7 +219,7 @@ def callback():
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=fixurl(request.url),
-        redirect_url=fixurl(base_url.request),
+        redirect_url=fixurl(request.base_url),
         code=code
     )
     if Data.dbg:
