@@ -61,6 +61,7 @@ if [ $# -gt 0 ]; then
   # Enable SSL with cert and key on data disk.
   elif [ $OPT = ssl ]; then
     echo start: Enabling SSL.
+    export USESSL=true
   # Enable SSL with cert and key generated.
   elif [ $OPT = sslgen ]; then
     echo start: Enabling SSL.
