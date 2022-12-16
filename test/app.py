@@ -232,7 +232,7 @@ def callback():
             print(f"{key}: {resp[key]}")
         print('--------- END Token response')
     # Parse tokens and fetch user profile.
-    client.parse_request_body_response(json.dumps(resp)
+    client.parse_request_body_response(json.dumps(resp))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = client.add_token(userinfo_endpoint)
     userinfo_response = requests.get(uri, headers=headers, data=body)
