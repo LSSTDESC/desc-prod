@@ -87,8 +87,7 @@ class Data:
         return 0
 
 # Get the base url from a flask request.
-def base_url(req):
-    url = req.base_url
+def fixurl(url):
     if Data.force_https:
         url = url.replace('http:', 'https:', 1)
     return url
@@ -167,7 +166,7 @@ def home():
 def login():
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-    redirect_uri = base_url(request) + "/callback"
+    redirect_uri = fixurl(base_url.request) + "/callback"
     # For anything but local host, make sure redirect is https.
     if redirect_uri[0:5] == 'http:' and redirect_uri.find('localhost') < 0 and redirect_uri.find('127.0.0.1') < 0:
         redirect_uri = redirect_uri.replace('http:', 'https:')
@@ -219,8 +218,8 @@ def callback():
     token_endpoint = google_provider_cfg["token_endpoint"]
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
-        authorization_response=request.url,
-        redirect_url=base_url(request),
+        authorization_response=fixurl(request.url),
+        redirect_url=fixurl(base_url.request),
         code=code
     )
     if Data.dbg:
