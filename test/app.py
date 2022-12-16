@@ -65,8 +65,6 @@ class Data:
         cout.close()
         return 0
 
-@app.route("/")
-app = Flask(__name__)
 if __name__ == '__main__':
     app.run(ssl_context=('/home/descprod/cert.pem', 'key.pem'))
 app.secret_key = os.urandom(24)
@@ -102,6 +100,9 @@ def get_google_ids():
         print(f"ERROR: Google ID list not found: {fnam}")
     return gids
 
+app = Flask(__name__)
+
+@app.route("/")
 def top():
     return redirect(url_for('home'))
 
