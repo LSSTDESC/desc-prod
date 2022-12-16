@@ -23,6 +23,7 @@ GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = ("https://accounts.google.com/.well-known/openid-configuration")
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
+# Restore https behind a proxy.
 def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()
 
@@ -62,6 +63,7 @@ class Data:
     rundir = None
     com = None
     ret = None
+    forcehttps = os.environ['SERVER_HTTPS'] == 'true'
     @classmethod
     def write_config(cls):
         myname = 'Data.write_config'
@@ -83,6 +85,12 @@ class Data:
         cout.write(msg)
         cout.close()
         return 0
+
+# Get the base url from a flask request.
+def base_url(request):
+    url = request.base_url
+    if url[0:5] == 'http:' and url.find('localhost') < 0 and url.find('127.0.0.1') < 0:
+        url = url.replace('http:', 'https:', 1)
 
 if __name__ == '__main__':
     app.run(ssl_context=('/home/descprod/cert.pem', 'key.pem'))
@@ -155,7 +163,7 @@ def home():
 def login():
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-    redirect_uri=request.base_url + "/callback"
+    redirect_uri=base_url(request) + "/callback"
     # For anything but local host, make sure redirect is https.
     if redirect_uri[0:5] == 'http:' and redirect_uri.find('localhost') < 0 and redirect_uri.find('127.0.0.1') < 0:
         redirect_uri = redirect_uri.replace('http:', 'https:')
@@ -208,7 +216,7 @@ def callback():
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=request.url,
-        redirect_url=request.base_url,
+        redirect_url=base_url(request),
         code=code
     )
     if Data.dbg:
