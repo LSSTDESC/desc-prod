@@ -207,7 +207,7 @@ def callback():
     token_endpoint = google_provider_cfg["token_endpoint"]
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
-        authorization_responase=request.url,
+        authorization_response=request.url,
         redirect_url=request.base_url,
         code=code
     )
