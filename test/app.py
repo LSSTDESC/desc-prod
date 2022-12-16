@@ -26,6 +26,25 @@ client = WebApplicationClient(GOOGLE_CLIENT_ID)
 def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()
 
+# Return map of authorized user IDs and names.
+def get_google_ids():
+    gids = {}
+    fnam = '/home/descprod/data/etc/google_ids.txt'
+    try:
+        fids = open(fnam)
+        for line in fids.readlines():
+            words = line.split()
+            if len(words):
+                gid = words[0]
+                nam = line.replace(gid, '').strip()
+                gids[gid] = nam
+        fids.close()
+    except FileNotFoundError:
+        print(f"ERROR: Google ID list not found: {fnam}")
+    return gids
+
+app = Flask(__name__)
+
 class Data:
     dbg = False      # Noisy if true.
     msg = ''         # Error message show once on  home page.
@@ -82,25 +101,6 @@ def get_jobid():
     fnam  = '/home/descprod/data/etc/jobid.txt'
     jobid = int(subprocess.getoutput(f"descprod-next-jobid"))
     return jobid
-
-# Return map of authorized user IDs and names.
-def get_google_ids():
-    gids = {}
-    fnam = '/home/descprod/data/etc/google_ids.txt'
-    try:
-        fids = open(fnam)
-        for line in fids.readlines():
-            words = line.split()
-            if len(words):
-                gid = words[0]
-                nam = line.replace(gid, '').strip()
-                gids[gid] = nam
-        fids.close()
-    except FileNotFoundError:
-        print(f"ERROR: Google ID list not found: {fnam}")
-    return gids
-
-app = Flask(__name__)
 
 @app.route("/")
 def top():
