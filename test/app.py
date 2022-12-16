@@ -89,8 +89,6 @@ class Data:
 # Get the base url from a flask request.
 def base_url(request):
     url = request.base_url
-    if not url is str:
-    
     if Data.force_https:
         url = url.replace('http:', 'https:', 1)
 
