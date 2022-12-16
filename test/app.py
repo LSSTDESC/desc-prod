@@ -225,12 +225,14 @@ def callback():
         data=body,
         auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
     )
+    resp = token_response.json()
     if Data.dbg:
         print('--------- BEGIN Token response')
-        print(token_response.json())
+        for key in resp:
+            print(f"{key}: {resp[key]}")
         print('--------- END Token response')
     # Parse tokens and fetch user profile.
-    client.parse_request_body_response(json.dumps(token_response.json()))
+    client.parse_request_body_response(json.dumps(resp)
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = client.add_token(userinfo_endpoint)
     userinfo_response = requests.get(uri, headers=headers, data=body)
