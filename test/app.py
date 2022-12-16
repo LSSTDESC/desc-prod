@@ -220,7 +220,7 @@ def callback():
         authresp = fixurl(request.url)
     else:
         authresp = None
-    print(f"**************** authresp: {authresp})
+    print(f"**************** authresp: {authresp}")
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response = authresp;
