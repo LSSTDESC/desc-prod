@@ -223,7 +223,7 @@ def callback():
     print(f"**************** authresp: {authresp}")
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
-        authorization_response = authresp;
+        authorization_response = authresp,
         redirect_url = fixurl(request.base_url),
         code = code
     )
