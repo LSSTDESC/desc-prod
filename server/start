@@ -69,6 +69,11 @@ if [ $# -gt 0 ]; then
   elif [ $OPT = nossl ]; then
     echo start: Disabling SSL.
     export USESSL=false
+  # Force https in flask callbacks
+  elif [ $OPT = 'force-https' ]; then
+    echo start: Setting force-https
+    export SERVER_OPTS="$SERVER_OPTS force-https"
+  # Make server log noisy.
   elif [ $OPT = debug ]; then
     echo start: Setting debug.
     export SERVER_OPTS="$SERVER_OPTS debug"

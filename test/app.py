@@ -63,7 +63,7 @@ class Data:
     rundir = None
     com = None
     ret = None
-    forcehttps = os.environ['SERVER_HTTPS'] == 'true'
+    force_https = False
     @classmethod
     def write_config(cls):
         myname = 'Data.write_config'
@@ -89,7 +89,7 @@ class Data:
 # Get the base url from a flask request.
 def base_url(request):
     url = request.base_url
-    if url[0:5] == 'http:' and url.find('localhost') < 0 and url.find('127.0.0.1') < 0:
+    if Data.force_https:
         url = url.replace('http:', 'https:', 1)
 
 if __name__ == '__main__':
@@ -102,6 +102,8 @@ for opt in opts:
     print(f"Processing server option {opt}")
     if opt == 'debug':
         Data.dbg = True
+    elif opt == 'force-https':
+        Data.force_https = True
     else:
         print(f"Ignoring invalid option {opt}")
 
