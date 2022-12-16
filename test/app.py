@@ -216,11 +216,16 @@ def callback():
     code = request.args.get("code")
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
+    if request.is_secure
+        authresp = fixurl(request.url)
+    else
+        authresp = None
+    print(f"**************** authresp: {authresp})
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
-        #authorization_response=fixurl(request.url),
-        redirect_url=fixurl(request.base_url),
-        code=code
+        authorization_response = authresp;
+        redirect_url = fixurl(request.base_url),
+        code = code
     )
     if Data.dbg:
         print('--------- BEGIN Token post')
