@@ -32,6 +32,13 @@ if __name__ == '__main__':
 app.secret_key = os.urandom(24)
 login_manager = LoginManager()
 login_manager.init_app(app)
+opts=os.environ['SERVER_OPTS'].split()
+for opt in opts:
+    print('Processing server option {opt}')
+    if opt == debug:
+        Data.dbg = True
+    else:
+        print(f"Ignoring invalid option {opt}")
 
 def get_jobid():
     fnam  = '/home/descprod/data/etc/jobid.txt'
@@ -209,6 +216,10 @@ def callback():
         data=body,
         auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
     )
+    if Data.dbg:
+        print('--------- BEGIN Token response')
+        print(token_reponse.json())
+        print('--------- END Token response')
     # Parse tokens and fetch user profile.
     client.parse_request_body_response(json.dumps(token_response.json()))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]

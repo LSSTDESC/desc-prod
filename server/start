@@ -69,6 +69,9 @@ if [ $# -gt 0 ]; then
   elif [ $OPT = nossl ]; then
     echo start: Disabling SSL.
     export USESSL=false
+  elif [ $OPT = debug ]; then
+    echo start: Setting debug.
+    export SERVER_OPTS="$SERVER_OPTS debug"
   else
     echo start: WARNING: Ignoring unknown flag: $OPT
   fi
