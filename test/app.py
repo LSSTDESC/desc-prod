@@ -26,42 +26,6 @@ client = WebApplicationClient(GOOGLE_CLIENT_ID)
 def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()
 
-app = Flask(__name__)
-if __name__ == '__main__':
-    app.run(ssl_context=('/home/descprod/cert.pem', 'key.pem'))
-app.secret_key = os.urandom(24)
-login_manager = LoginManager()
-login_manager.init_app(app)
-opts=os.environ['SERVER_OPTS'].split()
-for opt in opts:
-    print('Processing server option {opt}')
-    if opt == 'debug':
-        Data.dbg = True
-    else:
-        print(f"Ignoring invalid option {opt}")
-
-def get_jobid():
-    fnam  = '/home/descprod/data/etc/jobid.txt'
-    jobid = int(subprocess.getoutput(f"descprod-next-jobid"))
-    return jobid
-
-# Return map of authorized user IDs and names.
-def get_google_ids():
-    gids = {}
-    fnam = '/home/descprod/data/etc/google_ids.txt'
-    try:
-        fids = open(fnam)
-        for line in fids.readlines():
-            words = line.split()
-            if len(words):
-                gid = words[0]
-                nam = line.replace(gid, '').strip()
-                gids[gid] = nam
-        fids.close()
-    except FileNotFoundError:
-        print(f"ERROR: Google ID list not found: {fnam}")
-    return gids
-
 class Data:
     dbg = False      # Noisy if true.
     msg = ''         # Error message show once on  home page.
@@ -102,6 +66,42 @@ class Data:
         return 0
 
 @app.route("/")
+app = Flask(__name__)
+if __name__ == '__main__':
+    app.run(ssl_context=('/home/descprod/cert.pem', 'key.pem'))
+app.secret_key = os.urandom(24)
+login_manager = LoginManager()
+login_manager.init_app(app)
+opts=os.environ['SERVER_OPTS'].split()
+for opt in opts:
+    print('Processing server option {opt}')
+    if opt == 'debug':
+        Data.dbg = True
+    else:
+        print(f"Ignoring invalid option {opt}")
+
+def get_jobid():
+    fnam  = '/home/descprod/data/etc/jobid.txt'
+    jobid = int(subprocess.getoutput(f"descprod-next-jobid"))
+    return jobid
+
+# Return map of authorized user IDs and names.
+def get_google_ids():
+    gids = {}
+    fnam = '/home/descprod/data/etc/google_ids.txt'
+    try:
+        fids = open(fnam)
+        for line in fids.readlines():
+            words = line.split()
+            if len(words):
+                gid = words[0]
+                nam = line.replace(gid, '').strip()
+                gids[gid] = nam
+        fids.close()
+    except FileNotFoundError:
+        print(f"ERROR: Google ID list not found: {fnam}")
+    return gids
+
 def top():
     return redirect(url_for('home'))
 
