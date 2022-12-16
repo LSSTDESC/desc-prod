@@ -91,6 +91,7 @@ def base_url(request):
     url = request.base_url
     if Data.force_https:
         url = url.replace('http:', 'https:', 1)
+    return url
 
 if __name__ == '__main__':
     app.run(ssl_context=('/home/descprod/cert.pem', 'key.pem'))
