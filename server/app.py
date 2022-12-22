@@ -123,7 +123,7 @@ def home():
     #return render_template('index.html')
     sep = '<br>\n'
     msg = '<h2>DESCprod</h2>'
-    if Data.msg is not None:
+    if Data.msg is not None and len(Data.msg):
         msg += f"<hr>\n{Data.msg}\n<hr>\n"
         Data.msg = None
     msg += f"Site: {Data.site}"
