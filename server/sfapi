@@ -8,5 +8,5 @@ fi
 export SFAPI_ID
 export SFAPI_API
 
-$0.py $*
+$(readlink -f $0).py $*
 exit $?
