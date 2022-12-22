@@ -294,15 +294,14 @@ def versions():
     #return render_template('index.html', t=tbl)
     msg += sep
     msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
-    return msg
+    Data.msg = msg
+    return redirect(url_for('home'))
 
 @app.route("/pmstatus")
 def pmstatus():
     sfapi = Sfapi()
-    sep = '<br>\n'
-    msg = sfapi.get_status()
-    msg += sep
-    msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
+    Data.msg = sfapi.get_status()
+    return redirect(url_for('home'))
     return msg
 
 @app.route("/hello")
