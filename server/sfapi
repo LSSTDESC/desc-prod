@@ -39,11 +39,11 @@ if args[0] == '-d':
 token_url = "https://oidc.nersc.gov/c2id/token"
 client_id = os.getenv('SFAPI_ID', '')
 if len(client_id) == 0:
-    print('The SF API client ID must be stored in SFAPI_ID.')
+    print('>>> The SF API client ID must be stored in SFAPI_ID.')
     exit(1)
 client_key = os.getenv('SFAPI_KEY', '')
 if len(client_key) == 0:
-    print('The SF API client ID must be stored in SFAPI_ID.')
+    print('>>> The SF API client ID must be stored in SFAPI_ID.')
     exit(1)
 com = f"private_key = {client_key}"
 exec(com)
@@ -75,7 +75,7 @@ else:
     act = 'run'
 
 if act == 'status':
-    if dbg > 1: print('Fetching machine status.')
+	    if dbg > 1: print('>>> Fetching machine status.')
     url = "https://api.nersc.gov/api/v1.2/status/" + system
     r = session.get(url)
     res = r.json()
@@ -89,47 +89,49 @@ if act == 'status':
     print(f"{res['full_name']}: {res['description']}{snotes}, updated {res['updated_at']}")
 
 elif act == 'submit':
-    print('Option submit is not yuet supported.')
+    print('>>> Option submit is not yuet supported.')
 
 else:
     cmd = ""
     for arg in args:
         cmd += ' ' + arg
     cmd = cmd.strip()
-    if dbg: print(f"Command: {cmd}")
+    if dbg: print(f">>> Command: {cmd}")
     url = f"https://api.nersc.gov/api/v1.2/utilities/command/{system}"
     data={"executable": cmd}
     if dbg > 2:
-        print(f"Post {data} to {url}")
+        print(f">>> Post {data} to {url}")
     elif dbg > 1:
-        print(f"Url: {url}")
-        print(f"Data: {data}")
+        print(f">>> Url: {url}")
+        print(f">>> Data: {data}")
     r = session.post(url, data=data)
     if str(r) == '<Response [500]>':
-        print(f"It appears that {system} is not responding")
+        print(f">>> It appears that {system} is not responding")
         exit(1)
     try:
         jsr = r.json
     except:
-        print(f"Unable to decode response from post: {r}")
+        print(f">>> Unable to decode response from post: {r}")
         exit(0)
-    if dbg > 1: print(r.json())
+    if dbg > 1: print(f">>> Response: {jsr}")
     task_id = r.json()['task_id']
     if dbg > 1: print(f">>>>>>>>>>> Fetching result.")
     url = f"https://api.nersc.gov/api/v1.2/tasks/{task_id}"
-    if dbg > 1: print(f"Url: '{url}'")
+    if dbg > 1: print(f">>> Url: '{url}'")
     dodot = dbg == 2
     for i in range(20):
         time.sleep(2)
-        if dbg > 2: print(f"... Get from {url}")
-        if dbg == 2: print('.', end='', flush=True)
+        if dbg > 2: print(f">>> ... Get from {url}")
+        if dbg == 2:
+            if i==0: print('>>> .', end='', flush=True)
+            else:    print('.', end='', flush=True)
         r = session.get(url)
         sres = r.json()['result']
-        if dbg > 2: print(f"Result: {sres}")
+        if dbg > 2: print(f">>> ... Result: {sres}")
         if sres is not None: break
     if dodot: print('')
     if sres is None:
-        print('Time out waiting for result.')
+        print('>>> Timed out fetching for result.')
         exit(1)
     sout = json.loads(sres)['output']
     print(sout, end ='')
