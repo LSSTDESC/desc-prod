@@ -122,8 +122,7 @@ if [ ! -r $BINDIR ]; then
 fi
 PKGDIR=$HOME/dev/desc-prod
 SRCDIR=$PKGDIR/server
-TSTDIR=$PKGDIR/test
-linkit $TSTDIR/run-server $BINDIR
+linkit $SRCDIR/run-server $BINDIR
 linkit $SRCDIR/sfapi $BINDIR
 for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid \
            descprod-current-jobid setup-jupyter-job; do
@@ -160,7 +159,7 @@ if [ $OPT = server ]; then
     exit 1
   fi
   echo start: Starting server.
-  /home/descprod/dev/desc-prod/test/run-server
+  /home/descprod/dev/desc-prod/server/run-server
   echo start: Server exited.
   exit 0
 fi

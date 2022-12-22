@@ -26,7 +26,7 @@ elif [ $USESSL = generate ]; then
   USESSL=true
 fi
 MSG='Starting server.'
-APP=$HOME/dev/desc-prod/test/app.py
+APP=$HOME/dev/desc-prod/server/app.py
 while true; do
   echo $MSG
   if [ $USESSL = true ]; then
