@@ -143,7 +143,7 @@ else:
         if dbg > 2: print(f">>> ... Get from {url}")
         if dbg == 2:
             print(f"{dotpre}.", end='', flush=True)
-            dotdpre = ''
+            dotpre = ''
         try:
             sres = None
             r = session.get(url, timeout=timeout)
