@@ -81,7 +81,7 @@ class Sfapi:
         baseurl = self.baseurl()
         if dbg > 1: print('>>> Fetching machine status.')
         url = f"{baseurl}/status/{self.sysname()}"
-        r = session.get(url)
+        r = self.session.get(url)
         jsr = r.json()
         notes = jsr['notes']
         snotes = ''
