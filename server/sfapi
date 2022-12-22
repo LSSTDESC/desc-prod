@@ -75,7 +75,7 @@ else:
     act = 'run'
 
 if act == 'status':
-	    if dbg > 1: print('>>> Fetching machine status.')
+    if dbg > 1: print('>>> Fetching machine status.')
     url = "https://api.nersc.gov/api/v1.2/status/" + system
     r = session.get(url)
     res = r.json()
