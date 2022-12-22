@@ -278,22 +278,16 @@ def versions():
     #return f"{os.getcwd()}<br>{__file__}"
     sep = '<br>\n'
     tbl = {}
-    msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions').replace('\n', sep)
+    msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions')
     for line in msg.split('\n'):
         prod = line.split()[0]
         vers = line[len(prod):]
         tbl[prod.strip()] = vers.strip()
     tbl['desc-prod'] = subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt')
-    msg = '<table>'
-    msg += sep
+    msg = '<table>\n'
     for prod in tbl:
-        msg += f"<tr><td>{prod}</td><td>{tbl[prod]}</td></tr>"
-        msg += sep
-    msg += sep
-    msg += '</table>'
-    #return render_template('index.html', t=tbl)
-    msg += sep
-    msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
+        msg += f"<tr><td>{prod}</td><td>{tbl[prod]}</td></tr>\n"
+    msg += '</table>\n'
     Data.msg = msg
     return redirect(url_for('home'))
 
