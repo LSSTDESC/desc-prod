@@ -131,7 +131,7 @@ else:
             dodpre = ''
         try:
             r = session.get(url, timeout=10)
-        except ReadTimeout:
+        except requests.exceptions.ReadTimeout:
             if dbg > 1:
                 if dbg > 2:
                     print('')
