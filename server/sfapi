@@ -152,9 +152,10 @@ else:
         except requests.exceptions.ReadTimeout:
             if dbg > 1:
                 if dodot:
-                    print('')
                     dotpre = '>>> '
-                print(f">>> ... Get timed out ({timeout} sec). Trying again.")
+                else:
+                    print(f">>> ...")
+                print(f" Get timed out ({timeout} sec). Trying again.")
         if sres is not None: break
     if dodot: print('')
     if sres is None:
