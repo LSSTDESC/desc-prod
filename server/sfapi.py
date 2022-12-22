@@ -9,7 +9,7 @@ from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2.rfc7523 import PrivateKeyJWT
 
 class Sfapi:
-    _version = '1.0.0'
+    _version = '1.0.1'
     _debug = 1
     _timeout = 10
     _sysname = 'perlmutter'
@@ -68,10 +68,10 @@ class Sfapi:
             message(f"ERROR: Ignoring invalid system name: {sysname}")
         return self._sysname
 
-    def set_timeout(timeout):
+    def set_timeout(self, timeout):
         self._timeout = timeout
 
-    def set_baseurl(baseurl):
+    def set_baseurl(self, baseurl):
         self._baseurl = baseurl
 
     def get_status(self):
