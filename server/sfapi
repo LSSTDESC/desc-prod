@@ -64,6 +64,9 @@ if args[0] == 'cori':
     system = 'cori'
     args = args[1:]
 
+# Time out for get/post
+timeout = 10
+
 # First argument is the action:
 #   status - Show system status
 #   run command - Runs the command on a login node
@@ -105,7 +108,18 @@ else:
     elif dbg > 1:
         print(f">>> Url: {url}")
         print(f">>> Data: {data}")
-    r = session.post(url, data=data)
+    nto = 0
+    while true:
+        try:
+            r = session.post(url, data=data, timeout=timeout)
+            break
+        except requests.exceptions.ReadTimeout:
+            print(f">>> ... Post timed out ({timeout} sec). ", end='')
+            nto == 1
+            if nto > 4:
+                print("Giving up.")
+                exit(1)
+            print("Trying again.")
     if str(r) == '<Response [500]>':
         print(f">>> It appears that {system} is not responding")
         exit(1)
@@ -131,7 +145,6 @@ else:
             print(f"{dotpre}.", end='', flush=True)
             dodpre = ''
         try:
-            timeout = 10
             sres = None
             r = session.get(url, timeout=timeout)
             sres = r.json()['result']
