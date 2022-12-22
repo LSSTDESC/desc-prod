@@ -7,7 +7,7 @@ import json
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2.rfc7523 import PrivateKeyJWT
 
-myver='0.0.6'
+myver='0.0.7'
 
 args = sys.argv[1:]
 if len(args) < 1 or args[0]=='-h':
@@ -108,6 +108,11 @@ else:
     if str(r) == '<Response [500]>':
         print(f"It appears that {system} is not responding")
         exit(1)
+    try:
+        jsr = r.json
+    except:
+        print(f"Unable to decode response from post: {r}")
+        exit(0)
     if dbg > 1: print(r.json())
     task_id = r.json()['task_id']
     if dbg > 1: print(f">>>>>>>>>>> Fetching result.")
