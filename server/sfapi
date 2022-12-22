@@ -132,6 +132,7 @@ else:
             dodpre = ''
         try:
             timeout = 10
+            sres = None
             r = session.get(url, timeout=timeout)
             sres = r.json()['result']
             if dbg > 2: print(f">>> ... Result: {sres}")
