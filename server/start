@@ -125,7 +125,7 @@ SRCDIR=$PKGDIR/server
 TSTDIR=$PKGDIR/test
 linkit $TSTDIR/run-server $BINDIR
 for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid \
-           descprod-current-jobid setup-jupyter-job; do
+           descprod-current-jobid setup-jupyter-job sfapi; do
   copyit $SRCDIR/$FIL $BINDIR
 done
 cp -r $SRCDIR/static $HOME
@@ -140,9 +140,11 @@ fi
 copyit $SRCDIR/jupyter_notebook_config.py $JUPCFGDIR
 export GOOGLE_CLIENT_ID=528828744373-04i7f42vvajs1612c2ph1n9gi3s112vn.apps.googleusercontent.com
 export GOOGLE_CLIENT_SECRET=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
-GSUP=/home/descprod/data/etc/setup_google.sh
-if [ -r $GSUP ]; then
-  source $GSUP
+for SUP in google sfapi; do
+  SUPFIL=/home/descprod/data/etc/setup_google.sh
+if [ -r $SUPFIL ]; then
+  echo Setting up $SUP
+  source $SUPFIL
 fi
 
 # start the parsltest server

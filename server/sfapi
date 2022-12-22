@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import time
+import json
+from authlib.integrations.requests_client import OAuth2Session
+from authlib.oauth2.rfc7523 import PrivateKeyJWT
+
+myver='0.0.5'
+
+args = sys.argv[1:]
+if len(args) < 1 or args[0]=='-h':
+    print('Usage: [-d N] [cori] ACT ARGS')
+    print('  N is the debug level: 0-3, 1 is default')
+    print('  cori to use it instead of perlmutter.')
+    print('  ACT ARGS is one of:')
+    print('        status: to show machine status.')
+    print('    submit FIL: to submit FIL to batch.')
+    print('       run COM: run command COM.')
+    exit(0)
+
+if len(args) == 1 and args[0]=='-v':
+    print(myver)
+    exit(0)
+
+dbg = int(os.getenv("SFAPI_DEBUG", '1'))
+if args[0] == '-d':
+    dbg = int(args[1])
+    args = args[2:]
+
+# Authorize with SFAPI
+# USER must export SFAPI_ID and SFAPI_KEY
+# Create a client near the bottom of your IRIS page:
+#   https://iris.nersc.gov/user
+# You will likely have to file a ticket to get permission
+# to do this.
+# Cut and paste the first two values to define these values.
+token_url = "https://oidc.nersc.gov/c2id/token"
+client_id = os.getenv('SFAPI_ID', '')
+if len(client_id) == 0:
+    print('The SF API client ID must be stored in SFAPI_ID.')
+    exit(1)
+client_key = os.getenv('SFAPI_KEY', '')
+if len(client_key) == 0:
+    print('The SF API client ID must be stored in SFAPI_ID.')
+    exit(1)
+com = f"private_key = {client_key}"
+exec(com)
+session = OAuth2Session(
+    client_id, 
+    private_key, 
+    PrivateKeyJWT(token_url),
+    grant_type="client_credentials",
+    token_endpoint=token_url
+)
+session.fetch_token()
+
+# Default is to use perlmutter.
+# Export SFAPI_SYSTEM=cori to use cor instead.
+system = 'perlmutter'
+if args[0] == 'cori':
+    system = 'cori'
+    args = args[1:]
+
+# First argument is the action:
+#   status - Show system status
+#   run command - Runs the command on a login node
+#   command - Runs the command on a login node
+#   submit file - Submits file to batch
+act = args[0]
+if act in ['status', 'run', 'submit']:
+    args = args[1:]
+else:
+    act = 'run'
+
+if act == 'status':
+    if dbg: print('Fetching machine status.')
+    url = "https://api.nersc.gov/api/v1.2/status/" + system
+    r = session.get(url)
+    res = r.json()
+    notes = res['notes']
+    snotes = ''
+    if len(notes):
+        snotes = f" ({notes[0]}"
+        for note in notes[1:]:
+            snotes += f", {note}"
+        snotes += ')'
+    print(f"{res['full_name']}: {res['description']}{snotes}, updated {res['updated_at']}")
+
+elif act == 'submit':
+    print('Option submit is not yuet supported.')
+
+else:
+    cmd = ""
+    for arg in args:
+        cmd += ' ' + arg
+    cmd = cmd.strip()
+    if dbg: print(f"Command: {cmd}")
+    url = f"https://api.nersc.gov/api/v1.2/utilities/command/{system}"
+    data={"executable": cmd}
+    if dbg > 1: print(f"Url: {url}")
+    if dbg > 1: print(f"Data: {data}")
+    r = session.post(url, data=data)
+    if str(r) == '<Response [500]>':
+        print(f"It appears that {system} is not responding")
+        exit(1)
+    if dbg > 1: print(r.json())
+    task_id = r.json()['task_id']
+    if dbg > 1: print(f">>>>>>>>>>> Fetching result.")
+    url = f"https://api.nersc.gov/api/v1.2/tasks/{task_id}"
+    if dbg > 1: print(f"Url: '{url}'")
+    dodot = dbg == 2
+    for i in range(20):
+        time.sleep(2)
+        if dbg > 2: print(f"... Get from {url}")
+        if dbg == 2: print('.', end='', flush=True)
+        r = session.get(url)
+        sres = r.json()['result']
+        if dbg > 2: print(f"Result: {sres}")
+        if sres is not None: break
+    if dodot: print('')
+    if sres is None:
+        print('Time out waiting for result.')
+        exit(1)
+    sout = json.loads(sres)['output']
+    print(sout, end ='')
+
+
