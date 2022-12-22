@@ -128,7 +128,7 @@ for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid \
            descprod-current-jobid setup-jupyter-job sfapi; do
   copyit $SRCDIR/$FIL $BINDIR
 done
-cp -r $SRCDIR/static $HOME
+#cp -r $SRCDIR/static $HOME
 DATRUNDIR=$HOME/data/rundirs
 if [ ! -r $DATRUNDIR ]; then
   mkdir $DATRUNDIR
