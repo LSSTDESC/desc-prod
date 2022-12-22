@@ -124,7 +124,9 @@ def home():
     sep = '<br>\n'
     msg = '<h2>DESCprod</h2>'
     if Data.msg is not None:
+        msg += '<hr>\n'
         msg += f"<h4>{Data.msg}</h4>"
+        msg += '<hr>\n'
         Data.msg = None
     msg += f"Site: {Data.site}"
     msg += sep
