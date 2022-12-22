@@ -7,7 +7,7 @@ import json
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2.rfc7523 import PrivateKeyJWT
 
-myver='0.0.5'
+myver='0.0.6'
 
 args = sys.argv[1:]
 if len(args) < 1 or args[0]=='-h':
@@ -75,7 +75,7 @@ else:
     act = 'run'
 
 if act == 'status':
-    if dbg: print('Fetching machine status.')
+    if dbg > 1: print('Fetching machine status.')
     url = "https://api.nersc.gov/api/v1.2/status/" + system
     r = session.get(url)
     res = r.json()
@@ -99,8 +99,11 @@ else:
     if dbg: print(f"Command: {cmd}")
     url = f"https://api.nersc.gov/api/v1.2/utilities/command/{system}"
     data={"executable": cmd}
-    if dbg > 1: print(f"Url: {url}")
-    if dbg > 1: print(f"Data: {data}")
+    if dbg > 2:
+        print(f"Post {data} to {url}")
+    elif dbg > 1:
+        print(f"Url: {url}")
+        print(f"Data: {data}")
     r = session.post(url, data=data)
     if str(r) == '<Response [500]>':
         print(f"It appears that {system} is not responding")
