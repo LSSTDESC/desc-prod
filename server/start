@@ -142,6 +142,7 @@ export GOOGLE_CLIENT_ID=528828744373-04i7f42vvajs1612c2ph1n9gi3s112vn.apps.googl
 export GOOGLE_CLIENT_SECRET=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
 for SUP in google sfapi; do
   SUPFIL=/home/descprod/data/etc/setup_google.sh
+done
 if [ -r $SUPFIL ]; then
   echo Setting up $SUP
   source $SUPFIL
