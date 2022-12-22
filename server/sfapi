@@ -151,7 +151,7 @@ else:
             if dbg > 2: print(f">>> ... Result: {sres}")
         except requests.exceptions.ReadTimeout:
             if dbg > 1:
-                if dbg > 2:
+                if dodot:
                     print('')
                     dotpre = '>>> '
                 print(f">>> ... Get timed out ({timeout} sec). Trying again.")
