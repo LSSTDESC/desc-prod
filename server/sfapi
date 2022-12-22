@@ -117,7 +117,7 @@ else:
     task_id = r.json()['task_id']
     if dbg > 1: print(f">>> Fetching command response.")
     url = f"https://api.nersc.gov/api/v1.2/tasks/{task_id}"
-    if dbg > 1: print(f">>> Url: '{url}'")
+    if dbg > 1: print(f">>> Looping on get with url: '{url}'")
     dodot = dbg == 2
     for i in range(20):
         time.sleep(2)
