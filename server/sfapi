@@ -114,7 +114,10 @@ else:
         print(f">>> Unable to decode response from post: {r}")
         exit(0)
     if dbg > 1: print(f">>> Response: {jsr}")
-    task_id = r.json()['task_id']
+    if 'task_id' not in jsr:
+        print('>>> Post to run command failed: {jsr}')
+        exit(0)
+    task_id = jsr['task_id']
     if dbg > 1: print(f">>> Fetching command response.")
     url = f"https://api.nersc.gov/api/v1.2/tasks/{task_id}"
     if dbg > 1: print(f">>> Looping on get with url: '{url}'")
