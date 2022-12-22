@@ -299,6 +299,7 @@ def versions():
 @app.route("/pmstatus")
 def pmstatus():
     sfapi = Sfapi()
+    sep = '<br>\n'
     msg = sfapi.get_status()
     msg += sep
     msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
