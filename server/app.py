@@ -6,6 +6,7 @@ from markupsafe import escape
 import sys
 import os
 import subprocess
+from sfapi import Sfapi
 
 import json
 from flask_login import (
@@ -159,6 +160,7 @@ def home():
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>'
     msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
     msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
+    msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>'
     msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>'
     return msg
 
@@ -198,6 +200,7 @@ def help():
     msg += '<br> hello?John&Doe - Says hello to John Doe'
     msg += '<br>        request - Parses a request'
     msg += '<br>       versions - Show software versions'
+    msg += '<br>       versions - Show perlmutter status'
     msg += '<br>      parsltest - Parses a request'
     return msg
 
@@ -289,6 +292,14 @@ def versions():
     msg += sep
     msg += '</table>'
     #return render_template('index.html', t=tbl)
+    msg += sep
+    msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
+    return msg
+
+@app.route("/pmstatus")
+def pmstatus():
+    sfapi = Sfapi()
+    msg = sfapi.status()
     msg += sep
     msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
     return msg

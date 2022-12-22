@@ -25,6 +25,7 @@ elif [ $USESSL = generate ]; then
   fi
   USESSL=true
 fi
+. $HOME/setup.sh
 MSG='Starting server.'
 APP=$HOME/dev/desc-prod/server/app.py
 while true; do

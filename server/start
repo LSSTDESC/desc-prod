@@ -124,6 +124,7 @@ PKGDIR=$HOME/dev/desc-prod
 SRCDIR=$PKGDIR/server
 linkit $SRCDIR/run-server $BINDIR
 linkit $SRCDIR/sfapi $BINDIR
+copyit $SRCDIR/setup.sh $HOME
 for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid \
            descprod-current-jobid setup-jupyter-job; do
   copyit $SRCDIR/$FIL $BINDIR
