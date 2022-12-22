@@ -109,7 +109,7 @@ else:
         print(f">>> Url: {url}")
         print(f">>> Data: {data}")
     nto = 0
-    while true:
+    while True:
         try:
             r = session.post(url, data=data, timeout=timeout)
             break
