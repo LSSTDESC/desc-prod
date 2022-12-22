@@ -109,7 +109,7 @@ else:
         print(f">>> It appears that {system} is not responding")
         exit(1)
     try:
-        jsr = r.json
+        jsr = r.json()
     except:
         print(f">>> Unable to decode response from post: {r}")
         exit(0)
