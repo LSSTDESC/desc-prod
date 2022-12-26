@@ -386,7 +386,7 @@ def status():
 def show_session():
     print(session)
     sep = ''
-    for key in session.keys:
+    for key in session.keys():
         msg += f"{sep}{key}: {session[key]}\n"
         sep = '<br>'
     print(msg)
