@@ -216,7 +216,7 @@ def callback():
     Data.user_name = None
     # Fetch tokens.
     code = request.args.get("code")
-    google_provider_cfg = get_google_provider_cfg()
+    google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     token_endpoint = google_provider_cfg["token_endpoint"]
     if request.is_secure:
         authresp = fixurl(request.url)
