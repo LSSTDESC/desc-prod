@@ -48,11 +48,10 @@ app = Flask(__name__, static_url_path='/home/descprod/static')
 
 class Data:
     dbg = False      # Noisy if true.
-    users = {}
-    msg = ''         # Error message show once on  home page.
+    users = {}       # Map f active users indexed by session key
+    msg = ''         # Error message show once on home page.
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
     google_ids = get_google_ids()
-    user_info = None
     lognam = None   # Job log file
     stanam = None   # Last line is status or processing
     cfgnam = 'config.txt'   # Name for config file describing ther job
@@ -94,10 +93,11 @@ class Data:
         cout.write(msg)
         cout.close()
         return 0
-    def __init__(self, userkey, user_name):
+    def __init__(self, userkey, user_name, user_info):
         """Add an active user."""
         self.userkey = userkey
         self.user_name = user_name
+        user_info = user_info
         assert userkey not in Data.users
         Data.users[userkey] = self
         print(f"Updated active user count is {len(Data.users)}")
@@ -144,7 +144,7 @@ def home():
     have_user = udat is not None
     if have_user:
         if Data.msg is not None and len(Data.msg):
-            msg += f"<hr>\n{Data.msg}\n<hr>\n"
+            msg += f"<hr>\n{Data.msg}\n<hr>\n<br>"
             Data.msg = None
     msg += f"Site: {Data.site}"
     msg += sep
@@ -170,7 +170,7 @@ def home():
             msg += f"Command: {Data.com}"
             msg += sep
             msg += f"Run dir: {Data.rundir}"
-        if Data.user_info is not None and ready():
+        if udat.user_info is not None and ready():
             msg += sep
             msg += sep
             msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
@@ -237,7 +237,6 @@ def bye():
 @app.route("/login/callback")
 def callback():
     if Data.dbg: print('Handling google callback')
-    Data.user_info = None
     # Fetch tokens.
     code = request.args.get("code")
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -285,9 +284,13 @@ def callback():
     #print(f"User info: {user_info")
     if userinfo_response.json().get("email_verified"):
         if user_id in Data.google_ids:
-            Data.user_info    = userinfo_response.json()
-            Data.user_name    = user_name
             print(f"Authorizing  {user_label}")
+            user_info    = userinfo_response.json()
+            userkey = app.secret_key = os.urandom(16)
+            session['userkey'] = userkey
+            session['user_name'] = user_name
+            session.permanent = True   # This makes the session expire
+            udat = Data(userkey, user_name, user_info)
         else:
             print(f"Denying unauthorized user {user_label}")
             Data.msg = f"User not authorized: {user_id} {user_name}"
@@ -295,11 +298,6 @@ def callback():
     else:
         print(f"Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
-    session.permanent = True
-    userkey = app.secret_key = os.urandom(16)
-    session['userkey'] = userkey
-    session['user_name'] = user_name
-    udat = Data(userkey, user_name)
     return redirect(url_for('home'))
 
 @app.route("/versions")
