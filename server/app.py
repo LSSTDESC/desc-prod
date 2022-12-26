@@ -91,7 +91,7 @@ class Data:
         cout.write(msg)
         cout.close()
         return 0
-    def __init__(self, userkey, user_name)
+    def __init__(self, userkey, user_name):
         self.userkey = userkey
         self.user_name = user_name
         assert userkey not in Data.users
