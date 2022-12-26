@@ -47,11 +47,11 @@ app = Flask(__name__, static_url_path='/home/descprod/static')
 
 class Data:
     dbg = False      # Noisy if true.
+    users = {}
     msg = ''         # Error message show once on  home page.
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
     google_ids = get_google_ids()
     user_info = None
-    user_name = None
     lognam = None   # Job log file
     stanam = None   # Last line is status or processing
     cfgnam = 'config.txt'   # Name for config file describing ther job
@@ -63,6 +63,11 @@ class Data:
     com = None
     ret = None
     force_https = False
+    @classmethod
+    deg get(cls, user_name):
+        if user_name in cls.users:
+            return cls.users[user_name]
+        return None
     @classmethod
     def write_config(cls):
         myname = 'Data.write_config'
@@ -84,6 +89,10 @@ class Data:
         cout.write(msg)
         cout.close()
         return 0
+    def __init__(self, user_name):
+        self.user_name = user_name
+        assert user_name not in Data.users
+        Data.users['user_name'] = self
 
 # Get the base url from a flask request.
 def fixurl(url):
@@ -121,42 +130,45 @@ def home():
     #return render_template('index.html')
     sep = '<br>\n'
     msg = '<h2>DESCprod</h2>'
-    if Data.msg is not None and len(Data.msg):
-        msg += f"<hr>\n{Data.msg}\n<hr>\n"
-        Data.msg = None
+    udat = Data.get()
+    have_user = udat is not None
+    if have_user:
+        if Data.msg is not None and len(Data.msg):
+            msg += f"<hr>\n{Data.msg}\n<hr>\n"
+            Data.msg = None
     msg += f"Site: {Data.site}"
     msg += sep
-    msg += f"User: {Data.user_name}"
-    if 'username' in session: msg += f" [{session['username']}]"
-    msg += sep
-    msg += f"{status()}"
-    if Data.stanam is not None:
-        sjstat = 'Not found'
-        try:
-            jsin = open(Data.stanam, 'r')
-            sjtext = jsin.readlines()
-            if len(sjtext): sjstat = sjtext[-1]
-        except FileNotFoundError:
-            sjstat = f"File not found: {Data.stanam}"
+    if have_user:
+        msg += f"User: {udat.user_name}"
         msg += sep
-        msg += f"Status: {sjstat}"
-    if Data.sjobid is not None:
-      msg += sep
-      msg += f"Config: {Data.sjob}"
-      msg += sep
-      msg += f"Command: {Data.com}"
-      msg += sep
-      msg += f"Run dir: {Data.rundir}"
-    msg += sep
-    msg += sep
-    if Data.user_info is not None and ready():
-        msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
+        msg += f"{status()}"
+        if Data.stanam is not None:
+            sjstat = 'Not found'
+            try:
+                jsin = open(Data.stanam, 'r')
+                sjtext = jsin.readlines()
+                if len(sjtext): sjstat = sjtext[-1]
+            except FileNotFoundError:
+                sjstat = f"File not found: {Data.stanam}"
+            msg += sep
+            msg += f"Status: {sjstat}"
+        if Data.sjobid is not None:
+            msg += sep
+            msg += f"Config: {Data.sjob}"
+            msg += sep
+            msg += f"Command: {Data.com}"
+            msg += sep
+            msg += f"Run dir: {Data.rundir}"
         msg += sep
-    msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
-    if Data.user_info is None:
-        msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
-    else:
+        msg += sep
+        if Data.user_info is not None and ready():
+            msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
+            msg += sep
+        msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
+    if have_user:
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>'
+    else:
+        msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
     msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
     msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
     msg += '<form action="/session" method="get"><input type="submit" value="Show session"></form>'
@@ -187,8 +199,9 @@ def login():
 
 @app.route("/logout")
 def logout():
-    Data.user_info = None
-    Data.user_name = None
+    user_name = session['username']
+    del Data.users[user_name]
+    session['username'] = None
     return redirect(url_for('home'))
 
 @app.route("/help")
@@ -214,7 +227,6 @@ def bye():
 def callback():
     if Data.dbg: print('Handling google callback')
     Data.user_info = None
-    Data.user_name = None
     # Fetch tokens.
     code = request.args.get("code")
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -272,6 +284,9 @@ def callback():
         print(f"Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
     session['username'] = user_name
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(minutes=60)
+    udat = Data(user_name)
     return redirect(url_for('home'))
 
 @app.route("/versions")
