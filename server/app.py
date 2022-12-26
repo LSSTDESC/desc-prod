@@ -303,7 +303,7 @@ def callback():
             session.permanent = True   # This makes the session expire
             udat = Data(userkey, user_name, user_info)
             ckey = f"{user_name}--{user_index}--[{userkey}]"
-            texp = datetime.timestamp(datetime.now) + 10
+            texp = datetime.timestamp(datetime.now()) + 10
             resp.set_cookie('userkey', ckey, expiration=texp)
         else:
             print(f"Denying unauthorized user {user_label}")
