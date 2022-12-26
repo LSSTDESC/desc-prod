@@ -26,10 +26,6 @@ GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = ("https://accounts.google.com/.well-known/openid-configuration")
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
-# Restore https behind a proxy.
-def get_google_provider_cfg():
-    return requests.get(GOOGLE_DISCOVERY_URL).json()
-
 # Return map of authorized user IDs and names.
 def get_google_ids():
     gids = {}
@@ -169,7 +165,6 @@ def home():
 
 @app.route("/login")
 def login():
-    #google_provider_cfg = get_google_provider_cfg()
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     redirect_uri = fixurl(request.base_url) + "/callback"
