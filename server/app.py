@@ -310,6 +310,7 @@ def callback():
     #return redirect(url_for('home'))
     resp = redirect(url_for('home'))
     resp.set_cookie('userkey', userkey)
+    return resp
 
 @app.route("/versions")
 def versions():
