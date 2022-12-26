@@ -171,6 +171,8 @@ def home():
             msg += sep
             msg += f"Run dir: {Data.rundir}"
         if Data.user_info is not None and ready():
+            msg += sep
+            msg += sep
             msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
             msg += sep
         msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
