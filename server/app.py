@@ -304,7 +304,7 @@ def callback():
             udat = Data(userkey, user_name, user_info)
             ckey = f"{user_name}--{user_index}--[{userkey}]"
             texp = datetime.timestamp(datetime.now()) + 10
-            resp.set_cookie('userkey', ckey, expiration=texp)
+            resp.set_cookie('userkey', ckey, expires=texp)
         else:
             print(f"Denying unauthorized user {user_label}")
             Data.msg = f"User not authorized: {user_id} {user_name}"
