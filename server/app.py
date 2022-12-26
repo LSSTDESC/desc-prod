@@ -386,7 +386,7 @@ def status():
 def show_session():
     print(session)
     print(str(session))
-    Data.msg = session.data()
+    Data.msg = str(session)
     return redirect(url_for('home'))
 
 @app.route("/request")
