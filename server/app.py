@@ -159,7 +159,7 @@ def home():
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>'
     msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
     msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
-    msg += '<form action="/show_session" method="get"><input type="submit" value="Show session"></form>'
+    msg += '<form action="/session" method="get"><input type="submit" value="Show session"></form>'
     msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>'
     msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>'
     return msg
