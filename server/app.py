@@ -385,11 +385,9 @@ def status():
 @app.route('/session')
 def show_session():
     print(session)
-    sep = ''
-    msg = ''
+    msg = 'Session data:'
     for key in session.keys():
-        msg += f"{sep}{key}: {session[key]}\n"
-        sep = '<br>'
+        msg += f"<br>{key}: {session[key]}\n"
     print(msg)
     Data.msg = msg
     return redirect(url_for('home'))
