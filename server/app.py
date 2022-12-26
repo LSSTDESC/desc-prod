@@ -69,8 +69,11 @@ class Data:
         """Return the user data for the current session"""
         if 'userkey' not in session: return None
         userkey = session['userkey']
+        print(f"Session key is {userkey}")
         if userkey not in cls.users: return None
-        return cls.users[userkey]
+        udat = cls.users[userkey]
+        print(f"Session user is {udat.user_name}")
+        return udat
     @classmethod
     def write_config(cls):
         myname = 'Data.write_config'
@@ -405,7 +408,7 @@ def status():
 @app.route('/session')
 def show_session():
     print(session)
-    msg = 'Session data:'
+    msg = 'Session data:\n'
     for key in session.keys():
         msg += f"<br>{key}: {session[key]}\n"
     print(msg)
