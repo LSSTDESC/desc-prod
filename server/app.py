@@ -289,6 +289,7 @@ def callback():
     user_name    = user_info["name"]
     user_label = f"{user_name} ({user_id})"
     #print(f"User info: {user_info")
+    resp = redirect(url_for('home'))
     if userinfo_response.json().get("email_verified"):
         if user_id in Data.google_ids:
             print(f"Authorizing  {user_label}")
@@ -296,10 +297,13 @@ def callback():
             userkey = app.secret_key = os.urandom(16)
             session['userkey'] = userkey
             session['user_name'] = user_name
-            session['index'] = Data.session_count
+            user_indes = Data.session_count
+            session['index'] = user_index
             Data.session_count += 1
             session.permanent = True   # This makes the session expire
             udat = Data(userkey, user_name, user_info)
+            ckey = f"{user_name}--Data--[{userkey}]"}
+            resp.set_cookie('userkey', ckey)
         else:
             print(f"Denying unauthorized user {user_label}")
             Data.msg = f"User not authorized: {user_id} {user_name}"
@@ -308,8 +312,6 @@ def callback():
         print(f"Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
     #return redirect(url_for('home'))
-    resp = redirect(url_for('home'))
-    resp.set_cookie('userkey', str(userkey))
     return resp
 
 @app.route("/versions")
