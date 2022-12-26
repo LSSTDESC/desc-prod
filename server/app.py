@@ -49,6 +49,7 @@ app = Flask(__name__, static_url_path='/home/descprod/static')
 class Data:
     dbg = False      # Noisy if true.
     users = {}       # Map f active users indexed by session key
+    session_count = 0
     msg = ''         # Error message show once on home page.
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
     google_ids = get_google_ids()
@@ -289,6 +290,8 @@ def callback():
             userkey = app.secret_key = os.urandom(16)
             session['userkey'] = userkey
             session['user_name'] = user_name
+            session['index'] = Data.session_count
+            Data.session_count += 1
             session.permanent = True   # This makes the session expire
             udat = Data(userkey, user_name, user_info)
         else:
