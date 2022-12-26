@@ -67,10 +67,14 @@ class Data:
     @classmethod
     def get(cls):
         """Return the user data for the current session"""
-        if 'userkey' not in session: return None
+        if 'userkey' not in session:
+            print('Session does not have a key')
+            return None
         userkey = session['userkey']
         session.modified = True    # Reset session timeout timer
-        if userkey not in cls.users: return None
+        if userkey not in cls.users:
+            print(f"Key {userkey} not found in users.")
+            return None
         udat = cls.users[userkey]
         return udat
     @classmethod
