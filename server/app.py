@@ -309,7 +309,7 @@ def callback():
         Data.msg = "User is not verified Google: {user_label}"
     #return redirect(url_for('home'))
     resp = redirect(url_for('home'))
-    resp.set_cookie('userkey', userkey)
+    resp.set_cookie('userkey', str(userkey))
     return resp
 
 @app.route("/versions")
