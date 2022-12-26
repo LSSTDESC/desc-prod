@@ -98,8 +98,11 @@ class Data:
     def __init__(self, userkey, user_name):
         self.userkey = userkey
         self.user_name = user_name
+        print(f"User count before insertion: len(Data.users)")
         assert userkey not in Data.users
-        Data.users['userkey'] = self
+        Data.users[userkey] = self
+        print(f"User count after insertion: len(Data.users)")
+        assert userkey in Data.users
 
 # Get the base url from a flask request.
 def fixurl(url):
