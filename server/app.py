@@ -162,13 +162,10 @@ def home():
             msg += f"Command: {Data.com}"
             msg += sep
             msg += f"Run dir: {Data.rundir}"
-        msg += sep
-    msg += sep
         if Data.user_info is not None and ready():
             msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
             msg += sep
         msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
-    if have_user:
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>'
         msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
         msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
@@ -176,6 +173,7 @@ def home():
         msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>'
         msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>'
     else:
+        msg += sep
         msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
     return msg
 
