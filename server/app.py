@@ -97,7 +97,7 @@ class Data:
         """Add an active user."""
         self.userkey = userkey
         self.user_name = user_name
-        user_info = user_info
+        self.user_info = user_info
         assert userkey not in Data.users
         Data.users[userkey] = self
         print(f"Updated active user count is {len(Data.users)}")
