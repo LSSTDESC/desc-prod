@@ -297,7 +297,7 @@ def callback():
             userkey = app.secret_key = os.urandom(16)
             session['userkey'] = userkey
             session['user_name'] = user_name
-            user_indes = Data.session_count
+            user_index = Data.session_count
             session['index'] = user_index
             Data.session_count += 1
             session.permanent = True   # This makes the session expire
