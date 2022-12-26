@@ -1,5 +1,6 @@
 from time import time
 from datetime import datetime
+from datetime import timedelta
 from flask import Flask, render_template, redirect, url_for
 from flask import request
 from flask import session
@@ -106,6 +107,7 @@ def fixurl(url):
 if __name__ == '__main__':
     app.run(ssl_context=('/home/descprod/cert.pem', 'key.pem'))
 app.secret_key = os.urandom(24)
+app.permanent_session_lifetime = timedelta(minutes=5)
 login_manager = LoginManager()
 login_manager.init_app(app)
 if 'SERVER_OPTS' in os.environ:
@@ -286,7 +288,6 @@ def callback():
         Data.msg = "User is not verified Google: {user_label}"
     session['username'] = user_name
     session.permanent = True
-    app.permanent_session_lifetime = timedelta(minutes=60)
     userkey = app.secret_key = os.urandom(24)
     udat = Data(userkey, user_name)
     return redirect(url_for('home'))
