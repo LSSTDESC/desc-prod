@@ -64,7 +64,7 @@ class Data:
     ret = None
     force_https = False
     @classmethod
-    deg get(cls, user_name):
+    del get(cls, user_name):
         if user_name in cls.users:
             return cls.users[user_name]
         return None
