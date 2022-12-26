@@ -8,14 +8,33 @@ while [ $# -gt 0 ]; do
   if [ ${ARG:0:2} = -- ]; then
     FLG=${ARG:2}
     shift
+    echo Invalid flag $ARG
+    exit 1
+  elif [ ${ARG:0:1} = - ]; then
+    FLG=${ARG:1}
+    shift
+    if [ $FLG == 'h' ]; then
+      HELP=true
+    else
+      echo Invalid flag $ARG
+      exit 1
+    fi
   else
     break
   fi
 done
 
+NAME=$(basename $(pwd))
+
+if [ -n "$HELP" ]; then
+  echo Usage: $0 TAG ARGS
+  echo "  TAG is the $NAME image version."
+  echo "  ARGS are the arguments passed to the container"
+  exit 0
+fi
+
 TAG=$1
 shift
-NAME=$(basename $(pwd))
 FROM=$NAME:$TAG
 CNAME=$NAME
 

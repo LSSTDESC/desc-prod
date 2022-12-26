@@ -2,6 +2,7 @@ from time import time
 from datetime import datetime
 from flask import Flask, render_template, redirect, url_for
 from flask import request
+from flask import session
 from markupsafe import escape
 import sys
 import os
@@ -18,6 +19,7 @@ from flask_login import (
 )
 from oauthlib.oauth2 import WebApplicationClient
 import requests
+import secrets
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
@@ -128,7 +130,7 @@ def home():
         Data.msg = None
     msg += f"Site: {Data.site}"
     msg += sep
-    msg += f"User: {Data.user_name}"
+    msg += f"User: {Data.user_name} [{session['username']}]"
     msg += sep
     msg += f"{status()}"
     if Data.stanam is not None:
@@ -166,7 +168,8 @@ def home():
 
 @app.route("/login")
 def login():
-    google_provider_cfg = get_google_provider_cfg()
+    #google_provider_cfg = get_google_provider_cfg()
+    google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     redirect_uri = fixurl(request.base_url) + "/callback"
     # For anything but local host, make sure redirect is https.
@@ -271,6 +274,7 @@ def callback():
     else:
         print(f"Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
+    session['username'] = user_name
     return redirect(url_for('home'))
 
 @app.route("/versions")
