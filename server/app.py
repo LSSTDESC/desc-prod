@@ -145,6 +145,8 @@ def home():
     #return render_template('index.html')
     sep = '<br>\n'
     msg = '<h2>DESCprod</h2>'
+    msg += f"Cookie key: request.cookies().get('userkey')"
+    msg += sep
     udat = Data.get()
     have_user = udat is not None
     if have_user:
@@ -305,7 +307,9 @@ def callback():
     else:
         print(f"Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
-    return redirect(url_for('home'))
+    #return redirect(url_for('home'))
+    resp = redirect(url_for('home'))
+    resp.set_cookie('userkey', userkey)
 
 @app.route("/versions")
 def versions():
