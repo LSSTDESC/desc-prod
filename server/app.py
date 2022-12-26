@@ -69,10 +69,9 @@ class Data:
         """Return the user data for the current session"""
         if 'userkey' not in session: return None
         userkey = session['userkey']
-        print(f"Session key is {userkey}")
+        session.modified = True    # Reset session timeout timer
         if userkey not in cls.users: return None
         udat = cls.users[userkey]
-        print(f"Session user is {udat.user_name}")
         return udat
     @classmethod
     def write_config(cls):
@@ -96,12 +95,12 @@ class Data:
         cout.close()
         return 0
     def __init__(self, userkey, user_name):
+        """Add an active user."""
         self.userkey = userkey
         self.user_name = user_name
-        print(f"User count before insertion: len(Data.users)")
         assert userkey not in Data.users
         Data.users[userkey] = self
-        print(f"User count after insertion: len(Data.users)")
+        print(f"Updated active user count is {len(Data.users)}")
         assert userkey in Data.users
 
 # Get the base url from a flask request.
@@ -151,6 +150,7 @@ def home():
     msg += sep
     if have_user:
         msg += f"User: {udat.user_name}"
+        msg += sep
         msg += sep
         msg += f"{status()}"
         if Data.stanam is not None:
