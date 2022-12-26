@@ -283,12 +283,14 @@ def callback():
         else:
             print(f"Denying unauthorized user {user_label}")
             Data.msg = f"User not authorized: {user_id} {user_name}"
+            Data.msg += f"\n<br>Send the above line to adminn@descprod.org request authorization."
     else:
         print(f"Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
-    session['username'] = user_name
     session.permanent = True
-    userkey = app.secret_key = os.urandom(24)
+    userkey = app.secret_key = os.urandom(16)
+    session['userkey'] = userkey
+    session['user_name'] = user_name
     udat = Data(userkey, user_name)
     return redirect(url_for('home'))
 
