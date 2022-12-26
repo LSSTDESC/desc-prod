@@ -145,7 +145,7 @@ def home():
     #return render_template('index.html')
     sep = '<br>\n'
     msg = '<h2>DESCprod</h2>'
-    msg += f"Cookie key: {request.cookies().get('userkey')}"
+    msg += f"Cookie key: {request.cookies.get('userkey')}"
     msg += sep
     udat = Data.get()
     have_user = udat is not None
