@@ -64,10 +64,12 @@ class Data:
     ret = None
     force_https = False
     @classmethod
-    def get(cls, user_name):
-        if user_name in cls.users:
-            return cls.users[user_name]
-        return None
+    def get(cls):
+        """Return the user data for the current session"""
+        if 'userkey' not in session: return None
+        userkey = session['userkey']
+        if userkey not in cls.users: return None
+        return cls.users[userkey]
     @classmethod
     def write_config(cls):
         myname = 'Data.write_config'
@@ -89,10 +91,11 @@ class Data:
         cout.write(msg)
         cout.close()
         return 0
-    def __init__(self, user_name):
+    def __init__(self, userkey, user_name)
+        self.userkey = userkey
         self.user_name = user_name
-        assert user_name not in Data.users
-        Data.users['user_name'] = self
+        assert userkey not in Data.users
+        Data.users['userkey'] = self
 
 # Get the base url from a flask request.
 def fixurl(url):
@@ -199,9 +202,9 @@ def login():
 
 @app.route("/logout")
 def logout():
-    user_name = session['username']
-    del Data.users[user_name]
-    session['username'] = None
+    userkey = session['userkey']
+    del Data.users[userkey]
+    session['userkey'] = None
     return redirect(url_for('home'))
 
 @app.route("/help")
@@ -286,7 +289,8 @@ def callback():
     session['username'] = user_name
     session.permanent = True
     app.permanent_session_lifetime = timedelta(minutes=60)
-    udat = Data(user_name)
+    userkey = app.secret_key = os.urandom(24)
+    udat = Data(userkey, user_name)
     return redirect(url_for('home'))
 
 @app.route("/versions")
