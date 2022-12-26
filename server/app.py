@@ -130,7 +130,8 @@ def home():
         Data.msg = None
     msg += f"Site: {Data.site}"
     msg += sep
-    msg += f"User: {Data.user_name} [{session['username']}]"
+    msg += f"User: {Data.user_name}"
+    if 'username' in session: msg += f" [{session['username']}]"
     msg += sep
     msg += f"{status()}"
     if Data.stanam is not None:
