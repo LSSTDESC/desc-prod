@@ -84,7 +84,7 @@ class Data:
             userkey = session['userkey']
             session.modified = True    # Reset session timeout timer
         if userkey in cls.users:
-            return = cls.users[userkey]
+            return cls.users[userkey]
         userkey = None
         if userkey not in cls.users:
             if Data.dbg: print(f"Creating session data for {userkey}")
