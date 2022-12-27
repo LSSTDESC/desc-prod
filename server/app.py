@@ -119,7 +119,7 @@ class Data:
         Data.users[userkey] = self
         print(f"Updated active user count is {len(Data.users)}")
         assert userkey in Data.users
-    def make_reponse(self, rdat):
+    def make_response(self, rdat):
         """
         Make an HTML response from the provided response data.
         Typically called from home().
