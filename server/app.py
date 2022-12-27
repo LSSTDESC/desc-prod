@@ -47,11 +47,10 @@ def get_google_ids():
 app = Flask(__name__, static_url_path='/home/descprod/static')
 
 class Data:
-    dbg = False            # Noisy if true.
-    use_cookie_key = True  # If true session key is obtained from cookie.
-    cookie_key             # The current cookie key
-    cookie_key_lifetime    # Lifetime to set for cookie keys
-    users = {}             # Map of active users indexed by session key
+    dbg = False                # Noisy if true.
+    use_cookie_key = True      # If true session key is obtained from cookie.
+    cookie_key_lifetime = 300  # Lifetime to set for cookie keys
+    users = {}                 # Map of active users indexed by session key
     session_count = 0
     msg = ''               # Error message shown once on home page.
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
