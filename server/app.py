@@ -4,6 +4,7 @@ from datetime import timedelta
 from flask import Flask, render_template, redirect, url_for
 from flask import request
 from flask import session
+from flask import make_response
 from markupsafe import escape
 import sys
 import os
@@ -41,13 +42,13 @@ def get_google_ids():
                 gids[gid] = nam
         fids.close()
     except FileNotFoundError:
-        print(f"ERROR: Google ID list not found: {fnam}")
+        print(f"get_google_ids: ERROR: Google ID list not found: {fnam}")
     return gids
 
 app = Flask(__name__, static_url_path='/home/descprod/static')
 
 class Data:
-    dbg = False                # Noisy if true.
+    dbg = True                 # Noisy if true.
     use_cookie_key = True      # If true session key is obtained from cookie.
     cookie_key_lifetime = 300  # Lifetime to set for cookie keys
     users = {}                 # Map of active users indexed by session key
@@ -76,17 +77,17 @@ class Data:
         if Data.use_cookie_key:
             userkey = request.cookies.get('userkey')
             if userkey is None:
-                if Data.dbg: print('Cookie with user key not found.')
+                if Data.dbg: print('Data.get: Cookie with user key not found.')
         else:
             if 'userkey' not in session:
-                if Data.dbg: print('Session does not have a key')
+                if Data.dbg: print('Data.get: Session does not have a key')
             userkey = session['userkey']
             session.modified = True    # Reset session timeout timer
         if userkey in cls.users:
             return cls.users[userkey]
         userkey = None
         if userkey not in cls.users:
-            if Data.dbg: print(f"Creating session data for {userkey}")
+            if Data.dbg: print(f"Data.get: Creating session data for {userkey}")
             cls.users[userkey] = Data(userkey)
         return cls.users[userkey]
     @classmethod
@@ -117,7 +118,7 @@ class Data:
         self.user_info = user_info
         assert userkey not in Data.users
         Data.users[userkey] = self
-        print(f"Updated active user count is {len(Data.users)}")
+        print(f"Data.init: Updated active user count is {len(Data.users)}")
         assert userkey in Data.users
     def make_response(self, rdat):
         """
@@ -126,7 +127,7 @@ class Data:
         if Data.use_cookie_key is true, then create a new userkey cookie with
         the value Data.cookie_key and lifetime Data.cookie_key_lifetime.
         """
-        resp = make_reponse(rdat)
+        resp = make_response(rdat)
         if Data.use_cookie_key:
             if self.userkey is None:
                 resp.set_cookie('userkey', '', expires=0)
@@ -136,6 +137,7 @@ class Data:
                 resp.set_cookie('userkey', self.userkey, expires=texp)
         else:
             session.modified = True
+        return resp
 
 # Get the base url from a flask request.
 def fixurl(url):
@@ -186,7 +188,7 @@ def home():
     msg = '<h2>DESCprod</h2>'
     msg += sep
     udat = Data.get()
-    have_user = udat is not None
+    have_user = udat.userkey is not None
     if have_user:
         if Data.msg is not None and len(Data.msg):
             msg += f"<hr>\n{Data.msg}\n<hr>\n<br>"
@@ -230,7 +232,7 @@ def home():
     else:
         msg += sep
         msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
-    return Data.make_response(msg)
+    return udat.make_response(msg)
 
 @app.route("/login")
 def login():
@@ -240,24 +242,24 @@ def login():
     # For anything but local host, make sure redirect is https.
     if redirect_uri[0:5] == 'http:' and redirect_uri.find('localhost') < 0 and redirect_uri.find('127.0.0.1') < 0:
         redirect_uri = redirect_uri.replace('http:', 'https:')
-    if Data.dbg: print(f"URI: {redirect_uri}")
+    if Data.dbg: print(f"login: URI: {redirect_uri}")
     scope=["openid", "email", "profile"]
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=redirect_uri,
         scope=scope
     )
-    if Data.dbg: print(f"Auth: {authorization_endpoint}")
-    if Data.dbg: print(f"Request: {request_uri}")
+    if Data.dbg: print(f"login: Auth: {authorization_endpoint}")
+    if Data.dbg: print(f"login: Request: {request_uri}")
     res = redirect(request_uri)
-    if Data.dbg: print(f"Result: {res}")
+    if Data.dbg: print(f"login: Result: {res}")
     return res
 
 @app.route("/logout")
 def logout():
     udat = Data.get()
     if udat is None:
-        print('Logout requested without login. Might be expired.')
+        print('logout: Logout requested without login. Might be expired.')
     else:
         del Data.users[userkey]
     session['userkey'] = None
@@ -278,13 +280,13 @@ def help():
 
 @app.route("/bye")
 def bye():
-    print("Shutting down.")
+    print("bye: Shutting down.")
     os.kill(os.getpid(), 9)
     return ""
 
 @app.route("/login/callback")
 def callback():
-    if Data.dbg: print('Handling google callback')
+    if Data.dbg: print('callback: Handling google callback')
     # Fetch tokens.
     code = request.args.get("code")
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -293,7 +295,7 @@ def callback():
         authresp = fixurl(request.url)
     else:
         authresp = None
-    print(f"**************** authresp: {authresp}")
+    print(f"callback: **************** authresp: {authresp}")
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response = authresp,
@@ -301,13 +303,13 @@ def callback():
         code = code
     )
     if Data.dbg:
-        print('--------- BEGIN Token post')
-        print(f"token_url: {token_url}")
-        print(f"headers: {headers}")
-        print(f"token_url: {token_url}")
-        print(f"data: {body}")
-        print(f"auth: {GOOGLE_CLIENT_ID}, *****")
-        print('--------- END Token response')
+        print('callback: --------- BEGIN Token post')
+        print(f"callback: token_url: {token_url}")
+        print(f"callback: headers: {headers}")
+        print(f"callback: token_url: {token_url}")
+        print(f"callback: data: {body}")
+        print(f"callback: auth: {GOOGLE_CLIENT_ID}, *****")
+        print('callback: --------- END Token response')
     token_response = requests.post(
         token_url,
         headers=headers,
@@ -316,10 +318,10 @@ def callback():
     )
     resp = token_response.json()
     if Data.dbg:
-        print('--------- BEGIN Token response')
+        print('callback: --------- BEGIN Token response')
         for key in resp:
-            print(f"{key}: {resp[key]}")
-        print('--------- END Token response')
+            print(f"callback: {key}: {resp[key]}")
+        print('callback: --------- END Token response')
     # Parse tokens and fetch user profile.
     client.parse_request_body_response(json.dumps(resp))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
@@ -329,11 +331,11 @@ def callback():
     user_id      = user_info["sub"]
     user_name    = user_info["name"]
     user_label = f"{user_name} ({user_id})"
-    #print(f"User info: {user_info")
+    #print(f"callback: User info: {user_info")
     resp = redirect(url_for('home'))
     if userinfo_response.json().get("email_verified"):
         if user_id in Data.google_ids:
-            print(f"Authorizing  {user_label}")
+            print(f"callback: Authorizing  {user_label}")
             user_info    = userinfo_response.json()
             userkey = app.secret_key = os.urandom(16)
             udat = Data(userkey, user_name, user_info)
@@ -347,11 +349,11 @@ def callback():
                 session.permanent = True   # This enables the session to expire
             Data.session_count += 1
         else:
-            print(f"Denying unauthorized user {user_label}")
+            print(f"callback: Denying unauthorized user {user_label}")
             Data.msg = f"User not authorized: {user_id} {user_name}"
             Data.msg += f"\n<br>Send the above line to adminn@descprod.org request authorization."
     else:
-        print(f"Denying unverified user {user_label}")
+        print(f"callback: Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
     return redirect(url_for('home'))
 
@@ -399,7 +401,7 @@ def run_parsltest():
     if 'config' not in request.args.keys():
           return "Invalid job description"
     args = request.args.get('config')
-    print(args)
+    print(f"parsltest: {args}")
     return do_parsltest(args)
 
 @app.route('/form_parsltest/', methods=['POST', 'GET'])
