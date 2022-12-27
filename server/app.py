@@ -47,14 +47,17 @@ def get_google_ids():
 app = Flask(__name__, static_url_path='/home/descprod/static')
 
 class Data:
-    dbg = False      # Noisy if true.
-    users = {}       # Map f active users indexed by session key
+    dbg = False            # Noisy if true.
+    use_cookie_key = True  # If true session key is obtained from cookie.
+    cookie_key             # The current cookie key
+    cookie_key_lifetime    # Lifetime to set for cookie keys
+    users = {}             # Map of active users indexed by session key
     session_count = 0
-    msg = ''         # Error message show once on home page.
+    msg = ''               # Error message shown once on home page.
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
     google_ids = get_google_ids()
-    lognam = None   # Job log file
-    stanam = None   # Last line is status or processing
+    lognam = None      # Job log file
+    stanam = None      # Last line is status or processing
     cfgnam = 'config.txt'   # Name for config file describing ther job
     logfil = None
     sjobid = None
@@ -66,17 +69,27 @@ class Data:
     force_https = False
     @classmethod
     def get(cls):
-        """Return the user data for the current session"""
-        if 'userkey' not in session:
-            print('Session does not have a key')
-            return None
-        userkey = session['userkey']
-        session.modified = True    # Reset session timeout timer
+        """
+        Return the data for the current session.
+        If a user is logged in, then userkey, user_name etc. will be set.
+        If not, userkey is None.
+        """
+        if Data.use_cookie_key:
+            userkey = request.cookies.get('userkey')
+            if userkey is None:
+                if dbg: print('Cookie with user key not found.')
+        else:
+            if 'userkey' not in session:
+                if dbg: print('Session does not have a key')
+            userkey = session['userkey']
+            session.modified = True    # Reset session timeout timer
+        if userkey in cls.users:
+            return = cls.users[userkey]
+        userkey = None
         if userkey not in cls.users:
-            print(f"Key {userkey} not found in users.")
-            return None
-        udat = cls.users[userkey]
-        return udat
+            if Data.dbg: print(f"Creating session data for {userkey}")
+            cls.users[userkey] = Data(userkey)
+        return cls.users[userkey]
     @classmethod
     def write_config(cls):
         myname = 'Data.write_config'
@@ -98,7 +111,7 @@ class Data:
         cout.write(msg)
         cout.close()
         return 0
-    def __init__(self, userkey, user_name, user_info):
+    def __init__(self, userkey, user_name='', user_info={}):
         """Add an active user."""
         self.userkey = userkey
         self.user_name = user_name
@@ -107,6 +120,23 @@ class Data:
         Data.users[userkey] = self
         print(f"Updated active user count is {len(Data.users)}")
         assert userkey in Data.users
+    def make_reponse(self, rdat):
+        """
+        Make an HTML response from the provided response data.
+        Typically called from home().
+        if Data.use_cookie_key is true, then create a new userkey cookie with
+        the value Data.cookie_key and lifetime Data.cookie_key_lifetime.
+        """
+        resp = make_reponse(rdat)
+        if Data.use_cookie_key:
+            if self.userkey is None:
+                resp.set_cookie('userkey', '', expires=0)
+            else:
+                udat = Data(userkey, user_name, user_info)
+                texp = datetime.timestamp(datetime.now()) + Data.cookie_key_lifetime
+                resp.set_cookie('userkey', self.userkey, expires=texp)
+        else:
+            session.modified = True
 
 # Get the base url from a flask request.
 def fixurl(url):
@@ -142,10 +172,19 @@ def top():
 
 @app.route("/home")
 def home():
+    """
+    Create and return the home page.
+    Most http commands will redirect here.
+    If the session doe not have an active user, generic data is displayed
+    along with a button to log in.
+    If the session is for an authenticated user, his or her info is displayed.
+    if Data.msg has content, it is displayed near the top iof the page and then
+    cleared so it will not appear when the page is refreshed.
+    The lifetime of the session or cookie  user key is refreshed.
+    """
     #return render_template('index.html')
     sep = '<br>\n'
     msg = '<h2>DESCprod</h2>'
-    msg += f"Cookie key: {request.cookies.get('userkey')}"
     msg += sep
     udat = Data.get()
     have_user = udat is not None
@@ -192,7 +231,7 @@ def home():
     else:
         msg += sep
         msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
-    return msg
+    return Data.make_response(msg)
 
 @app.route("/login")
 def login():
@@ -217,8 +256,11 @@ def login():
 
 @app.route("/logout")
 def logout():
-    userkey = session['userkey']
-    del Data.users[userkey]
+    udat = Data.get()
+    if udat is None:
+        print('Logout requested without login. Might be expired.')
+    else:
+        del Data.users[userkey]
     session['userkey'] = None
     return redirect(url_for('home'))
 
@@ -295,16 +337,16 @@ def callback():
             print(f"Authorizing  {user_label}")
             user_info    = userinfo_response.json()
             userkey = app.secret_key = os.urandom(16)
-            session['userkey'] = userkey
-            session['user_name'] = user_name
-            user_index = Data.session_count
-            session['index'] = user_index
-            Data.session_count += 1
-            session.permanent = True   # This makes the session expire
             udat = Data(userkey, user_name, user_info)
-            ckey = f"{user_name}--{user_index}--[{userkey}]"
-            texp = datetime.timestamp(datetime.now()) + 10
-            resp.set_cookie('userkey', ckey, expires=texp)
+            if Data.use_cookie_key:
+                pass    # The cookie is created in udat.make_response
+            else:
+                session['userkey'] = userkey
+                session['user_name'] = user_name
+                user_index = Data.session_count
+                session['index'] = user_index
+                session.permanent = True   # This enables the session to expire
+            Data.session_count += 1
         else:
             print(f"Denying unauthorized user {user_label}")
             Data.msg = f"User not authorized: {user_id} {user_name}"
@@ -312,8 +354,7 @@ def callback():
     else:
         print(f"Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
-    #return redirect(url_for('home'))
-    return resp
+    return redirect(url_for('home'))
 
 @app.route("/versions")
 def versions():
