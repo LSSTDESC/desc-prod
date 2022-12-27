@@ -76,10 +76,10 @@ class Data:
         if Data.use_cookie_key:
             userkey = request.cookies.get('userkey')
             if userkey is None:
-                if dbg: print('Cookie with user key not found.')
+                if Data.dbg: print('Cookie with user key not found.')
         else:
             if 'userkey' not in session:
-                if dbg: print('Session does not have a key')
+                if Data.dbg: print('Session does not have a key')
             userkey = session['userkey']
             session.modified = True    # Reset session timeout timer
         if userkey in cls.users:
