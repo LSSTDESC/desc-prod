@@ -22,6 +22,7 @@ from flask_login import (
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 import secrets
+import string
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
@@ -52,6 +53,7 @@ class Data:
     use_cookie_key = True      # If true session key is obtained from cookie.
     cookie_key_lifetime = 300  # Lifetime to set for cookie keys
     users = {}                 # Map of active users indexed by session key
+    current = None             # Cache the current user
     session_count = 0
     msg = ''               # Error message shown once on home page.
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
@@ -74,6 +76,7 @@ class Data:
         If a user is logged in, then userkey, user_name etc. will be set.
         If not, userkey is None.
         """
+        if Data.current is not None: return Data.current
         if Data.use_cookie_key:
             userkey = request.cookies.get('userkey')
             if userkey is None:
@@ -85,10 +88,14 @@ class Data:
             session.modified = True    # Reset session timeout timer
         if userkey in cls.users:
             return cls.users[userkey]
-        userkey = None
+        if userkey is not None:
+            print(f"Data.get: ERROR: Unknown user key: {userkey}")
+            print(f"Data.get: ERROR: Known keys: {cls.users.keys()}")
+            userkey = None
+        user_name = 'nologin'
         if userkey not in cls.users:
-            if Data.dbg: print(f"Data.get: Creating session data for {userkey}")
-            cls.users[userkey] = Data(userkey)
+            if Data.dbg: print(f"Data.get: Creating session data for {user_name}")
+            cls.users[userkey] = Data(userkey, user_name, {})
         return cls.users[userkey]
     @classmethod
     def write_config(cls):
@@ -132,11 +139,11 @@ class Data:
             if self.userkey is None:
                 resp.set_cookie('userkey', '', expires=0)
             else:
-                udat = Data(userkey, user_name, user_info)
                 texp = datetime.timestamp(datetime.now()) + Data.cookie_key_lifetime
-                resp.set_cookie('userkey', self.userkey, expires=texp)
+                resp.set_cookie('userkey', str(self.userkey), expires=texp)
         else:
             session.modified = True
+        Data.current = None
         return resp
 
 # Get the base url from a flask request.
@@ -184,10 +191,12 @@ def home():
     The lifetime of the session or cookie  user key is refreshed.
     """
     #return render_template('index.html')
+    if Data.dbg: print('home: Constructing home page.')
     sep = '<br>\n'
     msg = '<h2>DESCprod</h2>'
     msg += sep
     udat = Data.get()
+    if Data.dbg: print(f"home: User is {udat.user_name} [{udat.userkey}]")
     have_user = udat.userkey is not None
     if have_user:
         if Data.msg is not None and len(Data.msg):
@@ -197,6 +206,7 @@ def home():
     msg += sep
     if have_user:
         msg += f"User: {udat.user_name}"
+        msg += f" [{udat.userkey}]"
         msg += sep
         msg += sep
         msg += f"{status()}"
@@ -333,15 +343,17 @@ def callback():
     user_label = f"{user_name} ({user_id})"
     #print(f"callback: User info: {user_info")
     resp = redirect(url_for('home'))
+    udata = None
     if userinfo_response.json().get("email_verified"):
         if user_id in Data.google_ids:
             print(f"callback: Authorizing  {user_label}")
             user_info    = userinfo_response.json()
-            userkey = app.secret_key = os.urandom(16)
-            udat = Data(userkey, user_name, user_info)
             if Data.use_cookie_key:
-                pass    # The cookie is created in udat.make_response
+                # The cookie is created in udat.make_response
+                # We need a string key.
+                userkey = ''.join(secrets.choice(string.ascii_letters+string.digits) for i in range(24))
             else:
+                userkey = app.secret_key = os.urandom(16)
                 session['userkey'] = userkey
                 session['user_name'] = user_name
                 user_index = Data.session_count
@@ -355,6 +367,7 @@ def callback():
     else:
         print(f"callback: Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
+    Data.current = Data(userkey, user_name, user_info)
     return redirect(url_for('home'))
 
 @app.route("/versions")
