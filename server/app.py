@@ -271,7 +271,7 @@ def logout():
     if udat is None:
         print('logout: Logout requested without login. Might be expired.')
     else:
-        del Data.users[userkey]
+        del Data.users[udat.userkey]
     session['userkey'] = None
     return redirect(url_for('home'))
 
