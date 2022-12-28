@@ -29,7 +29,10 @@ GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = ("https://accounts.google.com/.well-known/openid-configuration")
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
-# Return map of authorized user IDs and names.
+# Return map of [username, googlename] indexed by authorized google IDs.
+# File lines are:
+#  username google-id google-name
+# The last may include single spaces
 def get_google_ids():
     gids = {}
     fnam = '/home/descprod/data/etc/google_ids.txt'
@@ -38,9 +41,10 @@ def get_google_ids():
         for line in fids.readlines():
             words = line.split()
             if len(words):
-                gid = words[0]
-                nam = line.replace(gid, '').strip()
-                gids[gid] = nam
+                unam = words[0]
+                gid = words[1]
+                gnam = ' '.join(words[2:])
+                gids[gid] = [unam, gnam]
         fids.close()
     except FileNotFoundError:
         print(f"get_google_ids: ERROR: Google ID list not found: {fnam}")
@@ -53,12 +57,11 @@ class Data:
     The Data class holds global data for the servide and its sessions.
     Data objects describe sessions.
     """
-    dbg = False                # Log is noisy if true.
-    use_cookie_key = True      # If true session key is obtained from cookie.
-    cookie_key_lifetime = 3600 # Lifetime [sec] to set for cookie keys.
-    sessions = {}                 # Map of active sessions indexed by session key
-    current = None             # Cache the current user
-    session_count = 0
+    dbg = False                 # Log is noisy if true.
+    use_cookie_key = True       # If true session key is obtained from cookie.
+    cookie_key_lifetime = 3600  # Lifetime [sec] to set for cookie keys.
+    sessions = {}               # Map of active sessions indexed by session key
+    current = None              # Cache the current user
     msg = ''               # Error message shown once on home page.
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
     google_ids = get_google_ids()
@@ -83,7 +86,7 @@ class Data:
     def get(cls):
         """
         Return the data for the current session.
-        If a user is logged in, then sesskey, user_name etc. will be set.
+        If a user is logged in, then sesskey, descname, fullname, login_info etc. will be set.
         If not, sesskey is None and name is 'nologin'.
         """
         if Data.current is not None: return Data.current
@@ -126,11 +129,12 @@ class Data:
         cout.write(msg)
         cout.close()
         return 0
-    def __init__(self, sesskey, user_name='', user_info={}):
+    def __init__(self, sesskey, descname, fullname=None, login_info={}):
         """Add an active user."""
         self.sesskey = sesskey
-        self.user_name = user_name
-        self.user_info = user_info
+        self.descname = descname
+        self.fullname = fullname
+        self.login_info = login_info
         self.session_id = 0 if sesskey is None else get_sessionid()
         assert sesskey not in Data.sessions
         Data.sessions[sesskey] = self
@@ -222,9 +226,12 @@ def home():
     msg += f"Site: {Data.site}"
     msg += sep
     if have_user:
-        msg += f"User: {udat.user_name}"
+        msg += f"User: {udat.descname}"
+        if udat.fullname is not None: msg+= f" ({udat.fullname})"
         #msg += f" [{udat.sesskey}]"
         msg += sep
+        #msg += f"Login info: {udat.login_info}"
+        #msg += sep
         msg += f"Session: {udat.session_id}"
         #msg += f" [{udat.sesskey}]"
         msg += sep
@@ -247,11 +254,10 @@ def home():
             msg += f"Command: {Data.com}"
             msg += sep
             msg += f"Run dir: {Data.rundir}"
-        if udat.user_info is not None and ready():
-            msg += sep
-            msg += sep
-            msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
-            msg += sep
+        msg += sep
+        msg += sep
+        msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
+        msg += sep
         msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>'
         msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
@@ -358,17 +364,17 @@ def callback():
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = client.add_token(userinfo_endpoint)
     userinfo_response = requests.get(uri, headers=headers, data=body)
-    user_info = userinfo_response.json()
-    user_id      = user_info["sub"]
-    user_name    = user_info["name"]
-    user_label = f"{user_name} ({user_id})"
-    #print(f"callback: User info: {user_info")
+    login_info = userinfo_response.json()
+    google_id      = login_info["sub"]
+    fullname    = login_info["name"]
+    user_label = f"{fullname} ({google_id})"
+    #print(f"callback: User info: {login_info")
     resp = redirect(url_for('home'))
     udat = None
     if userinfo_response.json().get("email_verified"):
-        if user_id in Data.google_ids:
+        if google_id in Data.google_ids:
             print(f"callback: Authorizing  {user_label}")
-            user_info    = userinfo_response.json()
+            login_info    = userinfo_response.json()
             if Data.use_cookie_key:
                 # The cookie is created in udat.make_response
                 # We need a string key.
@@ -376,19 +382,21 @@ def callback():
             else:
                 sesskey = app.secret_key = os.urandom(16)
                 session['sesskey'] = sesskey
-                session['user_name'] = user_name
-                user_index = Data.session_count
-                session['index'] = user_index
+                session['fullname'] = fullname
                 session.permanent = True   # This enables the session to expire
-            Data.session_count += 1
+            descname = Data.google_ids[google_id][0]
         else:
             print(f"callback: Denying unauthorized user {user_label}")
-            Data.msg = f"User not authorized: {user_id} {user_name}"
+            Data.msg = f"User not authorized: {google_id} {fullname}"
             Data.msg += f"\n<br>Send the above line to adminn@descprod.org request authorization."
     else:
         print(f"callback: Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
-    Data.current = Data(sesskey, user_name, user_info)
+    if sesskey is not None:
+        udat = Data(sesskey, descname, fullname, login_info)
+        if not Data.use_cookie_key:
+            session['session_id'] = udat.session_id
+        Data.current = udat
     return redirect(url_for('home'))
 
 @app.route("/versions")
