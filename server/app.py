@@ -49,10 +49,14 @@ def get_google_ids():
 app = Flask(__name__, static_url_path='/home/descprod/static')
 
 class Data:
-    dbg = True                 # Noisy if true.
+    """
+    The Data class holds global data for the servide and its sessions.
+    Data objects describe sessions.
+    """
+    dbg = True                 # Log is noisy if true.
     use_cookie_key = True      # If true session key is obtained from cookie.
-    cookie_key_lifetime = 300  # Lifetime to set for cookie keys
-    users = {}                 # Map of active users indexed by session key
+    cookie_key_lifetime = 300  # Lifetime [sec] to set for cookie keys.
+    sessions = {}                 # Map of active sessions indexed by session key
     current = None             # Cache the current user
     session_count = 0
     msg = ''               # Error message shown once on home page.
@@ -70,33 +74,37 @@ class Data:
     ret = None
     force_https = False
     @classmethod
+    def nologin_session(cls):
+        """Fetch the data for the no-login session."""
+        if None not in Data.sessions:
+            Data.sessions[None] = Data(None, 'nologin', {})
+        return Data.sessions[None]
+    @classmethod
     def get(cls):
         """
         Return the data for the current session.
-        If a user is logged in, then userkey, user_name etc. will be set.
-        If not, userkey is None.
+        If a user is logged in, then sesskey, user_name etc. will be set.
+        If not, sesskey is None and name is 'nologin'.
         """
         if Data.current is not None: return Data.current
         if Data.use_cookie_key:
-            userkey = request.cookies.get('userkey')
-            if userkey is None:
+            sesskey = request.cookies.get('sesskey')
+            if sesskey is None:
                 if Data.dbg: print('Data.get: Cookie with user key not found.')
         else:
-            if 'userkey' not in session:
+            if 'sesskey' in session:
+                sesskey = session['sesskey']
+            else:
                 if Data.dbg: print('Data.get: Session does not have a key')
-            userkey = session['userkey']
-            session.modified = True    # Reset session timeout timer
-        if userkey in cls.users:
-            return cls.users[userkey]
-        if userkey is not None:
-            print(f"Data.get: ERROR: Unknown user key: {userkey}")
-            print(f"Data.get: ERROR: Known keys: {cls.users.keys()}")
-            userkey = None
-        user_name = 'nologin'
-        if userkey not in cls.users:
-            if Data.dbg: print(f"Data.get: Creating session data for {user_name}")
-            cls.users[userkey] = Data(userkey, user_name, {})
-        return cls.users[userkey]
+                sesskey = None
+        if sesskey in cls.sessions:
+            Data.current = cls.sessions[sesskey]
+        else:
+            if sesskey is not None:
+                print(f"Data.get: ERROR: Unexpected session key: {sesskey}")
+                print(f"Data.get: ERROR: Known keys: {cls.sessions.keys()}")
+            Data.current = Data.nologin_session()
+        return Data.current
     @classmethod
     def write_config(cls):
         myname = 'Data.write_config'
@@ -118,29 +126,29 @@ class Data:
         cout.write(msg)
         cout.close()
         return 0
-    def __init__(self, userkey, user_name='', user_info={}):
+    def __init__(self, sesskey, user_name='', user_info={}):
         """Add an active user."""
-        self.userkey = userkey
+        self.sesskey = sesskey
         self.user_name = user_name
         self.user_info = user_info
-        assert userkey not in Data.users
-        Data.users[userkey] = self
-        print(f"Data.init: Updated active user count is {len(Data.users)}")
-        assert userkey in Data.users
+        assert sesskey not in Data.sessions
+        Data.sessions[sesskey] = self
+        print(f"Data.init: Updated active user count is {len(Data.sessions)}")
+        assert sesskey in Data.sessions
     def make_response(self, rdat):
         """
         Make an HTML response from the provided response data.
         Typically called from home().
-        if Data.use_cookie_key is true, then create a new userkey cookie with
+        if Data.use_cookie_key is true, then create a new sesskey cookie with
         the value Data.cookie_key and lifetime Data.cookie_key_lifetime.
         """
         resp = make_response(rdat)
         if Data.use_cookie_key:
-            if self.userkey is None:
-                resp.set_cookie('userkey', '', expires=0)
+            if self.sesskey is None:
+                resp.set_cookie('sesskey', '', expires=0)
             else:
                 texp = datetime.timestamp(datetime.now()) + Data.cookie_key_lifetime
-                resp.set_cookie('userkey', str(self.userkey), expires=texp)
+                resp.set_cookie('sesskey', str(self.sesskey), expires=texp)
         else:
             session.modified = True
         Data.current = None
@@ -196,8 +204,8 @@ def home():
     msg = '<h2>DESCprod</h2>'
     msg += sep
     udat = Data.get()
-    if Data.dbg: print(f"home: User is {udat.user_name} [{udat.userkey}]")
-    have_user = udat.userkey is not None
+    if Data.dbg: print(f"home: User is {udat.user_name} [{udat.sesskey}]")
+    have_user = udat.sesskey is not None
     if have_user:
         if Data.msg is not None and len(Data.msg):
             msg += f"<hr>\n{Data.msg}\n<hr>\n<br>"
@@ -206,7 +214,7 @@ def home():
     msg += sep
     if have_user:
         msg += f"User: {udat.user_name}"
-        msg += f" [{udat.userkey}]"
+        msg += f" [{udat.sesskey}]"
         msg += sep
         msg += sep
         msg += f"{status()}"
@@ -271,8 +279,8 @@ def logout():
     if udat is None:
         print('logout: Logout requested without login. Might be expired.')
     else:
-        del Data.users[udat.userkey]
-    session['userkey'] = None
+        del Data.sessions[udat.sesskey]
+    session['sesskey'] = None
     return redirect(url_for('home'))
 
 @app.route("/help")
@@ -343,7 +351,7 @@ def callback():
     user_label = f"{user_name} ({user_id})"
     #print(f"callback: User info: {user_info")
     resp = redirect(url_for('home'))
-    udata = None
+    udat = None
     if userinfo_response.json().get("email_verified"):
         if user_id in Data.google_ids:
             print(f"callback: Authorizing  {user_label}")
@@ -351,10 +359,10 @@ def callback():
             if Data.use_cookie_key:
                 # The cookie is created in udat.make_response
                 # We need a string key.
-                userkey = ''.join(secrets.choice(string.ascii_letters+string.digits) for i in range(24))
+                sesskey = ''.join(secrets.choice(string.ascii_letters+string.digits) for i in range(24))
             else:
-                userkey = app.secret_key = os.urandom(16)
-                session['userkey'] = userkey
+                sesskey = app.secret_key = os.urandom(16)
+                session['sesskey'] = sesskey
                 session['user_name'] = user_name
                 user_index = Data.session_count
                 session['index'] = user_index
@@ -367,7 +375,7 @@ def callback():
     else:
         print(f"callback: Denying unverified user {user_label}")
         Data.msg = "User is not verified Google: {user_label}"
-    Data.current = Data(userkey, user_name, user_info)
+    Data.current = Data(sesskey, user_name, user_info)
     return redirect(url_for('home'))
 
 @app.route("/versions")
