@@ -52,24 +52,34 @@ def get_google_ids():
 
 app = Flask(__name__, static_url_path='/home/descprod/static')
 
-class Data:
+class JobData:
     """
-    The Data class holds global data for the servide and its sessions.
-    Data objects describe sessions.
+    Holds the data describing a job.
+    jobtype - Job type: parsltest, ...
+    spec - string specifying job configuration
+    id   - Id unique to server
+    """
+    def __init__(self, jobtype, spec):
+        self.id = get_jobid()
+
+from descprod import UserData
+
+class SessionData:
+    """
+    The SessionData class holds global data for the service and its sessions.
+    SessionData objects describe sessions.
     """
     dbg = False                 # Log is noisy if true.
     use_cookie_key = True       # If true session key is obtained from cookie.
     cookie_key_lifetime = 3600  # Lifetime [sec] to set for cookie keys.
     sessions = {}               # Map of active sessions indexed by session key
-    current = None              # Cache the current user
-    msg = ''               # Error message shown once on home page.
+    current = None              # Cache the current session
     site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
-    google_ids = get_google_ids()
+    google_ids = get_google_ids()  # [descname, fullname] indexed by google ID
     lognam = None      # Job log file
     stanam = None      # Last line is status or processing
     cfgnam = 'config.txt'   # Name for config file describing ther job
     logfil = None
-    sjobid = None
     fout = None
     sjob = None
     rundir = None
@@ -79,9 +89,9 @@ class Data:
     @classmethod
     def nologin_session(cls):
         """Fetch the data for the no-login session."""
-        if None not in Data.sessions:
-            Data.sessions[None] = Data(None, 'nologin', {})
-        return Data.sessions[None]
+        if None not in SessionData.sessions:
+            SessionData.sessions[None] = SessionData(None, 'nologin', {})
+        return SessionData.sessions[None]
     @classmethod
     def get(cls):
         """
@@ -89,28 +99,28 @@ class Data:
         If a user is logged in, then sesskey, descname, fullname, login_info etc. will be set.
         If not, sesskey is None and name is 'nologin'.
         """
-        if Data.current is not None: return Data.current
-        if Data.use_cookie_key:
+        if SessionData.current is not None: return SessionData.current
+        if SessionData.use_cookie_key:
             sesskey = request.cookies.get('sesskey')
             if sesskey is None:
-                if Data.dbg: print('Data.get: Cookie with user key not found.')
+                if SessionData.dbg: print('SessionData.get: Cookie with user key not found.')
         else:
             if 'sesskey' in session:
                 sesskey = session['sesskey']
             else:
-                if Data.dbg: print('Data.get: Session does not have a key')
+                if SessionData.dbg: print('SessionData.get: Session does not have a key')
                 sesskey = None
         if sesskey in cls.sessions:
-            Data.current = cls.sessions[sesskey]
+            SessionData.current = cls.sessions[sesskey]
         else:
             if sesskey is not None:
-                print(f"Data.get: ERROR: Unexpected session key: {sesskey}")
-                print(f"Data.get: ERROR: Known keys: {cls.sessions.keys()}")
-            Data.current = Data.nologin_session()
-        return Data.current
+                print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
+                print(f"SessionData.get: ERROR: Known keys: {cls.sessions.keys()}")
+            SessionData.current = SessionData.nologin_session()
+        return SessionData.current
     @classmethod
     def write_config(cls):
-        myname = 'Data.write_config'
+        myname = 'SessionData.write_config'
         if cls.rundir is None:
             print(f"{myname}: Cannot write config without rundir")
             return None
@@ -136,32 +146,38 @@ class Data:
         self.fullname = fullname
         self.login_info = login_info
         self.session_id = 0 if sesskey is None else get_sessionid()
-        assert sesskey not in Data.sessions
-        Data.sessions[sesskey] = self
-        print(f"Data.init: Updated active user count is {len(Data.sessions)}")
-        assert sesskey in Data.sessions
+        self.msg = ''               # Error message shown once on home page.
+        self._user = None
+        assert sesskey not in SessionData.sessions
+        SessionData.sessions[sesskey] = self
+        print(f"SessionData.init: Updated active user count is {len(SessionData.sessions)}")
+        assert sesskey in SessionData.sessions
+    def user(self):
+        if self._user is None:
+            self._user = UserData.get(self.descname)
+        return self._user
     def make_response(self, rdat):
         """
         Make an HTML response from the provided response data.
         Typically called from home().
-        if Data.use_cookie_key is true, then create a new sesskey cookie with
-        the value Data.cookie_key and lifetime Data.cookie_key_lifetime.
+        if SessionData.use_cookie_key is true, then create a new sesskey cookie with
+        the value SessionData.cookie_key and lifetime SessionData.cookie_key_lifetime.
         """
         resp = make_response(rdat)
-        if Data.use_cookie_key:
+        if SessionData.use_cookie_key:
             if self.sesskey is None:
                 resp.set_cookie('sesskey', '', expires=0)
             else:
-                texp = datetime.timestamp(datetime.now()) + Data.cookie_key_lifetime
+                texp = datetime.timestamp(datetime.now()) + SessionData.cookie_key_lifetime
                 resp.set_cookie('sesskey', str(self.sesskey), expires=texp)
         else:
             session.modified = True
-        Data.current = None
+        SessionData.current = None
         return resp
 
 # Get the base url from a flask request.
 def fixurl(url):
-    if Data.force_https:
+    if SessionData.force_https:
         url = url.replace('http:', 'https:', 1)
     return url
 
@@ -176,9 +192,9 @@ if 'SERVER_OPTS' in os.environ:
     for opt in opts:
         print(f"Processing server option {opt}")
         if opt == 'debug':
-            Data.dbg = True
+            SessionData.dbg = True
         elif opt == 'force-https':
-            Data.force_https = True
+            SessionData.force_https = True
         else:
             print(f"Ignoring invalid option {opt}")
 
@@ -192,7 +208,7 @@ def get_sessionid():
     sesid = int(lines[-1])
     for line in lines[0:-1]:
         print(f"get_sessionid: {line}")
-    if Data.dbg: print(f"get-sessionid: Session ID is {sesid}")
+    if SessionData.dbg: print(f"get-sessionid: Session ID is {sesid}")
     return sesid
 
 @app.route("/")
@@ -207,53 +223,57 @@ def home():
     If the session doe not have an active user, generic data is displayed
     along with a button to log in.
     If the session is for an authenticated user, his or her info is displayed.
-    if Data.msg has content, it is displayed near the top iof the page and then
+    if sdat.msg has content, it is displayed near the top iof the page and then
     cleared so it will not appear when the page is refreshed.
     The lifetime of the session or cookie  user key is refreshed.
     """
     #return render_template('index.html')
-    if Data.dbg: print('home: Constructing home page.')
+    if SessionData.dbg: print('home: Constructing home page.')
     sep = '<br>\n'
     msg = '<h2>DESCprod</h2>'
     msg += sep
-    udat = Data.get()
-    if Data.dbg: print(f"home: User is {udat.user_name} [{udat.sesskey}]")
-    have_user = udat.sesskey is not None
+    sdat = SessionData.get()
+    udat = sdat.user()
+    if SessionData.dbg: print(f"home: User is {sdat.user_name} [{sdat.sesskey}]")
+    have_user = sdat.sesskey is not None
     if have_user:
-        if Data.msg is not None and len(Data.msg):
-            msg += f"<hr>\n{Data.msg}\n<hr>\n<br>"
-            Data.msg = None
-    msg += f"Site: {Data.site}"
+        if sdat.msg is not None and len(sdat.msg):
+            msg += f"<hr>\n{sdat.msg}\n<hr>\n<br>"
+            sdat.msg = None
+    msg += f"Site: {SessionData.site}"
     msg += sep
     if have_user:
-        msg += f"User: {udat.descname}"
-        if udat.fullname is not None: msg+= f" ({udat.fullname})"
-        #msg += f" [{udat.sesskey}]"
+        msg += f"User: {sdat.descname}"
+        if sdat.fullname is not None: msg+= f" ({sdat.fullname})"
+        #msg += f" [{sdat.sesskey}]"
         msg += sep
-        #msg += f"Login info: {udat.login_info}"
+        #msg += f"Login info: {sdat.login_info}"
         #msg += sep
-        msg += f"Session: {udat.session_id}"
-        #msg += f" [{udat.sesskey}]"
+        msg += f"Session: {sdat.session_id}"
+        #msg += f" [{sdat.sesskey}]"
         msg += sep
         msg += sep
-        msg += f"{status()}"
-        if Data.stanam is not None:
-            sjstat = 'Not found'
-            try:
-                jsin = open(Data.stanam, 'r')
-                sjtext = jsin.readlines()
-                if len(sjtext): sjstat = sjtext[-1]
-            except FileNotFoundError:
-                sjstat = f"File not found: {Data.stanam}"
-            msg += sep
-            msg += f"Status: {sjstat}"
-        if Data.sjobid is not None:
-            msg += sep
-            msg += f"Config: {Data.sjob}"
-            msg += sep
-            msg += f"Command: {Data.com}"
-            msg += sep
-            msg += f"Run dir: {Data.rundir}"
+        msg += f"All jobs: {len(udat.jobs)}"
+        msg += sep
+        msg += sep
+        #msg += f"{status()}"
+        #if SessionData.stanam is not None:
+        #    sjstat = 'Not found'
+        #    try:
+        #        jsin = open(SessionData.stanam, 'r')
+        #        sjtext = jsin.readlines()
+        #        if len(sjtext): sjstat = sjtext[-1]
+        #    except FileNotFoundError:
+        #        sjstat = f"File not found: {SessionData.stanam}"
+        #    msg += sep
+        #    msg += f"Status: {sjstat}"
+        #if SessionData.sjobid is not None:
+        #    msg += sep
+        #    msg += f"Config: {SessionData.sjob}"
+        #    msg += sep
+        #    msg += f"Command: {SessionData.com}"
+        #    msg += sep
+        #    msg += f"Run dir: {SessionData.rundir}"
         msg += sep
         msg += sep
         msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
@@ -268,7 +288,7 @@ def home():
     else:
         msg += sep
         msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
-    return udat.make_response(msg)
+    return sdat.make_response(msg)
 
 @app.route("/login")
 def login():
@@ -278,28 +298,28 @@ def login():
     # For anything but local host, make sure redirect is https.
     if redirect_uri[0:5] == 'http:' and redirect_uri.find('localhost') < 0 and redirect_uri.find('127.0.0.1') < 0:
         redirect_uri = redirect_uri.replace('http:', 'https:')
-    if Data.dbg: print(f"login: URI: {redirect_uri}")
+    if SessionData.dbg: print(f"login: URI: {redirect_uri}")
     scope=["openid", "email", "profile"]
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=redirect_uri,
         scope=scope
     )
-    if Data.dbg: print(f"login: Auth: {authorization_endpoint}")
-    if Data.dbg: print(f"login: Request: {request_uri}")
+    if SessionData.dbg: print(f"login: Auth: {authorization_endpoint}")
+    if SessionData.dbg: print(f"login: Request: {request_uri}")
     res = redirect(request_uri)
-    if Data.dbg: print(f"login: Result: {res}")
+    if SessionData.dbg: print(f"login: Result: {res}")
     return res
 
 @app.route("/logout")
 def logout():
-    udat = Data.get()
-    if udat is None:
+    sdat = SessionData.get()
+    if sdat is None:
         print('logout: Logout requested without login. Might be expired.')
     else:
-        del Data.sessions[udat.sesskey]
+        del SessionData.sessions[sdat.sesskey]
     session['sesskey'] = None
-    Data.current = Data.nologin_session()
+    SessionData.current = SessionData.nologin_session()
     return redirect(url_for('home'))
 
 @app.route("/help")
@@ -323,7 +343,7 @@ def bye():
 
 @app.route("/login/callback")
 def callback():
-    if Data.dbg: print('callback: Handling google callback')
+    if SessionData.dbg: print('callback: Handling google callback')
     # Fetch tokens.
     code = request.args.get("code")
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -339,7 +359,7 @@ def callback():
         redirect_url = fixurl(request.base_url),
         code = code
     )
-    if Data.dbg:
+    if SessionData.dbg:
         print('callback: --------- BEGIN Token post')
         print(f"callback: token_url: {token_url}")
         print(f"callback: headers: {headers}")
@@ -354,7 +374,7 @@ def callback():
         auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
     )
     resp = token_response.json()
-    if Data.dbg:
+    if SessionData.dbg:
         print('callback: --------- BEGIN Token response')
         for key in resp:
             print(f"callback: {key}: {resp[key]}")
@@ -370,13 +390,13 @@ def callback():
     user_label = f"{fullname} ({google_id})"
     #print(f"callback: User info: {login_info")
     resp = redirect(url_for('home'))
-    udat = None
+    sdat = SessionData.nologin_session()
     if userinfo_response.json().get("email_verified"):
-        if google_id in Data.google_ids:
+        if google_id in SessionData.google_ids:
             print(f"callback: Authorizing  {user_label}")
             login_info    = userinfo_response.json()
-            if Data.use_cookie_key:
-                # The cookie is created in udat.make_response
+            if SessionData.use_cookie_key:
+                # The cookie is created in sdat.make_response
                 # We need a string key.
                 sesskey = ''.join(secrets.choice(string.ascii_letters+string.digits) for i in range(24))
             else:
@@ -384,19 +404,19 @@ def callback():
                 session['sesskey'] = sesskey
                 session['fullname'] = fullname
                 session.permanent = True   # This enables the session to expire
-            descname = Data.google_ids[google_id][0]
+            descname = SessionData.google_ids[google_id][0]
         else:
             print(f"callback: Denying unauthorized user {user_label}")
-            Data.msg = f"User not authorized: {google_id} {fullname}"
-            Data.msg += f"\n<br>Send the above line to adminn@descprod.org request authorization."
+            sdat.msg = f"User not authorized: {google_id} {fullname}"
+            sdat.msg += f"\n<br>Send the above line to adminn@descprod.org request authorization."
     else:
         print(f"callback: Denying unverified user {user_label}")
-        Data.msg = "User is not verified Google: {user_label}"
+        sdat.msg = "User is not verified Google: {user_label}"
     if sesskey is not None:
-        udat = Data(sesskey, descname, fullname, login_info)
-        if not Data.use_cookie_key:
-            session['session_id'] = udat.session_id
-        Data.current = udat
+        sdat = SessionData(sesskey, descname, fullname, login_info)
+        if not SessionData.use_cookie_key:
+            session['session_id'] = sdat.session_id
+        SessionData.current = sdat
     return redirect(url_for('home'))
 
 @app.route("/versions")
@@ -414,13 +434,13 @@ def versions():
     for prod in tbl:
         msg += f"<tr><td>{prod}</td><td>{tbl[prod]}</td></tr>\n"
     msg += '</table>\n'
-    Data.msg = msg
+    SessionData.get().msg = msg
     return redirect(url_for('home'))
 
 @app.route("/pmstatus")
 def pmstatus():
     sfapi = Sfapi()
-    Data.msg = sfapi.get_status()
+    SessionData.get().msg = sfapi.get_status()
     return redirect(url_for('home'))
     return msg
 
@@ -432,10 +452,11 @@ def hello():
             name += ' ' + snam
     else:
         name = ' NOONE'
-    if len(Data.msg) == 0:
-        Data.msg = "<h1>Hellos from desc-prod</h1>"
-    Data.msg += f"hello{name}</br>"
-    return Data.msg
+    sdat = SessionData.get()
+    if len(sdat.msg) == 0:
+        sdat.msg = "<h1>Hellos from desc-prod</h1>"
+    sdat.msg += f"hello{name}</br>"
+    return redirect(url_for('home'))
 
 @app.route('/parsltest')
 def run_parsltest():
@@ -455,55 +476,55 @@ def run_form_parsltest():
 
 def do_parsltest(args):
     myname = 'do_parsltest'
-    fout = Data.fout
-    if Data.sjob is not None and Data.ret is None:
-        return f"Job is already running: {Data.sjob}"
-    if Data.ret is not None:
-        rcode = Data.ret.poll()
+    fout = SessionData.fout
+    if SessionData.sjob is not None and SessionData.ret is None:
+        return f"Job is already running: {SessionData.sjob}"
+    if SessionData.ret is not None:
+        rcode = SessionData.ret.poll()
         if rcode is None:
-            msg = f"Earlier job {Data.sjob} is still running."
+            msg = f"Earlier job {SessionData.sjob} is still running."
             return msg
-        Data.ret = None
-    Data.sjobid = str(get_jobid())
-    while len(Data.sjobid) < 6: Data.sjobid = '0' + Data.sjobid
-    Data.rundir = f"/home/descprod/data/rundirs/job{Data.sjobid}"
-    os.mkdir(Data.rundir)
-    Data.sjob = args
-    Data.com = ['desc-wfmon-parsltest', args]
+        SessionData.ret = None
+    SessionData.sjobid = str(get_jobid())
+    while len(SessionData.sjobid) < 6: SessionData.sjobid = '0' + SessionData.sjobid
+    SessionData.rundir = f"/home/descprod/data/rundirs/job{SessionData.sjobid}"
+    os.mkdir(SessionData.rundir)
+    SessionData.sjob = args
+    SessionData.com = ['desc-wfmon-parsltest', args]
     if fout is not None:
         fout.close() 
-    rout = open(f"{Data.rundir}/README.txt", 'w')
-    rout.write(f"{Data.sjob}\n")
+    rout = open(f"{SessionData.rundir}/README.txt", 'w')
+    rout.write(f"{SessionData.sjob}\n")
     rout.close()
-    Data.lognam = f"{Data.rundir}/job{Data.sjobid}.log"
-    Data.stanam = f"{Data.rundir}/current-status.txt"
-    Data.write_config()
-    print(f"{myname}: Opening {Data.lognam}")
-    Data.logfil = open(Data.lognam, 'w')
-    Data.ret = subprocess.Popen(Data.com, cwd=Data.rundir, stdout=Data.logfil, stderr=Data.logfil)
+    SessionData.lognam = f"{SessionData.rundir}/job{SessionData.sjobid}.log"
+    SessionData.stanam = f"{SessionData.rundir}/current-status.txt"
+    SessionData.write_config()
+    print(f"{myname}: Opening {SessionData.lognam}")
+    SessionData.logfil = open(SessionData.lognam, 'w')
+    SessionData.ret = subprocess.Popen(SessionData.com, cwd=SessionData.rundir, stdout=SessionData.logfil, stderr=Data.logfil)
     sep = '<br>\n'
-    msg = f"Started {Data.com[0]} {Data.com[1]} in {Data.rundir}"
+    msg = f"Started {SessionData.com[0]} {SessionData.com[1]} in {SessionData.rundir}"
     msg += sep
     msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
     return msg
 
 def ready():
-    if Data.sjob is None: return True
-    rcode = Data.ret.poll()
+    if SessionData.sjob is None: return True
+    rcode = SessionData.ret.poll()
     if rcode is None: return False
     # Post job actions go here.
     return True
 
 @app.route('/status')
 def status():
-    if Data.sjob is None:
+    if SessionData.sjob is None:
         msg = "No job is started."
     else:
-        rcode = Data.ret.poll()
+        rcode = SessionData.ret.poll()
         if ready():
-            msg = f"Job {Data.sjobid} returned {Data.ret.poll()}."
+            msg = f"Job {SessionData.sjobid} returned {SessionData.ret.poll()}."
         else:
-            msg = f"Job {Data.sjobid} is running."
+            msg = f"Job {SessionData.sjobid} is running."
     return msg
 
 
@@ -514,7 +535,7 @@ def show_session():
     for key in session.keys():
         msg += f"<br>{key}: {session[key]}\n"
     print(msg)
-    Data.msg = msg
+    SessionData.get().msg = msg
     return redirect(url_for('home'))
 
 @app.route("/request")
