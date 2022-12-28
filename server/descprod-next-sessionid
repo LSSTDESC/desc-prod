@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# descprod-next-sessionid
+#
+# David Adams
+# December 2022
+#
+# Advance the session ID and return it.
+
+MYNAME=$(basename $0)
+SIDFIL=$HOME/data/etc/sessionid.txt
+SESID=sessionid-not-found
+if ! ls ${SIDFIL}* 2>/dev/null >/dev/null; then
+  echo $MYNAME: Creating session ID file: $SIDFIL >&2
+  echo 0 > $SIDFIL
+fi
+if ! ls ${SIDFIL}* 2>/dev/null >/dev/null; then
+  echo $MYNAME: ERROR: Job ID file not found: $SIDFIL >&2
+  echo $SESID
+  exit 1
+fi
+COUNT=0
+TMPFIL=$(mktemp ${SIDFIL}-pid$$-XXXXXX)
+while [ $COUNT -lt 20 ]; do
+  if mv $SIDFIL $TMPFIL 2>/dev/null; then
+    SESID=$(cat $TMPFIL)
+    SESID=$((SESID+1))
+    chmod +w $TMPFIL
+    echo $SESID >$TMPFIL
+    chmod -w $TMPFIL
+    mv $TMPFIL $SIDFIL
+    echo $SESID
+    exit 0
+  fi
+  sleep 1
+  COUNT=$((COUNT+1))
+done
+rm $TMPFIL
+echo $MYNAME: ERROR: Job ID file is locked: ${SIDFIL}*
+echo $SESID
+exit 2
+

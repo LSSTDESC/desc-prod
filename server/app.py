@@ -131,6 +131,7 @@ class Data:
         self.sesskey = sesskey
         self.user_name = user_name
         self.user_info = user_info
+        self.session_id = 0 if sesskey is None else get_sessionid()
         assert sesskey not in Data.sessions
         Data.sessions[sesskey] = self
         print(f"Data.init: Updated active user count is {len(Data.sessions)}")
@@ -182,6 +183,10 @@ def get_jobid():
     jobid = int(subprocess.getoutput(f"descprod-next-jobid"))
     return jobid
 
+def get_sessionid():
+    sesid = int(subprocess.getoutput(f"descprod-next-sessionid"))
+    return sesid
+
 @app.route("/")
 def top():
     return redirect(url_for('home'))
@@ -214,7 +219,10 @@ def home():
     msg += sep
     if have_user:
         msg += f"User: {udat.user_name}"
-        msg += f" [{udat.sesskey}]"
+        #msg += f" [{udat.sesskey}]"
+        msg += sep
+        msg += f"Session: {udat.session_id}"
+        #msg += f" [{udat.sesskey}]"
         msg += sep
         msg += sep
         msg += f"{status()}"
