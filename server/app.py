@@ -52,16 +52,6 @@ def get_google_ids():
 
 app = Flask(__name__, static_url_path='/home/descprod/static')
 
-class JobData:
-    """
-    Holds the data describing a job.
-    jobtype - Job type: parsltest, ...
-    spec - string specifying job configuration
-    id   - Id unique to server
-    """
-    def __init__(self, jobtype, spec):
-        self.id = get_jobid()
-
 from descprod import UserData
 
 class SessionData:

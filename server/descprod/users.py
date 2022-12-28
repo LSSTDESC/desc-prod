@@ -1,3 +1,5 @@
+from descprod import JobData
+
 class UserData:
     """
     Holds the data for each user.
