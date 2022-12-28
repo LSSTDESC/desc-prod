@@ -1,3 +1,3 @@
 # descprod
 
-from users import UserData
+from .users import UserData
