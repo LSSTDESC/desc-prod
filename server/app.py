@@ -53,7 +53,7 @@ class Data:
     The Data class holds global data for the servide and its sessions.
     Data objects describe sessions.
     """
-    dbg = True                 # Log is noisy if true.
+    dbg = False                # Log is noisy if true.
     use_cookie_key = True      # If true session key is obtained from cookie.
     cookie_key_lifetime = 3600 # Lifetime [sec] to set for cookie keys.
     sessions = {}                 # Map of active sessions indexed by session key
@@ -184,7 +184,11 @@ def get_jobid():
     return jobid
 
 def get_sessionid():
-    sesid = int(subprocess.getoutput(f"descprod-next-sessionid"))
+    lines = subprocess.getoutput(f"descprod-next-sessionid").splitlines()
+    sesid = int(lines[-1])
+    for line in lines[0:-1]:
+        print(f"get_sessionid: {line}")
+    if Data.dbg: print(f"get-sessionid: Session ID is {sesid}")
     return sesid
 
 @app.route("/")
