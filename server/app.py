@@ -55,7 +55,7 @@ class Data:
     """
     dbg = True                 # Log is noisy if true.
     use_cookie_key = True      # If true session key is obtained from cookie.
-    cookie_key_lifetime = 300  # Lifetime [sec] to set for cookie keys.
+    cookie_key_lifetime = 3600 # Lifetime [sec] to set for cookie keys.
     sessions = {}                 # Map of active sessions indexed by session key
     current = None             # Cache the current user
     session_count = 0
@@ -281,6 +281,7 @@ def logout():
     else:
         del Data.sessions[udat.sesskey]
     session['sesskey'] = None
+    Data.current = Data.nologin_session()
     return redirect(url_for('home'))
 
 @app.route("/help")
