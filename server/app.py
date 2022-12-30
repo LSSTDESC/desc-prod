@@ -152,6 +152,15 @@ def fixurl(url):
         url = url.replace('http:', 'https:', 1)
     return url
 
+def html_head():
+    msg = '<!DOCTYPE html>\n'
+    msg += '<html lang="en">\n'
+    msg += '<head>\n'
+    msg += '  <link rel="stylesheet" href="/static/main.css" />'
+    #msg += '  <script>alert("loaded page")</script>'
+    msg += '</head>\n'
+    return msg
+
 if __name__ == '__main__':
     app.run(ssl_context=('/home/descprod/cert.pem', 'key.pem'))
 app.secret_key = os.urandom(24)
@@ -202,7 +211,8 @@ def home():
     #return render_template('index.html')
     if SessionData.dbg: print('home: Constructing home page.')
     sep = '<br>\n'
-    msg = '<h2>DESCprod</h2>\n'
+    msg = html_head()
+    msg += '<h2>DESCprod</h2>\n'
     sdat = SessionData.get()
     udat = sdat.user()
     if SessionData.dbg: print(f"home: User is {sdat.user_name} [{sdat.sesskey}]")

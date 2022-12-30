@@ -22,11 +22,12 @@ class JobTable:
             self.jobtypes.append(job.jobtype)
             self.configs.append(job.config)
             if job.popen is None:
-                self.pids.append(None)
-                self.rstats.append(None)
+                self.pids.append(-1)
+                self.rstats.append(-1)
             else:
-                job.popen.poll()
                 self.pids.append(job.popen.pid)
+                rstat = job.popen.poll()
+                if rstat is None: rstat = -1
                 self.rstats.append(job.popen.returncode)
         self.map = {}
         self.map['id'] = self.jobids
