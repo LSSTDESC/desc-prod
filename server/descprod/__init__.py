@@ -1,4 +1,5 @@
 # descprod
 
-from .jobs  import JobData
 from .users import UserData
+from .jobs  import JobData
+from .jobs  import JobTable

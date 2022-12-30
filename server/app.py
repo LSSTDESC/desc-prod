@@ -52,6 +52,7 @@ def get_google_ids():
 
 app = Flask(__name__, static_url_path='/home/descprod/static')
 
+from descprod import JobData
 from descprod import UserData
 
 class SessionData:
@@ -108,27 +109,6 @@ class SessionData:
                 print(f"SessionData.get: ERROR: Known keys: {cls.sessions.keys()}")
             SessionData.current = SessionData.nologin_session()
         return SessionData.current
-    @classmethod
-    def write_config(cls):
-        myname = 'SessionData.write_config'
-        if cls.rundir is None:
-            print(f"{myname}: Cannot write config without rundir")
-            return None
-        msg = ""
-        sep = "\n"
-        msg += f"Time: {time()}"
-        msg += sep
-        msg += f"Command: {cls.com}"
-        msg += sep
-        msg += f"Site: {cls.site}"
-        msg += sep
-        msg += f"Rundir: {cls.rundir}"
-        msg += sep
-        cpat = f"{cls.rundir}/{cls.cfgnam}"
-        cout = open(cpat, 'w')
-        cout.write(msg)
-        cout.close()
-        return 0
     def __init__(self, sesskey, descname, fullname=None, login_info={}):
         """Add an active user."""
         self.sesskey = sesskey
@@ -215,20 +195,25 @@ def home():
     If the session is for an authenticated user, his or her info is displayed.
     if sdat.msg has content, it is displayed near the top iof the page and then
     cleared so it will not appear when the page is refreshed.
+    It can be either a string or a list of strings.
     The lifetime of the session or cookie  user key is refreshed.
     """
     #return render_template('index.html')
     if SessionData.dbg: print('home: Constructing home page.')
     sep = '<br>\n'
-    msg = '<h2>DESCprod</h2>'
-    msg += sep
+    msg = '<h2>DESCprod</h2>\n'
     sdat = SessionData.get()
     udat = sdat.user()
     if SessionData.dbg: print(f"home: User is {sdat.user_name} [{sdat.sesskey}]")
     have_user = sdat.sesskey is not None
     if have_user:
         if sdat.msg is not None and len(sdat.msg):
-            msg += f"<hr>\n{sdat.msg}\n<hr>\n<br>"
+            msg += f"<hr>\n"
+            if not isinstance(sdat.msg, list): lines = [sdat.msg]
+            else: lines = sdat.msg
+            for line in lines:
+                msg += f"{line}{sep}"
+            msg += f"<hr>{sep}"
             sdat.msg = None
     msg += f"Site: {SessionData.site}"
     msg += sep
@@ -243,7 +228,8 @@ def home():
         #msg += f" [{sdat.sesskey}]"
         msg += sep
         msg += sep
-        msg += f"All jobs: {len(udat.jobs)}"
+        ujobs = JobData.get_jobs(udat.descname)
+        msg += f"All jobs: {len(ujobs)}"
         msg += sep
         msg += sep
         #msg += f"{status()}"
@@ -453,9 +439,9 @@ def run_parsltest():
     myname = 'run_parsltest'
     if 'config' not in request.args.keys():
           return "Invalid job description"
-    args = request.args.get('config')
-    print(f"parsltest: {args}")
-    return do_parsltest(args)
+    cfg = request.args.get('config')
+    print(f"parsltest: {cfg}")
+    return do_parsltest(cfg)
 
 @app.route('/form_parsltest/', methods=['POST', 'GET'])
 def run_form_parsltest():
@@ -464,39 +450,27 @@ def run_form_parsltest():
     print(request.form['config'])
     return do_parsltest(request.form['config'])
 
-def do_parsltest(args):
+def do_parsltest(cfg):
     myname = 'do_parsltest'
-    fout = SessionData.fout
-    if SessionData.sjob is not None and SessionData.ret is None:
-        return f"Job is already running: {SessionData.sjob}"
-    if SessionData.ret is not None:
-        rcode = SessionData.ret.poll()
-        if rcode is None:
-            msg = f"Earlier job {SessionData.sjob} is still running."
-            return msg
-        SessionData.ret = None
-    SessionData.sjobid = str(get_jobid())
-    while len(SessionData.sjobid) < 6: SessionData.sjobid = '0' + SessionData.sjobid
-    SessionData.rundir = f"/home/descprod/data/rundirs/job{SessionData.sjobid}"
-    os.mkdir(SessionData.rundir)
-    SessionData.sjob = args
-    SessionData.com = ['desc-wfmon-parsltest', args]
-    if fout is not None:
-        fout.close() 
-    rout = open(f"{SessionData.rundir}/README.txt", 'w')
-    rout.write(f"{SessionData.sjob}\n")
-    rout.close()
-    SessionData.lognam = f"{SessionData.rundir}/job{SessionData.sjobid}.log"
-    SessionData.stanam = f"{SessionData.rundir}/current-status.txt"
-    SessionData.write_config()
-    print(f"{myname}: Opening {SessionData.lognam}")
-    SessionData.logfil = open(SessionData.lognam, 'w')
-    SessionData.ret = subprocess.Popen(SessionData.com, cwd=SessionData.rundir, stdout=SessionData.logfil, stderr=Data.logfil)
-    sep = '<br>\n'
-    msg = f"Started {SessionData.com[0]} {SessionData.com[1]} in {SessionData.rundir}"
-    msg += sep
-    msg += '<form action="/" method="get"><input type="submit" value="Home"></form>'
-    return msg
+    jobtype = 'parsltest'
+    sdat = SessionData.get()
+    udat = sdat.user()
+    if udat.descname == 'nologin':
+        sdat.msg = 'Log in to run parsltest'
+        return redirect(url_for('home'))
+    jobid = get_jobid()
+    jdat = JobData(jobid, udat.descname, True)
+    if len(jdat.errmsgs):
+        sdat.msg = jdat.errmsgs
+        return redirect(url_for('home'))
+    if jdat.configure(jobtype, cfg):
+        sdat.msg = jdat.errmsgs
+        return redirect(url_for('home'))
+    if jdat.run():
+        sdat.msg = jdat.errmsgs
+        return redirect(url_for('home'))
+    sdat.msg = f"Started {jobtype} {cfg} in {jdat.rundir}"
+    return redirect(url_for('home'))
 
 def ready():
     if SessionData.sjob is None: return True

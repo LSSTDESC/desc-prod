@@ -12,4 +12,3 @@ class UserData:
         return cls.users[descname]
     def __init__(self, descname):
         self.descname = descname
-        self.jobs = {}   # Dictionary of jobs indexed by job ID
