@@ -230,11 +230,13 @@ def home():
         msg += sep
         msg += sep
         jtab = JobTable(udat.descname)
-        njob = {len(jtab.jobs)}
+        njob = len(jtab.jobs)
         msg += f"User {udat.descname} has {njob} job"
         if njob != 1: msg += 's'
-        msg += sep
-        msg += jtab.to_html()
+        if njob:
+            msg += ':'
+            msg += sep
+            msg += jtab.to_html()
         msg += sep
         #msg += f"{status()}"
         #if SessionData.stanam is not None:

@@ -116,7 +116,7 @@ class JobData:
             else:
                return self.do_error(myname, f"Command not found for job type {jobtype}", 16)
         self.command = command
-        self.lognam = f"{self.rundir}/job{self.idname()}.log"
+        self.lognam = f"{self.rundir}/{self.idname()}.log"
         self.stanam = f"{self.rundir}/current-status.txt"
         if True:   # Create README for desc-wfmon
             rout = open(f"{self.rundir}/README.txt", 'w')
