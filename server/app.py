@@ -156,9 +156,21 @@ def html_head():
     msg = '<!DOCTYPE html>\n'
     msg += '<html lang="en">\n'
     msg += '<head>\n'
-    msg += '  <link rel="stylesheet" href="/static/main.css" />'
+    msg += '  <link rel="stylesheet" href="/home/descprod/static/main.css" />\n'
     #msg += '  <script>alert("loaded page")</script>'
     msg += '</head>\n'
+    return msg
+
+def table_wrap(inmsg):
+    msg = ''
+    msg += '<div class="p-Widget jp-RenderedHTMLCommon jp-RenderedHTML jp-mod-trusted jp-OutputArea-output" data-mime-type="text/html">\n'
+    #msg += '<style scoped="">\n'
+    #msg += '  .dataframe tbody tr th:only-of-type { vertical-align: middle; }\n'
+    #msg += '  .dataframe tbody tr th { vertical-align: top; }\n'
+    #msg += '  .dataframe thead th { text-align: right; }\n'
+    #msg += '</style>'
+    msg += inmsg
+    msg += '\n</div>\n'
     return msg
 
 if __name__ == '__main__':
@@ -246,7 +258,7 @@ def home():
         if njob:
             msg += ':'
             msg += sep
-            msg += jtab.to_html()
+            msg += table_wrap(jtab.to_html())
         msg += sep
         #msg += f"{status()}"
         #if SessionData.stanam is not None:
