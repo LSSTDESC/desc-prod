@@ -1,4 +1,3 @@
-from descprod import JobData
 
 class UserData:
     """
