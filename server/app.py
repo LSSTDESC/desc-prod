@@ -164,11 +164,11 @@ def html_head():
 def table_wrap(inmsg):
     msg = ''
     msg += '<div class="p-Widget jp-RenderedHTMLCommon jp-RenderedHTML jp-mod-trusted jp-OutputArea-output" data-mime-type="text/html">\n'
-    #msg += '<style scoped="">\n'
-    #msg += '  .dataframe tbody tr th:only-of-type { vertical-align: middle; }\n'
-    #msg += '  .dataframe tbody tr th { vertical-align: top; }\n'
-    #msg += '  .dataframe thead th { text-align: right; }\n'
-    #msg += '</style>'
+    msg += '<style scoped="">\n'
+    msg += '  .dataframe tbody tr th:only-of-type { vertical-align: middle; }\n'
+    msg += '  .dataframe tbody tr th { vertical-align: top; }\n'
+    msg += '  .dataframe thead th { text-align: right; }\n'
+    msg += '</style>'
     msg += inmsg
     msg += '\n</div>\n'
     return msg
