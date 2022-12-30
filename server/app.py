@@ -52,8 +52,9 @@ def get_google_ids():
 
 app = Flask(__name__, static_url_path='/home/descprod/static')
 
-from descprod import JobData
 from descprod import UserData
+from descprod import JobData
+from descprod import JobTable
 
 class SessionData:
     """
@@ -228,9 +229,12 @@ def home():
         #msg += f" [{sdat.sesskey}]"
         msg += sep
         msg += sep
-        ujobs = JobData.get_jobs(udat.descname)
-        msg += f"All jobs: {len(ujobs)}"
+        jtab = JobTable(udat.descname)
+        njob = {len(jtab.jobs)}
+        msg += f"User {udat.descname} has {njob} job"
+        if njob != 1: msg += 's'
         msg += sep
+        msg += jtab.to_html()
         msg += sep
         #msg += f"{status()}"
         #if SessionData.stanam is not None:
