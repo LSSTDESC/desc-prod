@@ -14,13 +14,15 @@ class JobData:
       command - Array holding the job command line for Popen.
       lognam - Name of the job log file.
       stanam - Name of the job status file (last line is status)
-      popen - Popen object. E.g. se poll to see if job has completed.
-      return_code - Set when job finishes. 0 for success.
+      _popen - Popen object. E.g. se poll to see if job has completed.
+      _return_status - Return status.
+      pid - process ID
     """
     dbg = 1
     runbas = '/home/descprod/data/rundirs'
-    jobs = {}  # Known jobs indexed by id
-    ujobs = {} # Known jobs indexed by descname and id.
+    jobs = {}  # All known jobs indexed by id
+    ujobs = {} # Known user jobs indexed by descname and id.
+    have_oldjobs = []  # List of users for which old jobs have been retrieved.
 
     @classmethod
     def name_from_id(cls, idx):
@@ -31,15 +33,33 @@ class JobData:
 
     @classmethod
     def id_from_name(cls, sidx):
+        if len(sidx) < 9: return -1
+        if sidx[0:3] != 'job': return -2
         rem = sidx[3:]
         while rem[0] == '0' and len(rem) > 1: rem = rem[1:]
         return int(rem)
 
     @classmethod
     def get_jobs(cls, descname=None):
+        myname = 'JobData.get_jobs'
         if descname is None: return cls.jobs
+        if cls.dbg: print(f"{myname}: Fetching jobs for user {descname}.")
         if descname not in cls.ujobs:
-            return []
+            cls.ujobs[descname] = {}
+        if descname not in cls.have_oldjobs:
+            topdir = f"{cls.runbas}/{descname}"
+            if cls.dbg: print(f"{myname}: Looking for old jobs in {topdir}.")
+            if os.path.isdir(topdir):
+                for jobnam in os.listdir(topdir):
+                    jobid = cls.id_from_name(jobnam)
+                    if jobid < 0:
+                        if dbg: print(f"{myname}:   Skipping bad name {jobnam}.")
+                        continue
+                    if jobid in cls.jobs:
+                        if dbg: print(f"{myname}:   Skipping bad name {jobnam}.")
+                        continue
+                    jdat = JobData(jobid, descname, False)
+            cls.have_oldjobs.append(descname)
         return cls.ujobs[descname]
 
     def do_error(self, myname, msg, rstat=None):
@@ -65,7 +85,9 @@ class JobData:
         self.command = None
         self.lognam = None
         self.stanam = None
-        self.return_status = None
+        self._popen = None
+        self.pid = None
+        self._return_status = None
         myname = 'JobData.ctor'
         dbg = JobData.dbg
         sidx = JobData.name_from_id(self.id)
@@ -83,7 +105,20 @@ class JobData:
             if not havedir:
                 self.do_error(myname, f"Directory not found: {rundir}")
             else:
-                # Add code here to populate job description
+                jnam = f"{rundir}/config.json"
+                if not os.path.exists(jnam):
+                    self.do_error(myname, f"Config file not found: {jnam}")
+                else:
+                    try:
+                        with open(jnam, 'r') as jfil:
+                            jmap = json.load(jfil)
+                            self.jobtype = jmap['jobtype']
+                            self.config = jmap['config']
+                            self.command = jmap['command']
+                            if 'pid' in jmap: self.pid = jmap['pid']
+                            if 'return_status' in jmap: self._return_status = jmap['return_status']
+                    except json.decoder.JSONDecodeError:
+                        self.do_error(myname, f"Unable to parse config file: {jnam}")
                 self.rundir = rundir
         JobData.jobs[idx] = self
         if descname not in JobData.ujobs:
@@ -92,7 +127,7 @@ class JobData:
 
     def configure(self, jobtype, config, a_command=None):
         """
-        Configure a job: assigne a job type and a configuration string.
+        Configure a job: assign a job type and a configuration string.
         Optionally a command to be passed to Popen may be provided.
         If not the command is constructed from the job type and config.
         """
@@ -102,10 +137,12 @@ class JobData:
             rstat += self.do_error(myname, f"Job type is already set: {self.jobtype}", 1)
         if self.config is not None:
             rstat += self.do_error(myname, f"Job config is already set: {self.config}", 2)
-        if self.return_status is not None:
-            rstat += self.do_error(myname, f"Job has already run. Return status: {self.return_status}", 4)
+        if self.pid is not None:
+            rstat += self.do_error(myname, f"Job has already been started. Process ID: {self.pid}", 4)
+        if self.get_return_status() is not None:
+            rstat += self.do_error(myname, f"Job has already completed. Return status: {self.get_return_status()}", 8)
         if self.rundir is None:
-            rstat += self.do_error(myname, f"Run directory is not set", 8)
+            rstat += self.do_error(myname, f"Run directory is not set.", 16)
         if rstat: return rstat
         self.jobtype = jobtype
         self.config = config
@@ -122,14 +159,14 @@ class JobData:
             rout = open(f"{self.rundir}/README.txt", 'w')
             rout.write(f"{self.idname()}\n")
             rout.close()
-        dcfg = {}
-        dcfg['jobtype'] = self.jobtype
-        dcfg['config']  = self.config
-        dcfg['rundir']  = self.rundir
-        dcfg['command'] = self.command
+        jmap = {}
+        jmap['jobtype'] = self.jobtype
+        jmap['config']  = self.config
+        jmap['rundir']  = self.rundir
+        jmap['command'] = self.command
         jnam = f"{self.rundir}/config.json"
         with open(jnam, 'w') as jfil:
-            json.dump(dcfg, jfil)
+            json.dump(jmap, jfil)
         return 0
 
     def run(self):
@@ -147,6 +184,31 @@ class JobData:
         if rstat: return rstat
         if JobData.dbg: print(f"{myname}: Opening {self.lognam}")
         logfil = open(self.lognam, 'w')
-        self.popen = subprocess.Popen(self.command, cwd=self.rundir, stdout=logfil, stderr=logfil)
+        self._popen = subprocess.Popen(self.command, cwd=self.rundir, stdout=logfil, stderr=logfil)
+        self.pid = self._popen.pid
+        jnam = f"{self.rundir}/config.json"
+        with open(jnam, 'r') as jfil:
+            jmap = json.load(jfil)
+        jmap.update({'pid':self.pid})
+        with open(jnam, 'w') as jfil:
+            json.dump(jmap, jfil)
         return 0
  
+    def get_return_status(self):
+        if self._return_status is not None: return self._return_status
+        if self._popen is None: return None
+        self._return_status = self._popen.poll()
+        if self._return_status is not None:
+            jnam = f"{self.rundir}/config.json"
+            with open(jnam, 'r') as jfil:
+                jmap = json.load(jfil)
+            jmap.update({'return_status':self._return_status})
+            with open(jnam, 'w') as jfil:
+                json.dump(jmap, jfil)
+        return self._return_status
+
+    def dropdown_content(self, baseurl):
+        txt = f"<a href={baseurl}/archive_job?id={self.id}>Archive job {self.id}</a>"
+        txt += '<br>'
+        txt += f"<a href={baseurl}/delete_job?id={self.id}>Delete job {self.id}</a>"
+        return txt

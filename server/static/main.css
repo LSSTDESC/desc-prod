@@ -3,8 +3,9 @@ body {
 }
 
 <style> 
-  table, th, td {{font-size:10pt; border:1px solid black; border-collapse:collapse; text-align:left;}}
-  th, td {{padding: 5px;}}
+  table, th, td {font-size:20pt; border:1px solid black; border-collapse:collapse; text-align:left;}
+  .dataframe table, th, td {font-size:20pt; border:1px solid black; border-collapse:collapse; text-align:left;}
+  th, td {padding: 5px;}
 </style>
 
 <style>

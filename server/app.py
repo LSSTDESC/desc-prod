@@ -156,21 +156,51 @@ def html_head():
     msg = '<!DOCTYPE html>\n'
     msg += '<html lang="en">\n'
     msg += '<head>\n'
-    msg += '  <link rel="stylesheet" href="/home/descprod/static/main.css" />\n'
+    #msg += '  <link rel="stylesheet" href="/home/descprod/static/main.css?version=2" />\n'
+    msg += '<style>\n'
+    msg += '.dataframe table, th, td {font-size:12pt; border: none; padding-left: 20px; text-align:right;}\n'
+    msg += '.dropbtn {\n'
+    msg += '  background-color: #04AA6D;\n'
+    msg += '  color: white;\n'
+    msg += '  padding: 1px;\n'
+    #msg += '  font-size: 16px;\n'
+    msg += '  border: none;\n'
+    msg += '  cursor: pointer;\n'
+    msg += '}\n'
+    msg += '.dropdown {\n'
+    msg += '  position: relative;\n'
+    msg += '  display: inline-block;\n'
+    msg += '}\n'
+    msg += '.dropdown-content {\n'
+    msg += '  display: none;\n'
+    msg += '  position: absolute;\n'
+    msg += '  background-color: #f9f9f9;\n'
+    #msg += '  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);\n'
+    msg += '  white-space: nowrap;\n'
+    msg += '  text-align: left;\n'
+    msg += '  line-height: 1.4;\n'
+    msg += '  padding: 5px 5px;\n'
+    msg += '  font-size: 18px;\n'
+    msg += '  z-index: 1;\n'
+    msg += '}\n'
+    msg += '.dropdown:hover .dropdown-content {\n'
+    msg += '  display: block;\n'
+    msg += '}\n'
+    msg += '</style>\n'
     #msg += '  <script>alert("loaded page")</script>'
     msg += '</head>\n'
     return msg
 
 def table_wrap(inmsg):
     msg = ''
-    msg += '<div class="p-Widget jp-RenderedHTMLCommon jp-RenderedHTML jp-mod-trusted jp-OutputArea-output" data-mime-type="text/html">\n'
-    msg += '<style scoped="">\n'
-    msg += '  .dataframe tbody tr th:only-of-type { vertical-align: middle; }\n'
-    msg += '  .dataframe tbody tr th { vertical-align: top; }\n'
-    msg += '  .dataframe thead th { text-align: right; }\n'
-    msg += '</style>'
+    #msg += '<div class="p-Widget jp-RenderedHTMLCommon jp-RenderedHTML jp-mod-trusted jp-OutputArea-output" data-mime-type="text/html">\n'
+    #msg += '<style scoped="">\n'
+    #msg += '  .dataframe tbody tr th:only-of-type { vertical-align: middle; }\n'
+    #msg += '  .dataframe tbody tr th { vertical-align: top; }\n'
+    #msg += '  .dataframe thead th { text-align: right; }\n'
+    #msg += '</style>'
     msg += inmsg
-    msg += '\n</div>\n'
+    #msg += '\n</div>\n'
     return msg
 
 if __name__ == '__main__':
@@ -258,7 +288,7 @@ def home():
         if njob:
             msg += ':'
             msg += sep
-            msg += table_wrap(jtab.to_html())
+            msg += table_wrap(jtab.to_html(fixurl(request.base_url)))
         msg += sep
         #msg += f"{status()}"
         #if SessionData.stanam is not None:
@@ -342,8 +372,11 @@ def help():
 @app.route("/bye")
 def bye():
     print("bye: Shutting down.")
-    os.kill(os.getpid(), 9)
-    return ""
+    com = f"sleep 5; kill -9 {os.getpid()}"
+    subprocess.Popen(com, shell=True)
+    sdat = SessionData.get()
+    sdat.msg = 'Restarting server.'
+    return redirect(url_for('home'))
 
 @app.route("/login/callback")
 def callback():
@@ -533,6 +566,9 @@ def show_session():
 @app.route("/request")
 @app.route("/<path:path>")
 def req(path):
+    sdat = SessionData.get()
+    sdat.msg = f"Invalid command: {request.url}"
+    return redirect(url_for('home'))
     msg = ''
     msg += f"      url: {request.url}<br><br>"
     msg += f"root path: {request.root_path}<br><br>"
