@@ -283,12 +283,12 @@ def home():
         msg += sep
         jtab = JobTable(udat.descname)
         njob = len(jtab.jobs)
-        msg += f"User {udat.descname} has {njob} job"
+        msg += f"User {udat.descname} has {njob} active job"
         if njob != 1: msg += 's'
         if njob:
             msg += ':'
             msg += sep
-            msg += table_wrap(jtab.to_html(fixurl(request.base_url)))
+            msg += table_wrap(jtab.to_html(fixurl(request.base_url)[0:-5]))
         msg += sep
         #msg += f"{status()}"
         #if SessionData.stanam is not None:
@@ -531,6 +531,44 @@ def do_parsltest(cfg):
         sdat.msg = jdat.errmsgs
         return redirect(url_for('home'))
     sdat.msg = f"Started {jobtype} {cfg} in {jdat.rundir}"
+    return redirect(url_for('home'))
+
+@app.route('/archivejob')
+def archive_job():
+    sdat = SessionData.get()
+    udat = sdat.user()
+    if udat.descname == 'nologin':
+        sdat.msg = 'Log in to run parsltest'
+        return redirect(url_for('home'))
+    jobid = int(request.args['id'])
+    job = JobData.get_user_job(udat.descname, jobid)
+    if job is None:
+        sdat.msg = f"Job {jobid} not found for user {udat.descname}"
+    else:
+        arcfil = job.archive()
+        if arcfil is None:
+            sdat.msg = f"Unable to archive Job {jobid} for user {udat.descname}"
+        else:
+            sdat.msg = f"Job archived at {arcfil}"
+    return redirect(url_for('home'))
+
+@app.route('/deletejob')
+def delete_job():
+    sdat = SessionData.get()
+    udat = sdat.user()
+    if udat.descname == 'nologin':
+        sdat.msg = 'Log in to run parsltest'
+        return redirect(url_for('home'))
+    jobid = int(request.args['id'])
+    job = JobData.get_user_job(udat.descname, jobid)
+    if job is None:
+        sdat.msg = f"Job {jobid} not found for user {udat.descname}"
+    else:
+        delfil = job.delete()
+        if delfil is None:
+            sdat.msg = f"Unable to delete Job {jobid} for user {udat.descname}"
+        else:
+            sdat.msg = f"Job {jobid} scheduled for deletion at {delfil}"
     return redirect(url_for('home'))
 
 def ready():

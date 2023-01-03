@@ -1,4 +1,5 @@
 import os
+import shutil
 import json
 import subprocess
 
@@ -19,7 +20,9 @@ class JobData:
       pid - process ID
     """
     dbg = 1
-    runbas = '/home/descprod/data/rundirs'
+    runbas = '/home/descprod/data/rundirs'   # Active runs are here
+    delbas = '/home/descprod/data/deleted'   # Deleted runs are here (but may be removed any time)
+    arcbas = '/home/descprod/data/archive'   # Runs trnsferred to and from archive are here
     jobs = {}  # All known jobs indexed by id
     ujobs = {} # Known user jobs indexed by descname and id.
     have_oldjobs = []  # List of users for which old jobs have been retrieved.
@@ -38,6 +41,13 @@ class JobData:
         rem = sidx[3:]
         while rem[0] == '0' and len(rem) > 1: rem = rem[1:]
         return int(rem)
+
+    @classmethod
+    def get_user_job(cls, descname, idx):
+        myname = 'JobData.get_user_job'
+        if descname not in cls.ujobs: return None
+        if idx not in cls.ujobs[descname]: return None
+        return cls.ujobs[descname][idx]
 
     @classmethod
     def get_jobs(cls, descname=None):
@@ -62,6 +72,15 @@ class JobData:
             cls.have_oldjobs.append(descname)
         return cls.ujobs[descname]
 
+    @classmethod
+    def checkdirs(cls):
+        """Make sure the run directories are all present."""
+        myname = 'JobData.checkdirs'
+        for dnam in [cls.runbas, cls.delbas, cls.arcbas]:
+            if not os.path.isdir(dnam):
+                print(f"{myname}: INFO: Creating directory {dnam}")
+                os.mkdir(dnam)
+
     def do_error(self, myname, msg, rstat=None):
          errmsg = f"{myname}: ERROR: {msg}"
          self.errmsgs += [errmsg]
@@ -69,7 +88,23 @@ class JobData:
          return rstat
 
     def idname(self):
+        """Return the name of the job: jobXXXXXX."""
         return self.name_from_id(self.id)
+
+    def run_dir(self):
+        """Return the run directory for this job."""
+        return f"{self.runbas}/{self.descname}/{self.idname()}"
+
+    def archive_file(self):
+        """Return the archive file for this job."""
+        fnam = f"{self.arcbas}/{self.descname}/{self.idname()}.tz"
+        dnam = os.path.dirname(fnam)
+        if not os.path.exists(dnam): os.mkdir(dnam)
+        return fnam
+
+    def delete_file(self):
+        """Return the archive file after deletion for this job."""
+        return f"{self.delbas}/{self.idname()}.tz"
 
     def __init__(self, idx, descname, create):
         """
@@ -90,6 +125,7 @@ class JobData:
         self._return_status = None
         myname = 'JobData.ctor'
         dbg = JobData.dbg
+        self.checkdirs()
         sidx = JobData.name_from_id(self.id)
         usrdir = f"{self.runbas}/{self.descname}"
         rundir = f"{usrdir}/{sidx}"
@@ -208,7 +244,81 @@ class JobData:
         return self._return_status
 
     def dropdown_content(self, baseurl):
-        txt = f"<a href={baseurl}/archive_job?id={self.id}>Archive job {self.id}</a>"
+        q = '"'
+        txt = f"<a href={q}{baseurl}/archivejob?id={self.id}{q}>Archive job {self.id}</a>"
         txt += '<br>'
-        txt += f"<a href={baseurl}/delete_job?id={self.id}>Delete job {self.id}</a>"
+        txt += f"<a href={q}{baseurl}/deletejob?id={self.id}{q}>Delete job {self.id}</a>"
         return txt
+
+    def is_active(self):
+        return os.path.exists(self.run_dir())
+
+    def is_archived(self):
+        return os.path.exists(self.archive_file())
+
+    def is_deletedd(self):
+        if os.path.exists(self.run_dir()): return False
+        if os.path.exists(self.archive_file()): return False
+        return True
+
+    def deactivate(self):
+        """Deactivate this job: remove from jobs and ujobs."""
+        myname = 'JobData.deactivate'
+        if self.id in JobData.jobs:
+            del JobData.jobs[self.id]
+        if self.descname in JobData.ujobs:
+            if self.id in JobData.ujobs[self.descname]:
+                del JobData.ujobs[self.descname][self.id]
+
+    def archive(self, force=False, if_present=False):
+        """
+        Archive this job.
+        Returns the archive file name if successful.
+        Otherwise returns None.
+          force - Remake the arcive if it already exists
+          if_present - No error if rundir is missing
+        """
+        myname = 'JobData.archive'
+        rundir = self.run_dir()
+        runbas = os.path.dirname(rundir)
+        arcfil = self.archive_file()
+        jnam = self.idname()
+        if os.path.exists(arcfil):
+            if not force: return arcfil
+            if os.path.exists(rundir): os.rm(arcfil)
+        if not os.path.exists(rundir):
+            if if_present: return None
+            msg = f"Run directory not found: {rundir}"
+            self.do_error(myname, msg)
+            return None
+        com = f"cd {runbas} && tar zcf {arcfil} {jnam}"
+        (rstat, sout) = subprocess.getstatusoutput(com)
+        if rstat or not os.path.exists(arcfil):
+            msg = f"Archive command failed: {com}"
+            if os.path.exists(arcfil):
+                os.remove(arcfil)
+            self.do_error(myname, msg)
+            return None
+        print(f"XXX {os.path.exists(arcfil)} {os.path.exists(rundir)} {rundir}")
+        if os.path.exists(arcfil) and os.path.exists(rundir):
+            shutil.rmtree(rundir)
+            self.deactivate()
+        return arcfil
+
+    def delete(self):
+        """Delete this job."""
+        myname = 'JobData.delete'
+        rundir = self.run_dir()
+        arcfil = self.archive()
+        delfil = self.delete_file()
+        if os.path.exists(rundir):
+            shutil.rmtree(rundir)
+            self.deactivate()
+        if os.path.exists(arcfil) and not os.path.exists(delfil):
+            os.rename(arcfil, delfil)
+        else:
+            os.remove(arcfil)
+        if os.path.exists(delfil): return delfil
+        del JobData.jobs[job.id]
+        del JobData.ujobsjob[descname][job.id]
+        return None
