@@ -126,7 +126,7 @@ linkit $SRCDIR/run-server $BINDIR
 linkit $SRCDIR/sfapi $BINDIR
 copyit $SRCDIR/setup.sh $HOME
 for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid descprod-next-sessionid \
-           descprod-current-jobid setup-jupyter-job; do
+           descprod-current-jobid setup-jupyter-job descprod-wrap; do
   copyit $SRCDIR/$FIL $BINDIR
 done
 cp -r $SRCDIR/static $HOME

@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+# descprod-wrap
+#
+# David Adams
+# January 2023
+#
+
+import sys
+import os
+import time
+import json
+import subprocess
+
+jindent = 2
+jsep = (',', ': ')
+
+dohelp = len(sys.argv) != 5
+this = os.path.basename(sys.argv[0])
+
+if dohelp:
+    print(f"Usage: {this} COM RUNDIR LOGFIL STAFIL")
+    print(f"  COM is a shell command line.")
+    print(f"  RUNDIR is the directory where the command is run.")
+    print(f"  LOGFIL has the command stdout and stderr.")
+    print(f"  STAFIL has the config info in json fomat.")
+    print(f"The wrapper runs until the command completes.")
+    print(f"During execution the config holds:")
+    print(f"  command - COM")
+    print(f"  run_directory - RUNDIR")
+    print(f"  log_file - LOGFIL")
+    print(f"  start_time - Start time")
+    print(f"  pid - Process ID")
+    print(f"After execution, it has the above plus:")
+    print(f"  stop_time - Stop time")
+    print(f"  return_code - Command return code")
+    exit(0)
+
+command = sys.argv[1]
+rundir = sys.argv[2]
+logname = sys.argv[3]
+jnam = sys.argv[4]
+
+if logname[0] != '/': logname = f"{rundir}/{logname}"
+if jnam[0] != '/':    jnam    = f"{rundir}/{jnam}"
+
+logfil = open(logname, 'w')
+info = {}
+info['command'] = command
+info['run_directory'] = rundir
+info['log_file'] = logname
+info['start_time'] = int(time.time())
+pop = subprocess.Popen(command, shell=True, cwd=rundir, stdout=logfil, stderr=logfil)
+pid = pop.pid
+info['pid'] = pid
+with open(jnam, 'w') as jfil:
+    json.dump(info, jfil, separators=jsep, indent=jindent)
+print(f"Config is in {jnam}")
+rc = pop.wait()
+info['stop_time'] = int(time.time())
+info['return_code'] = rc
+with open(jnam, 'w') as jfil:
+    json.dump(info, jfil, separators=jsep, indent=jindent)
+print(f"Updated config is in {jnam}")
+exit(0)
