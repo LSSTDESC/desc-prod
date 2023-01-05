@@ -18,26 +18,28 @@ class JobTable:
         self.pids = []
         self.rstats = []
         self.errmsgs = []
+        self.stamsgs = []
         for job in self.jobs.values():
             self.jobids.append(job.id)
             self.jobtypes.append(job.jobtype)
             self.configs.append(job.config)
             pid = job.pid
-            if pid is None: pid = -1
+            #if pid is None: pid = -1
             self.pids.append(pid)
             rstat = job.get_return_status()
-            if rstat is None: rstat = -1
+            #if rstat is None: rstat = -1
             self.rstats.append(rstat)
             errmsg = ''
             if len(job.errmsgs): errmsg = job.errmsgs[-1]
             self.errmsgs.append(errmsg)
+            self.stamsgs.append(job.get_status_message())
         self.map = {}
         self.map['id'] = self.jobids
         self.map['jobtype'] = self.jobtypes
         self.map['config'] = self.configs
         self.map['pid'] = self.pids
         self.map['rstat'] = self.rstats
-        self.map[''] = self.errmsgs
+        self.map['msg'] = self.errmsgs
         self.df = DataFrame(self.map)
         
     def to_html(self, baseurl=None):
@@ -74,12 +76,19 @@ class JobTable:
                 sid += f"{job.dropdown_content(baseurl)}"
                 sid += '</div>'
                 sid += '</div>'
+            rstat = self.rstats[row]
+            srstat = '' if rstat is None else str(rstat)
+            pid = self.pids[row]
+            spid = '' if pid is None else str(pid)
+            stamsg = self.stamsgs[row]
+            errmsg = self.errmsgs[row]
+            msg = stamsg if len(stamsg) else errmsg if len(errmsg) else ''
             txt += f"""    <td{clsarg}>{sid}</td>{eol}"""
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"
             txt += f"    <td>{self.configs[row]}</td>{eol}"
-            txt += f"    <td>{self.pids[row]}</td>{eol}"
-            txt += f"    <td>{self.rstats[row]}</td>{eol}"
-            txt += f"""    <td style="text-align:left">{self.errmsgs[row]}</td>{eol}"""
+            txt += f"    <td>{spid}</td>{eol}"
+            txt += f"    <td>{srstat}</td>{eol}"
+            txt += f"""    <td style="text-align:left">{msg}</td>{eol}"""
             txt +=  '  </tr>\n'
         txt += '</tbody>\n'
         txt += '</table>\n'

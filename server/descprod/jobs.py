@@ -112,7 +112,7 @@ class JobData:
         return f"{self.run_dir()}/wrapper.log"
 
     def status_file(self):
-        """Return the status file naME for this job."""
+        """Return the status file name for this job."""
         return f"{self.run_dir()}/current-status.txt"
 
     def job_config_file(self):
@@ -377,3 +377,12 @@ class JobData:
         del JobData.jobs[job.id]
         del JobData.ujobsjob[descname][job.id]
         return None
+
+    def get_status_message(self):
+        snam = self.status_file()
+        line = ''
+        if os.path.isfile(snam):
+            with open(snam) as sfil:
+                for line in sfil: pass
+        return line
+
