@@ -530,7 +530,7 @@ def do_parsltest(cfg):
     if jdat.run():
         sdat.msg = jdat.errmsgs
         return redirect(url_for('home'))
-    sdat.msg = f"Started {jobtype} {cfg} in {jdat.rundir}"
+    sdat.msg = f"Started {jobtype} {cfg} in {jdat.run_dir()}"
     return redirect(url_for('home'))
 
 @app.route('/archivejob')

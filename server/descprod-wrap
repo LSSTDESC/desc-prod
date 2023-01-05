@@ -15,7 +15,8 @@ import subprocess
 jindent = 2
 jsep = (',', ': ')
 
-dohelp = len(sys.argv) != 5
+dohelp = len(sys.argv) > 1 and sys.argv[1] == '-h'
+doerr = len(sys.argv) != 5
 this = os.path.basename(sys.argv[0])
 
 if dohelp:
@@ -36,6 +37,12 @@ if dohelp:
     print(f"  return_code - Command return code")
     exit(0)
 
+if doerr:
+    print(f"Invalid arguments:")
+    for arg in sys.argv:
+        print(f"  {arg}")
+    exit(1)
+
 command = sys.argv[1]
 rundir = sys.argv[2]
 logname = sys.argv[3]
@@ -55,11 +62,13 @@ pid = pop.pid
 info['pid'] = pid
 with open(jnam, 'w') as jfil:
     json.dump(info, jfil, separators=jsep, indent=jindent)
+    jfil.write('\n')
 print(f"Config is in {jnam}")
 rc = pop.wait()
 info['stop_time'] = int(time.time())
 info['return_code'] = rc
 with open(jnam, 'w') as jfil:
     json.dump(info, jfil, separators=jsep, indent=jindent)
+    jfil.write('\n')
 print(f"Updated config is in {jnam}")
-exit(0)
+exit(rc)

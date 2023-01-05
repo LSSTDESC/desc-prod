@@ -8,27 +8,29 @@ class JobData:
     Holds the data describing a job.
       descname - DESC user name
       id - Job integer ID
-      rundir - Run directory
       errmsgs - Error messages
       jobtype - Job type: parsltest, ...
       config - config string for the job
       command - Array holding the job command line for Popen.
-      lognam - Name of the job log file.
-      stanam - Name of the job status file (last line is status)
-      _popen - Popen object. E.g. se poll to see if job has completed.
-      _return_status - Return status.
+      _popen - Popen object. E.g. use poll to see if job has completed.
       pid - process ID
+      start_time - start timestamp
+      _return_status - Return status.
+      _stop_time - stop timestamp
     """
     dbg = 1
     runbas = '/home/descprod/data/rundirs'   # Active runs are here
     delbas = '/home/descprod/data/deleted'   # Deleted runs are here (but may be removed any time)
-    arcbas = '/home/descprod/data/archive'   # Runs trnsferred to and from archive are here
+    arcbas = '/home/descprod/data/archive'   # Runs transferred to and from archive are here
+    jindent = 2
+    jsep = (',', ': ')
     jobs = {}  # All known jobs indexed by id
     ujobs = {} # Known user jobs indexed by descname and id.
     have_oldjobs = []  # List of users for which old jobs have been retrieved.
 
     @classmethod
     def name_from_id(cls, idx):
+        """Return the job name corresponding to an ID."""
         if idx is None: return None
         sidx = str(idx)
         while len(sidx) < 6: sidx = '0' + sidx
@@ -36,6 +38,7 @@ class JobData:
 
     @classmethod
     def id_from_name(cls, sidx):
+        """Return the job ID corresponding to an name."""
         if len(sidx) < 9: return -1
         if sidx[0:3] != 'job': return -2
         rem = sidx[3:]
@@ -82,6 +85,7 @@ class JobData:
                 os.mkdir(dnam)
 
     def do_error(self, myname, msg, rstat=None):
+         """Record an error."""
          errmsg = f"{myname}: ERROR: {msg}"
          self.errmsgs += [errmsg]
          if JobData.dbg: print(errmsg)
@@ -91,9 +95,33 @@ class JobData:
         """Return the name of the job: jobXXXXXX."""
         return self.name_from_id(self.id)
 
+    def user_dir(self):
+        """Return the user directory for this job."""
+        return f"{self.runbas}/{self.descname}"
+
     def run_dir(self):
         """Return the run directory for this job."""
-        return f"{self.runbas}/{self.descname}/{self.idname()}"
+        return f"{self.user_dir()}/{self.idname()}"
+
+    def log_file(self):
+        """Return the log file name for this job."""
+        return f"{self.run_dir()}/{self.idname()}.log"
+
+    def wrapper_log_file(self):
+        """Return the log file name for this job's wrapper."""
+        return f"{self.run_dir()}/wrapper.log"
+
+    def status_file(self):
+        """Return the status file naME for this job."""
+        return f"{self.run_dir()}/current-status.txt"
+
+    def job_config_file(self):
+        """Return the job config file for this job."""
+        return f"{self.run_dir()}/config.json"
+
+    def wrapper_config_file(self):
+        """Return the wrapper config file for this job."""
+        return f"{self.run_dir()}/wrapper-status.json"
 
     def archive_file(self):
         """Return the archive file for this job."""
@@ -113,22 +141,21 @@ class JobData:
         """
         self.id = idx
         self.descname = descname
-        self.rundir = None
         self.errmsgs = []
         self.jobtype = None
         self.config = None
         self.command = None
-        self.lognam = None
-        self.stanam = None
         self._popen = None
         self.pid = None
+        self.start_time = None
         self._return_status = None
+        self._stop_time = None
         myname = 'JobData.ctor'
         dbg = JobData.dbg
         self.checkdirs()
         sidx = JobData.name_from_id(self.id)
-        usrdir = f"{self.runbas}/{self.descname}"
-        rundir = f"{usrdir}/{sidx}"
+        usrdir = self.user_dir()
+        rundir = self.run_dir()
         havedir = os.path.isdir(rundir)
         if create:
             if havedir:
@@ -136,12 +163,11 @@ class JobData:
             else:
                 if not os.path.isdir(usrdir): os.mkdir(usrdir)
                 os.mkdir(rundir)
-                self.rundir = rundir
         else:
             if not havedir:
                 self.do_error(myname, f"Directory not found: {rundir}")
             else:
-                jnam = f"{rundir}/config.json"
+                jnam = self.job_config_file()
                 if not os.path.exists(jnam):
                     self.do_error(myname, f"Config file not found: {jnam}")
                 else:
@@ -152,10 +178,11 @@ class JobData:
                             self.config = jmap['config']
                             self.command = jmap['command']
                             if 'pid' in jmap: self.pid = jmap['pid']
+                            if 'start_time' in jmap: self.start_time = jmap['start_time']
                             if 'return_status' in jmap: self._return_status = jmap['return_status']
+                            if 'stop_time' in jmap: self.stop_time = jmap['stop_time']
                     except json.decoder.JSONDecodeError:
                         self.do_error(myname, f"Unable to parse config file: {jnam}")
-                self.rundir = rundir
         JobData.jobs[idx] = self
         if descname not in JobData.ujobs:
             JobData.ujobs[descname] = {}
@@ -177,71 +204,99 @@ class JobData:
             rstat += self.do_error(myname, f"Job has already been started. Process ID: {self.pid}", 4)
         if self.get_return_status() is not None:
             rstat += self.do_error(myname, f"Job has already completed. Return status: {self.get_return_status()}", 8)
-        if self.rundir is None:
-            rstat += self.do_error(myname, f"Run directory is not set.", 16)
         if rstat: return rstat
         self.jobtype = jobtype
         self.config = config
         command = a_command
         if command is None:
             if jobtype == 'parsltest':
-               command = ['desc-wfmon-parsltest', config]
+               command = f"desc-wfmon-parsltest {config}"
             else:
                return self.do_error(myname, f"Command not found for job type {jobtype}", 16)
         self.command = command
-        self.lognam = f"{self.rundir}/{self.idname()}.log"
-        self.stanam = f"{self.rundir}/current-status.txt"
         if True:   # Create README for desc-wfmon
-            rout = open(f"{self.rundir}/README.txt", 'w')
+            rout = open(f"{self.run_dir()}/README.txt", 'w')
             rout.write(f"{self.idname()}\n")
             rout.close()
         jmap = {}
         jmap['jobtype'] = self.jobtype
         jmap['config']  = self.config
-        jmap['rundir']  = self.rundir
         jmap['command'] = self.command
-        jnam = f"{self.rundir}/config.json"
+        jnam = self.job_config_file()
         with open(jnam, 'w') as jfil:
-            json.dump(jmap, jfil)
+            json.dump(jmap, jfil, separators=JobData.jsep, indent=JobData.jindent)
         return 0
 
     def run(self):
         """
-        Run the job, i.e. start it with Popen.
+        Run the job, i.e. start it with Popen and a wrapper.
         """
         myname = 'JobData.run'
         rstat = 0
-        if self.rundir is None:
-            rstat += self.do_error(myname, f"Run directory is not specified.", 1)
-        if self.lognam is None:
-            rstat += self.do_error(myname, f"Log file is not specified.", 2)
         if self.command is None:
-            rstat += self.do_error(myname, f"Command is not specified.", 4)
+            rstat += self.do_error(myname, f"Command is not specified.", 1)
+        if not os.path.exists(self.run_dir()):
+            rstat += self.do_error(myname, f"Run directory is not present.", 2)
         if rstat: return rstat
-        if JobData.dbg: print(f"{myname}: Opening {self.lognam}")
-        logfil = open(self.lognam, 'w')
-        self._popen = subprocess.Popen(self.command, cwd=self.rundir, stdout=logfil, stderr=logfil)
-        self.pid = self._popen.pid
-        jnam = f"{self.rundir}/config.json"
-        with open(jnam, 'r') as jfil:
-            jmap = json.load(jfil)
-        jmap.update({'pid':self.pid})
-        with open(jnam, 'w') as jfil:
-            json.dump(jmap, jfil)
+        com = ['descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
+        logfil = open(self.wrapper_log_file(), 'w')
+        self._popen = subprocess.Popen(com, cwd=self.run_dir(), stdout=logfil, stderr=logfil)
+        wmap = self.get_wrapper_info()
         return 0
  
-    def get_return_status(self):
-        if self._return_status is not None: return self._return_status
-        if self._popen is None: return None
-        self._return_status = self._popen.poll()
-        if self._return_status is not None:
-            jnam = f"{self.rundir}/config.json"
+    def get_wrapper_info(self, err=True):
+        """
+        Fetch the config info written by the wrapper.
+        We expect something like:
+          "command":       "desc-wfmon-parsltest wq-sleep-ttsk2-ntsk4-nwrk4",
+          "run_directory": "/home/descprod/data/rundirs/dladams/job000081",
+          "log_file":      "/home/descprod/data/rundirs/dladams/job000081/job000081.log",
+          "start_time":    1672871201,
+          "pid":           1362,
+          "stop_time":     1672871253,
+          "return_code":   0
+        """
+        jnam = self.wrapper_config_file()
+        if not os.path.exists(jnam): return None
+        with open(jnam, 'r') as jfil:
+            jmap = json.load(jfil)
+        # If we have the pid for the first time, record it and the start time
+        # in the job data and config file.
+        if self.pid is None and 'pid' in jmap:
+            self.pid = jmap['pid']
+            self.start_time = jmap['start_time']
+            jnam = self.job_config_file()
             with open(jnam, 'r') as jfil:
                 jmap = json.load(jfil)
-            jmap.update({'return_status':self._return_status})
+            jmap.update({'pid':self.pid})
+            jmap.update({'start_time':self.start_time})
             with open(jnam, 'w') as jfil:
-                json.dump(jmap, jfil)
-        return self._return_status
+                json.dump(jmap, jfil, separators=JobData.jsep, indent=JobData.jindent)
+                jfil.write('\n')
+        return jmap
+
+    def get_return_status(self):
+        if self._return_status is not None: return self._return_status
+        wmap = self.get_wrapper_info()
+        # If we have the return status for the first time, record it and
+        # the stop time in the the job data and config file.
+        if wmap is not None and 'return_code' in wmap:
+           self._return_status = wmap['return_code']
+           self._stop_time = wmap['stop_time']
+           jnam = self.job_config_file()
+           with open(jnam, 'r') as jfil:
+               jmap = json.load(jfil)
+           jmap.update({'return_status':self._return_status})
+           jmap.update({'stop_time':self._stop_time})
+           with open(jnam, 'w') as jfil:
+               json.dump(jmap, jfil)
+           return self._return_status
+        return None
+
+    def get_stop_time(self):
+        if self._stop_time is None:
+            get_return_status()
+        return self._stop_time
 
     def dropdown_content(self, baseurl):
         q = '"'
@@ -280,7 +335,7 @@ class JobData:
         """
         myname = 'JobData.archive'
         rundir = self.run_dir()
-        runbas = os.path.dirname(rundir)
+        usrdir = self.user_dir()
         arcfil = self.archive_file()
         jnam = self.idname()
         if os.path.exists(arcfil):
@@ -291,7 +346,7 @@ class JobData:
             msg = f"Run directory not found: {rundir}"
             self.do_error(myname, msg)
             return None
-        com = f"cd {runbas} && tar zcf {arcfil} {jnam}"
+        com = f"cd {usrdir} && tar zcf {arcfil} {jnam}"
         (rstat, sout) = subprocess.getstatusoutput(com)
         if rstat or not os.path.exists(arcfil):
             msg = f"Archive command failed: {com}"
