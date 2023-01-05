@@ -5,8 +5,14 @@
 # David Adams
 # November 2022
 #
-# Return the prot on which the descprod parsl
+# Return the port on which the descprod parsl
 # service listens for workers.
+
+# 04-jan-2023
+INTPORT=${1:-9123}
+EXTPORT=$((INTPORT%1000 + 30000))
+echo $EXTPORT
+exit 0
 
 echo 3306; exit 0
 echo 9123

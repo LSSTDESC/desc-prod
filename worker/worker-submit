@@ -17,6 +17,10 @@ if [ -z "$SLURM_JOB_ID" ]; then
   OPT=$1
   shift
   RESUB=
+  THIS=$(readlink -f $0)
+  WKRDIR=$(dirname $THIS)
+  SERVER=$($WKRDIR/worker-getip):$($WKRDIR/worker-port)
+  echo SERVER=$SERVER
   while [ -n "$OPT" ]; do
     VAL=$1
     shift
@@ -32,6 +36,13 @@ if [ -z "$SLURM_JOB_ID" ]; then
         exit 1
       fi
       TMIN=$VAL
+    elif [ $OPT = -s ]; then
+      if [ -z "$VAL" ]; then
+        echo ERROR: Option $OPT requires an argument
+        exit 1
+      fi
+      SERVER=$VAL
+      echo SERVER=$SERVER
     else
       echo ERROR: Invalid flag: $OPT
       exit 1
@@ -45,16 +56,14 @@ if [ -z "$SLURM_JOB_ID" ]; then
   NHOU=$((TMIN/60))
   STIM=$NHOU:$NMIN:00
   QOS=regular
-  if [ $TMIN -le 30 -a $NNOD -le 2 ]; then
+  if [ $TMIN -le 30 -a $NNOD -le 4 ]; then
     QOS=debug
   fi
 
   BASDIR=/pscratch/sd/d/dladams/slurmout
-  THIS=$(readlink -f $0)
 
   THIS=$(readlink -f $0)
   BFIL=$BASDIR/$(basename $THIS).sbatch
-  WKRDIR=$(dirname $THIS)
   echo '#!/bin/bash' > $BFIL
   echo >>$BFIL
   echo "#SBATCH --nodes=$NNOD" >>$BFIL
@@ -65,7 +74,7 @@ if [ -z "$SLURM_JOB_ID" ]; then
   echo >>$BFIL
   echo 'if [ -z "$SLURM_JOB_ID" ]; then echo SLURM job ID is not set; exit 1; fi' >>$BFIL
   echo >>$BFIL
-  echo "export SERVER=$($WKRDIR/worker-getip):$($WKRDIR/worker-port)" >> $BFIL
+  echo "export SERVER=$SERVER" >> $BFIL
   mv $BFIL $BFIL.tmp
   cat $BFIL.tmp $THIS >$BFIL
   echo $(date): Submitting batch job with sbatch $BFIL

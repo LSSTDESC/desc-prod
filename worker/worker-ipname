@@ -1,2 +1,2 @@
-SVCNAM=${1:-descprod-v01}
-echo $SVCNAM-loadbalancer.descprod.development.svc.spin.nersc.org
+SVCNAM=${1:-descprod}
+echo $SVCNAM-loadbalancer.descprod.production.svc.spin.nersc.org

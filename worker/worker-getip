@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# 04-jan-2023
+echo 128.55.206.106
+exit 0
+
 THIS=$(readlink -f $0)
 WKRDIR=$(dirname $THIS)
 IPNAM=$($WKRDIR/worker-ipname)
