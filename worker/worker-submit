@@ -21,6 +21,10 @@ if [ -z "$SLURM_JOB_ID" ]; then
   WKRDIR=$(dirname $THIS)
   SERVER=$($WKRDIR/worker-getip):$($WKRDIR/worker-port)
   echo SERVER=$SERVER
+  QOS=regular
+  if [ $TMIN -le 30 -a $NNOD -le 4 ]; then
+    QOS=debug
+  fi
   while [ -n "$OPT" ]; do
     VAL=$1
     shift
@@ -43,6 +47,13 @@ if [ -z "$SLURM_JOB_ID" ]; then
       fi
       SERVER=$VAL
       echo SERVER=$SERVER
+    elif [ $OPT = -q ]; then
+      if [ -z "$VAL" ]; then
+        echo ERROR: Option $OPT requires an argument
+        exit 1
+      fi
+      QOS=$VAL
+      echo QOS=$QOS
     else
       echo ERROR: Invalid flag: $OPT
       exit 1
@@ -55,10 +66,6 @@ if [ -z "$SLURM_JOB_ID" ]; then
   if [ ${#NMIN} -lt 2 ]; then TMIN=0$TMIN; fi
   NHOU=$((TMIN/60))
   STIM=$NHOU:$NMIN:00
-  QOS=regular
-  if [ $TMIN -le 30 -a $NNOD -le 4 ]; then
-    QOS=debug
-  fi
 
   BASDIR=/pscratch/sd/d/dladams/slurmout
 
