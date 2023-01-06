@@ -259,7 +259,7 @@ def home():
     udat = sdat.user()
     if SessionData.dbg: print(f"home: User is {sdat.user_name} [{sdat.sesskey}]")
     have_user = sdat.sesskey is not None
-    if have_user:
+    if have_user or True:
         if sdat.msg is not None and len(sdat.msg):
             msg += f"<hr>\n"
             if not isinstance(sdat.msg, list): lines = [sdat.msg]
