@@ -88,7 +88,7 @@ fi
 
 # Link external drives.
 EXTMNT01=/mnt/dpvol01
-EXTMNT01=/mnt/dpvol02
+EXTMNT02=/mnt/dpvol02
 DATDIR=$HOME/data
 LOCDIR=$HOME/local
 LOGDIR=$DATDIR/logs
