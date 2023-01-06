@@ -428,6 +428,7 @@ def callback():
     #print(f"callback: User info: {login_info")
     resp = redirect(url_for('home'))
     sdat = SessionData.nologin_session()
+    sesskey = None
     if userinfo_response.json().get("email_verified"):
         if google_id in SessionData.google_ids:
             print(f"callback: Authorizing  {user_label}")
