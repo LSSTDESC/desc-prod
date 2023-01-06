@@ -87,14 +87,21 @@ if [ $# -gt 0 ]; then
 fi
 
 # Link external drives.
-EXTMNT=/mnt/dpvol01
-EXTDIR=$HOME/data
+EXTMNT01=/mnt/dpvol01
+EXTMNT01=/mnt/dpvol02
+DATDIR=$HOME/data
 LOCDIR=$HOME/local
-LOGDIR=$EXTDIR/logs
-if [ ! -r $EXTDIR ]; then
-  if [ -r $EXTMNT ]; then
-    echo start: Creating $EXTDIR 
-    ln -s $EXTMNT $EXTDIR
+LOGDIR=$DATDIR/logs
+if [ ! -r $DATDIR ]; then
+  if [ -r $EXTMNT01 ]; then
+    echo start: Creating $DATDIR 
+    ln -s $EXTMNT01 $DATDIR
+  fi
+fi
+if [ ! -r $LOCDIR ]; then
+  if [ -r $EXTMNT02 ]; then
+    echo start: Creating $LOCDIR 
+    ln -s $EXTMNT02 $LOCDIR
   fi
   SITFIL=$LOCDIR/etc/site.txt
   if [ -r $SITFIL ]; then
