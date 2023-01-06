@@ -86,11 +86,9 @@ if [ $# -gt 0 ]; then
   exit
 fi
 
-# Link external drives.
+# Mount and check data disk.
 EXTMNT01=/mnt/dpvol01
-EXTMNT02=/mnt/dpvol02
 DATDIR=$HOME/data
-LOCDIR=$HOME/local
 LOGDIR=$DATDIR/logs
 if [ ! -r $DATDIR ]; then
   if [ -r $EXTMNT01 ]; then
@@ -98,31 +96,13 @@ if [ ! -r $DATDIR ]; then
     ln -s $EXTMNT01 $DATDIR
   fi
 fi
-if [ ! -r $LOCDIR ]; then
-  if [ -r $EXTMNT02 ]; then
-    echo start: Creating $LOCDIR 
-    ln -s $EXTMNT02 $LOCDIR
-  fi
-  SITFIL=$LOCDIR/etc/site.txt
-  if [ -r $SITFIL ]; then
-    echo start: Site is $(cat $SITFIL)
-  else
-    echo start: ERROR: Site file not found: $SITFIL
-    echo start: Please add this with a shot and unique site name.
-  fi
-  JIDFIL=$LOCDIR/etc/jobid.txt
-  if [ ! -r $JIDFIL* ]; then
-    echo start: WARNING: Creating missing job ID file: $JIDFIL
-  fi
-  echo start: Current/last job ID is $(cat $JIDFIL)
-fi
-
 # Startup config.
 if [ ! -r $LOGDIR ]; then
   echo start: Creating log directory: $LOGDIR
   mkdir $LOGDIR
 fi
 echo $(date): $HOSTNAME >> $LOGDIR/host.log
+
 PKGDIR=$HOME/dev/desc-prod
 BINDIR=$HOME/bin
 if [ ! -r $BINDIR ]; then
@@ -143,18 +123,38 @@ if [ ! -r $JUPCFGDIR ]; then
   mkdir $JUPCFGDIR
 fi
 copyit $SRCDIR/jupyter_notebook_config.py $JUPCFGDIR
-export GOOGLE_CLIENT_ID=528828744373-04i7f42vvajs1612c2ph1n9gi3s112vn.apps.googleusercontent.com
-export GOOGLE_CLIENT_SECRET=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
-for SUP in google sfapi; do
-  SUPFIL=/home/descprod/local/etc/setup_google.sh
-  if [ -r $SUPFIL ]; then
-    echo Setting up $SUP
-    source $SUPFIL
-  fi
-done
 
 # start the parsltest server
 if [ $OPT = server ]; then
+  # Mount and configure local disk.
+  EXTMNT02=/mnt/dpvol02
+  LOCDIR=$HOME/local
+  if [ ! -r $LOCDIR ]; then
+    if [ -r $EXTMNT02 ]; then
+      echo start: Creating $LOCDIR 
+      ln -s $EXTMNT02 $LOCDIR
+    fi
+    SITFIL=$LOCDIR/etc/site.txt
+    if [ -r $SITFIL ]; then
+      echo start: Site is $(cat $SITFIL)
+    else
+      echo start: ERROR: Site file not found: $SITFIL
+      echo start: Please add this with a shot and unique site name.
+    fi
+    JIDFIL=$LOCDIR/etc/jobid.txt
+    if [ ! -r $JIDFIL* ]; then
+      echo start: WARNING: Creating missing job ID file: $JIDFIL
+    fi
+    echo start: Current/last job ID is $(cat $JIDFIL)
+  fi
+  # Setup authentications.
+  for SUP in google sfapi; do
+    SUPFIL=/home/descprod/local/etc/setup_$SUP.sh
+    if [ -r $SUPFIL ]; then
+      echo Setting up $SUP
+      source $SUPFIL
+    fi
+  done
   if [ -z "$GOOGLE_CLIENT_ID" ]; then
     echo GOOGLE client ID not found
     exit 1
@@ -163,6 +163,7 @@ if [ $OPT = server ]; then
     echo GOOGLE client secret not found
     exit 1
   fi
+  # Start server.
   echo start: Starting server.
   /home/descprod/dev/desc-prod/server/run-server
   echo start: Server exited.
