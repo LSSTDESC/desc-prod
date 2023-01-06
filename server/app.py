@@ -429,7 +429,12 @@ def callback():
     resp = redirect(url_for('home'))
     sdat = SessionData.nologin_session()
     sesskey = None
-    if userinfo_response.json().get("email_verified"):
+    email = userinfo_response.json().get("email")
+    have_email = len(email) > 0
+    email_verified = userinfo_response.json().get("email_verified")
+    # 06jan2023  Allow unverified email.
+    verified = email_verified or have_email
+    if verified:
         if google_id in SessionData.google_ids:
             print(f"callback: Authorizing  {user_label}")
             login_info    = userinfo_response.json()
@@ -444,12 +449,13 @@ def callback():
                 session.permanent = True   # This enables the session to expire
             descname = SessionData.google_ids[google_id][0]
         else:
-            print(f"callback: Denying unauthorized user {user_label}")
+            print(f"callback: Denying unauthorized user {user_label} [{email}]")
             sdat.msg = f"User not authorized: {google_id} {fullname}"
             sdat.msg += f"\n<br>Send the above line and your NERSC user name to admin@descprod.org to request authorization."
     else:
-        print(f"callback: Denying unverified user {user_label}")
-        sdat.msg = "User is not verified Google: {user_label}"
+        print(f"callback: Denying unverified user {user_label} [{email}]")
+        if not email_verified: sdat.msg = f"User has not verified email with google: {fullname} [{email}]"
+        if not have_email: sdat.msg = f"User does not have email with google: {fullname} [{google_id}]"
     if sesskey is not None:
         sdat = SessionData(sesskey, descname, fullname, login_info)
         if not SessionData.use_cookie_key:
