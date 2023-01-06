@@ -1,0 +1,6 @@
+#!/bin/bash
+
+NAM=${!:-descprod}
+
+echo Attaching to $NAM...
+docker exec -it $NAM /bin/bash

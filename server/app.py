@@ -264,8 +264,10 @@ def home():
             msg += f"<hr>\n"
             if not isinstance(sdat.msg, list): lines = [sdat.msg]
             else: lines = sdat.msg
+            lsep = '\n'
             for line in lines:
-                msg += f"{line}{sep}"
+                msg += f"{lsep}{line}"
+                lsep = sep
             msg += f"<hr>{sep}"
             sdat.msg = None
     msg += f"Site: {SessionData.site}"
@@ -314,11 +316,11 @@ def home():
         msg += sep
         msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>'
-        msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
+        #msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
         msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
-        msg += '<form action="/session" method="get"><input type="submit" value="Show session"></form>'
+        #msg += '<form action="/session" method="get"><input type="submit" value="Show session"></form>'
         msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>'
-        msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>'
+        if udat.is_admin(): msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>'
     else:
         msg += sep
         msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
@@ -365,14 +367,14 @@ def help():
     msg += '<br> hello?John&Doe - Says hello to John Doe'
     msg += '<br>        request - Parses a request'
     msg += '<br>       versions - Show software versions'
-    msg += '<br>       versions - Show perlmutter status'
+    msg += '<br>       pmstatus - Show perlmutter status'
     msg += '<br>      parsltest - Parses a request'
     return msg
 
 @app.route("/bye")
 def bye():
     print("bye: Shutting down.")
-    com = f"sleep 5; kill -9 {os.getpid()}"
+    com = f"sleep 3; kill -9 {os.getpid()}"
     subprocess.Popen(com, shell=True)
     sdat = SessionData.get()
     sdat.msg = 'Restarting server.'
@@ -474,9 +476,9 @@ def versions():
         vers = line[len(prod):]
         tbl[prod.strip()] = vers.strip()
     tbl['desc-prod'] = subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt')
-    msg = '<table>\n'
+    msg = '<table>'
     for prod in tbl:
-        msg += f"<tr><td>{prod}</td><td>{tbl[prod]}</td></tr>\n"
+        msg += f"""<tr><td style="text-align:right">{prod}</td><td style="text-align:left">{tbl[prod]}</td></tr>\n"""
     msg += '</table>\n'
     SessionData.get().msg = msg
     return redirect(url_for('home'))

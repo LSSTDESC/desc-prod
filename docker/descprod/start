@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Read flags.
+HELP=
+ROOT=
+while [ $# -gt 0 ]; do
+  ARG=$1
+  if [ ${ARG:0:2} = -- ]; then
+    FLG=${ARG:2}
+    shift
+    echo Invalid flag $ARG
+    exit 1
+  elif [ ${ARG:0:1} = - ]; then
+    FLG=${ARG:1}
+    shift
+    if [ $FLG == 'h' ]; then
+      HELP=true
+    else
+      echo Invalid flag $ARG
+      exit 1
+    fi
+  else
+    break
+  fi
+done
+
+NAME=$(basename $(pwd))
+
+if [ -n "$HELP" ]; then
+  echo Usage: $0 TAG ARGS
+  echo "  TAG is the $NAME image version."
+  echo "  ARGS are the arguments passed to the container"
+  exit 0
+fi
+
+TAG=$1
+shift
+FROM=$NAME:$TAG
+CNAME=$NAME
+
+# Create external directory.
+EXTDIR=$HOME/desc/dpvol01
+if [ ! -r $EXTDIR ]; then
+  mkdir -p $EXTDIR
+fi
+
+echo Starting $CNAME with $FROM
+#docker run --name $CNAME --rm -p 3306:3306 -p 80:5000 -p 8888:8888 -v $EXTDIR:/mnt/dpvol01 -it $FROM $*
+docker run --name $CNAME --rm -p 88:5000 -p 8888:8888 -v $EXTDIR:/mnt/dpvol01 -it $FROM $*
+
