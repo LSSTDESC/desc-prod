@@ -446,7 +446,7 @@ def callback():
         else:
             print(f"callback: Denying unauthorized user {user_label}")
             sdat.msg = f"User not authorized: {google_id} {fullname}"
-            sdat.msg += f"\n<br>Send the above line to adminn@descprod.org request authorization."
+            sdat.msg += f"\n<br>Send the above line and your NERSC user name to admin@descprod.org to request authorization."
     else:
         print(f"callback: Denying unverified user {user_label}")
         sdat.msg = "User is not verified Google: {user_label}"
