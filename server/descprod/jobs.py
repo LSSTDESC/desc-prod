@@ -66,7 +66,7 @@ class JobData:
                 for jobnam in os.listdir(topdir):
                     jobid = cls.id_from_name(jobnam)
                     if jobid < 0:
-                        if dbg: print(f"{myname}:   Skipping bad name {jobnam}.")
+                        if cls.dbg: print(f"{myname}:   Skipping bad name {jobnam}.")
                         continue
                     if jobid in cls.jobs:
                         if dbg: print(f"{myname}:   Skipping bad name {jobnam}.")
