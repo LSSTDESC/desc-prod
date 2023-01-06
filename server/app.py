@@ -35,7 +35,7 @@ client = WebApplicationClient(GOOGLE_CLIENT_ID)
 # The last may include single spaces
 def get_google_ids():
     gids = {}
-    fnam = '/home/descprod/data/etc/google_ids.txt'
+    fnam = '/home/descprod/local/etc/google_ids.txt'
     try:
         fids = open(fnam)
         for line in fids.readlines():
@@ -66,7 +66,7 @@ class SessionData:
     cookie_key_lifetime = 3600  # Lifetime [sec] to set for cookie keys.
     sessions = {}               # Map of active sessions indexed by session key
     current = None              # Cache the current session
-    site = subprocess.getoutput('cat /home/descprod/data/etc/site.txt')
+    site = subprocess.getoutput('cat /home/descprod/local/etc/site.txt')
     google_ids = get_google_ids()  # [descname, fullname] indexed by google ID
     lognam = None      # Job log file
     stanam = None      # Last line is status or processing
@@ -221,7 +221,7 @@ if 'SERVER_OPTS' in os.environ:
             print(f"Ignoring invalid option {opt}")
 
 def get_jobid():
-    fnam  = '/home/descprod/data/etc/jobid.txt'
+    fnam  = '/home/descprod/local/etc/jobid.txt'
     jobid = int(subprocess.getoutput(f"descprod-next-jobid"))
     return jobid
 

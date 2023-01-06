@@ -8,7 +8,7 @@
 # Advance the session ID and return it.
 
 MYNAME=$(basename $0)
-SIDFIL=$HOME/data/etc/sessionid.txt
+SIDFIL=$HOME/local/etc/sessionid.txt
 SESID=sessionid-not-found
 if ! ls ${SIDFIL}* 2>/dev/null >/dev/null; then
   echo $MYNAME: Creating session ID file: $SIDFIL >&2
