@@ -138,10 +138,6 @@ for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid descprod-
   copyit $SRCDIR/$FIL $BINDIR
 done
 cp -r $SRCDIR/static $HOME
-DATRUNDIR=$HOME/data/rundirs
-if [ ! -r $DATRUNDIR ]; then
-  mkdir $DATRUNDIR
-fi
 JUPCFGDIR=$HOME/.jupyter
 if [ ! -r $JUPCFGDIR ]; then
   mkdir $JUPCFGDIR

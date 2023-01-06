@@ -39,12 +39,12 @@ FROM=$NAME:$TAG
 CNAME=$NAME
 
 # Create external directory.
-EXTDIR=$HOME/desc/dpvol01
-if [ ! -r $EXTDIR ]; then
-  mkdir -p $EXTDIR
+DATDIR=$HOME/desc/dpvol01
+LOCDIR=$HOME/desc/dpvol02
+if [ ! -r $DATDIR ]; then
+  mkdir -p $DATDIR
 fi
 
 echo Starting $CNAME with $FROM
-#docker run --name $CNAME --rm -p 3306:3306 -p 80:5000 -p 8888:8888 -v $EXTDIR:/mnt/dpvol01 -it $FROM $*
-docker run --name $CNAME --rm -p 88:5000 -p 8888:8888 -v $EXTDIR:/mnt/dpvol01 -it $FROM $*
+docker run --name $CNAME --rm -p 88:5000 -p 8888:8888 -v $DATDIR:/mnt/dpvol01 -v $LOCDIR:/mnt/dpvol02 -it $FROM $*
 
