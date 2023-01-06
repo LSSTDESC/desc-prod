@@ -8,7 +8,7 @@
 # Advance the job ID and return it.
 
 MYNAME=$(basename $0)
-JIDFIL=$HOME/data/etc/jobid.txt
+JIDFIL=$HOME/local/etc/jobid.txt
 JOBID=jobid-not-found
 if ! ls ${JIDFIL}* 2>/dev/null >/dev/null; then
   echo $MYNAME: ERROR: Job ID file not found: $JIDFIL >&2

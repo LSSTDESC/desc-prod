@@ -2,7 +2,7 @@
 
 # Try to set up SFAPI env if it is not already set up.
 if [ -z "$SFAPI_ID" -o -z "$SFAPI_KEY" ]; then
-  SUPFIL=$HOME/data/etc/setup_sfapi.sh
+  SUPFIL=$HOME/local/etc/setup_sfapi.sh
   source $SUPFIL
 fi
 export SFAPI_ID

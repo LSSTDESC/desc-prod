@@ -58,7 +58,7 @@ if [ $# -gt 0 ]; then
     echo start: Updating desc-prod.
     cd /home/descprod/dev/desc-prod
     git pull
-  # Enable SSL with cert and key on data disk.
+  # Enable SSL with cert and key on local disk.
   elif [ $OPT = ssl ]; then
     echo start: Enabling SSL.
     export USESSL=true
@@ -89,20 +89,21 @@ fi
 # Link external drives.
 EXTMNT=/mnt/dpvol01
 EXTDIR=$HOME/data
+LOCDIR=$HOME/local
 LOGDIR=$EXTDIR/logs
 if [ ! -r $EXTDIR ]; then
   if [ -r $EXTMNT ]; then
     echo start: Creating $EXTDIR 
     ln -s $EXTMNT $EXTDIR
   fi
-  SITFIL=$EXTDIR/etc/site.txt
+  SITFIL=$LOCDIR/etc/site.txt
   if [ -r $SITFIL ]; then
     echo start: Site is $(cat $SITFIL)
   else
     echo start: ERROR: Site file not found: $SITFIL
     echo start: Please add this with a shot and unique site name.
   fi
-  JIDFIL=$EXTDIR/etc/jobid.txt
+  JIDFIL=$LOCDIR/etc/jobid.txt
   if [ ! -r $JIDFIL* ]; then
     echo start: WARNING: Creating missing job ID file: $JIDFIL
   fi
@@ -142,7 +143,7 @@ copyit $SRCDIR/jupyter_notebook_config.py $JUPCFGDIR
 export GOOGLE_CLIENT_ID=528828744373-04i7f42vvajs1612c2ph1n9gi3s112vn.apps.googleusercontent.com
 export GOOGLE_CLIENT_SECRET=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
 for SUP in google sfapi; do
-  SUPFIL=/home/descprod/data/etc/setup_google.sh
+  SUPFIL=/home/descprod/local/etc/setup_google.sh
   if [ -r $SUPFIL ]; then
     echo Setting up $SUP
     source $SUPFIL

@@ -12,7 +12,7 @@ USESSL=${USESSL:-false}
 THIS=$(readlink -f $0)
 THISDIR=$(dirname $THIS)
 if [ $USESSL = true ]; then
-  SRCDIR=$HOME/data/etc
+  SRCDIR=$HOME/local/etc
   if [ ! -r cert.pem -o ! -r key.pem ]; then
     echo Installing certificate from data disk.
     cp $SRCDIR/cert.pem $HOME
