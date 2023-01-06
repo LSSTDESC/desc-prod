@@ -12,6 +12,7 @@ fi
 MSG='Starting jupyter.'
 while true; do
   echo $MSG
+  export SHELL=/bin/bash
   #jupyter notebook
   jupyter lab
   MSG='Restarting jupyter'

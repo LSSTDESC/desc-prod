@@ -38,13 +38,23 @@ shift
 FROM=$NAME:$TAG
 CNAME=$NAME
 
-# Create external directory.
+ARGS="$*"
+
+# Configure mounts.
 DATDIR=$HOME/desc/dpvol01
 LOCDIR=$HOME/desc/dpvol02
-if [ ! -r $DATDIR ]; then
-  mkdir -p $DATDIR
-fi
+MOUNT_DATA="-v $DATDIR:/mnt/dpvol01"
+MOUNT_LOCAL=
+for ARG in $ARGS; do
+  if [ $ARG = server ]; then
+    MOUNT_LOCAL="-v $LOCDIR:/mnt/dpvol02"
+  fi
+done
 
 echo Starting $CNAME with $FROM
-docker run --name $CNAME --rm -p 88:5000 -p 8888:8888 -v $DATDIR:/mnt/dpvol01 -v $LOCDIR:/mnt/dpvol02 -it $FROM $*
+COM="docker run --name $CNAME --rm -p 88:5000 -p 8888:8888 $MOUNT_DATA $MOUNT_LOCAL -it $FROM $*"
+echo "Command: $COM"
+echo
+echo
+$COM
 
