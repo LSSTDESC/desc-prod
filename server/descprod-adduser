@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Add a user account.
+
+UNAM=$1 
+UHOM=/users/$UNAM
+
+UINFO=$(getent passwd $USER)
+if [ -n "$UINFO" ]; then
+  echo User already exists: $UINFO
+else
+  if ! sudo adduser $UNAM --home $UHOM; then
+    echo Unable to add user $USER.
+    exit 2
+  fi
+fi
+
+for SDIR in rundirs archive deleted; do
+  DIR=$UHOM/$SDIR
+  if [ -r $DIR ]; then
+    echo Directory exists: $DIR
+  else
+    if sudo $UNAM mkdir $DIR; then
+      echo Created directory $DIR
+    else
+      echo Unable to create directory $DIR
+      exit 1
+    fi
+  fi
+done
