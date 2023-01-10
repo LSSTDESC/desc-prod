@@ -88,12 +88,12 @@ fi
 
 # Mount and check data disk.
 EXTMNT01=/mnt/dpvol01
-DATDIR=$HOME/data
-LOGDIR=$DATDIR/logs
-if [ ! -r $DATDIR ]; then
+HOMDIR=/usr/home
+LOGDIR=$HOMDIR/logs
+if [ ! -r $HOMDIR ]; then
   if [ -r $EXTMNT01 ]; then
-    echo start: Creating $DATDIR 
-    ln -s $EXTMNT01 $DATDIR
+    echo start: Creating $HOMDIR 
+    ln -s $EXTMNT01 $HOMDIR
   fi
 fi
 # Startup config.
@@ -114,7 +114,7 @@ linkit $SRCDIR/run-server $BINDIR
 linkit $SRCDIR/sfapi $BINDIR
 copyit $SRCDIR/setup.sh $HOME
 for FIL in nersc-proxy show-open-ports nersc-proxy descprod-next-jobid descprod-next-sessionid \
-           descprod-current-jobid setup-jupyter-job descprod-wrap; do
+           descprod-current-jobid setup-jupyter-job descprod-wrap descprod-addusr; do
   copyit $SRCDIR/$FIL $BINDIR
 done
 cp -r $SRCDIR/static $HOME

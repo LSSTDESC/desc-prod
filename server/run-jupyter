@@ -13,6 +13,7 @@ MSG='Starting jupyter.'
 while true; do
   echo $MSG
   export SHELL=/bin/bash
+  PS1='\u:\W> '
   #jupyter notebook
   jupyter lab
   MSG='Restarting jupyter'
