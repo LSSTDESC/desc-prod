@@ -93,7 +93,7 @@ LOGDIR=$HOMDIR/logs
 if [ ! -r $HOMDIR ]; then
   if [ -r $EXTMNT01 ]; then
     echo start: Creating $HOMDIR 
-    ln -s $EXTMNT01 $HOMDIR
+    sudo ln -s $EXTMNT01 $HOMDIR
   fi
 fi
 # Startup config.
