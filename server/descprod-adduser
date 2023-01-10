@@ -5,7 +5,7 @@
 UNAM=$1 
 UHOM=/users/$UNAM
 
-UINFO=$(getent passwd $USER)
+UINFO=$(getent passwd $UNAM)
 if [ -n "$UINFO" ]; then
   echo User already exists: $UINFO
 else
