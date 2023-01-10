@@ -12,5 +12,10 @@ class UserData:
         return cls.users[descname]
     def __init__(self, descname):
         self.descname = descname
+        if descname is None: return None
+        self.home_dir = f"/users/{descname}"
+        self.run_dir = f"{self.home_dir}/rundirs"
+        self.archive_dir = f"{self.home_dir}/archives"
+        self.delete_dir = f"{self.home_dir}/deleted"
     def is_admin(self):
         return self.descname in UserData.admins

@@ -3,14 +3,20 @@
 # Add a user account.
 
 UNAM=$1 
+GNAM=$2
+if [ -n "$GNAM" ]; then
+  GFLG="--ingroup $GNAM"
+else
+  GFLG=
+fi
 UHOM=/users/$UNAM
 
 UINFO=$(getent passwd $UNAM)
 if [ -n "$UINFO" ]; then
   echo User already exists: $UINFO
 else
-  if ! sudo adduser $UNAM --home $UHOM; then
-    echo Unable to add user $USER.
+  if ! sudo adduser $UNAM $GFLG --home $UHOM --disabled-password --gecos ''; then
+    echo Unable to add user $UNAM
     exit 2
   fi
 fi
@@ -20,7 +26,7 @@ for SDIR in rundirs archive deleted; do
   if [ -r $DIR ]; then
     echo Directory exists: $DIR
   else
-    if sudo $UNAM mkdir $DIR; then
+    if sudo runuser -l $UNAM -c "mkdir $DIR"; then
       echo Created directory $DIR
     else
       echo Unable to create directory $DIR

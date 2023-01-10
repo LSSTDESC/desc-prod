@@ -2,11 +2,12 @@ import os
 import shutil
 import json
 import subprocess
+from descprod import UserData
 
 class JobData:
     """
     Holds the data describing a job.
-      descname - DESC user name
+      usr - User data constructed from DESC user name
       id - Job integer ID
       errmsgs - Error messages
       jobtype - Job type: parsltest, ...
@@ -19,9 +20,6 @@ class JobData:
       _stop_time - stop timestamp
     """
     dbg = 1
-    runbas = '/home/descprod/data/rundirs'   # Active runs are here
-    delbas = '/home/descprod/data/deleted'   # Deleted runs are here (but may be removed any time)
-    arcbas = '/home/descprod/data/archive'   # Runs transferred to and from archive are here
     jindent = 2
     jsep = (',', ': ')
     jobs = {}  # All known jobs indexed by id
@@ -56,11 +54,12 @@ class JobData:
     def get_jobs(cls, descname=None):
         myname = 'JobData.get_jobs'
         if descname is None: return cls.jobs
+        usr = UserData(descname)
         if cls.dbg: print(f"{myname}: Fetching jobs for user {descname}.")
         if descname not in cls.ujobs:
             cls.ujobs[descname] = {}
         if descname not in cls.have_oldjobs:
-            topdir = f"{cls.runbas}/{descname}"
+            topdir = f"{usr.run_dir}"
             if cls.dbg: print(f"{myname}: Looking for old jobs in {topdir}.")
             if os.path.isdir(topdir):
                 for jobnam in os.listdir(topdir):
@@ -75,14 +74,11 @@ class JobData:
             cls.have_oldjobs.append(descname)
         return cls.ujobs[descname]
 
-    @classmethod
-    def checkdirs(cls):
-        """Make sure the run directories are all present."""
+    def checkdirs(self):
+        """Make sure the run, archive and delete directories all present for the user."""
         myname = 'JobData.checkdirs'
-        for dnam in [cls.runbas, cls.delbas, cls.arcbas]:
-            if not os.path.isdir(dnam):
-                print(f"{myname}: INFO: Creating directory {dnam}")
-                os.mkdir(dnam)
+        ret = subprocess.run(['descprod-adduser', self.usr.descname])
+        return ret.returncode == 0
 
     def do_error(self, myname, msg, rstat=None):
          """Record an error."""
@@ -95,13 +91,9 @@ class JobData:
         """Return the name of the job: jobXXXXXX."""
         return self.name_from_id(self.id)
 
-    def user_dir(self):
-        """Return the user directory for this job."""
-        return f"{self.runbas}/{self.descname}"
-
     def run_dir(self):
         """Return the run directory for this job."""
-        return f"{self.user_dir()}/{self.idname()}"
+        return f"{self.usr.run_dir}/{self.idname()}"
 
     def log_file(self):
         """Return the log file name for this job."""
@@ -125,14 +117,14 @@ class JobData:
 
     def archive_file(self):
         """Return the archive file for this job."""
-        fnam = f"{self.arcbas}/{self.descname}/{self.idname()}.tz"
+        fnam = f"{usr.archive_dir()}/{self.idname()}.tz"
         dnam = os.path.dirname(fnam)
         if not os.path.exists(dnam): os.mkdir(dnam)
         return fnam
 
     def delete_file(self):
         """Return the archive file after deletion for this job."""
-        return f"{self.delbas}/{self.idname()}.tz"
+        return f"{usr.delete_dir()}/{self.idname()}.tz"
 
     def __init__(self, idx, descname, create):
         """
@@ -140,7 +132,7 @@ class JobData:
         If create is True, the directory is created.
         """
         self.id = idx
-        self.descname = descname
+        self.usr = UserData(descname)
         self.errmsgs = []
         self.jobtype = None
         self.config = None
@@ -152,16 +144,16 @@ class JobData:
         self._stop_time = None
         myname = 'JobData.ctor'
         dbg = JobData.dbg
-        self.checkdirs()
+        if not self.checkdirs():
+            self.doerror(myname, f"Unable to find/create run directories for user {descname}.")
+            return
         sidx = JobData.name_from_id(self.id)
-        usrdir = self.user_dir()
         rundir = self.run_dir()
         havedir = os.path.isdir(rundir)
         if create:
             if havedir:
                 self.do_error(myname, f"Directory already exists: {rundir}'")
             else:
-                if not os.path.isdir(usrdir): os.mkdir(usrdir)
                 os.mkdir(rundir)
         else:
             if not havedir:
@@ -238,7 +230,8 @@ class JobData:
         if not os.path.exists(self.run_dir()):
             rstat += self.do_error(myname, f"Run directory is not present.", 2)
         if rstat: return rstat
-        com = ['descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
+        com = ['sudo', 'sudo', '-u', self.usr.descname]
+        com += ['/home/descprod/bin/descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
         logfil = open(self.wrapper_log_file(), 'w')
         self._popen = subprocess.Popen(com, cwd=self.run_dir(), stdout=logfil, stderr=logfil)
         wmap = self.get_wrapper_info()
@@ -321,9 +314,9 @@ class JobData:
         myname = 'JobData.deactivate'
         if self.id in JobData.jobs:
             del JobData.jobs[self.id]
-        if self.descname in JobData.ujobs:
-            if self.id in JobData.ujobs[self.descname]:
-                del JobData.ujobs[self.descname][self.id]
+        if self.usr.descname in JobData.ujobs:
+            if self.id in JobData.ujobs[self.usr.descname]:
+                del JobData.ujobs[self.usr.descname][self.id]
 
     def archive(self, force=False, if_present=False):
         """
@@ -335,7 +328,7 @@ class JobData:
         """
         myname = 'JobData.archive'
         rundir = self.run_dir()
-        usrdir = self.user_dir()
+        usrdir = self.usr.run_dir
         arcfil = self.archive_file()
         jnam = self.idname()
         if os.path.exists(arcfil):
@@ -375,7 +368,7 @@ class JobData:
             os.remove(arcfil)
         if os.path.exists(delfil): return delfil
         del JobData.jobs[job.id]
-        del JobData.ujobsjob[descname][job.id]
+        del JobData.ujobsjob[self.usr.descname][job.id]
         return None
 
     def get_status_message(self):
