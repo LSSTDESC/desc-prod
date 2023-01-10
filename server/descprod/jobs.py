@@ -231,7 +231,7 @@ class JobData:
             rstat += self.do_error(myname, f"Run directory is not present.", 2)
         if rstat: return rstat
         com = ['sudo', 'sudo', '-u', self.usr.descname]
-        com += ['/home/descprod/bin/descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
+        com += ['descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
         logfil = open(self.wrapper_log_file(), 'w')
         self._popen = subprocess.Popen(com, cwd=self.run_dir(), stdout=logfil, stderr=logfil)
         wmap = self.get_wrapper_info()

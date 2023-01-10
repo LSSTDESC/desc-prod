@@ -118,7 +118,7 @@ for FIL in l nersc-proxy show-open-ports nersc-proxy descprod-next-jobid descpro
   copyit $SRCDIR/$FIL $BINDIR
 done
 for FIL in descprod-wrap; do
-  copyit $SRCDIR/$FIL /bin
+  sudo cp $SRCDIR/$FIL /bin
 done
 cp -r $SRCDIR/static $HOME
 JUPCFGDIR=$HOME/.jupyter
