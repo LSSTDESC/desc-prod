@@ -23,7 +23,7 @@ if dohelp:
     print(f"Usage: {this} COM RUNDIR LOGFIL STAFIL")
     print(f"  COM is a shell command line.")
     print(f"  RUNDIR is the directory where the command is run.")
-    print(f"  LOGFIL has the command stdout and stderr.")
+    print(f"  LOGFIL has the stdout and stderr.")
     print(f"  STAFIL has the config info in json fomat.")
     print(f"The wrapper runs until the command completes.")
     print(f"During execution the config holds:")

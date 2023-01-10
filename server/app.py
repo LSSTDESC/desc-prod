@@ -117,7 +117,7 @@ class SessionData:
         self.fullname = fullname
         self.login_info = login_info
         self.session_id = 0 if sesskey is None else get_sessionid()
-        self.msg = ''               # Error message shown once on home page.
+        self.msg = []               # Error message shown once on home page.
         self._user = None
         assert sesskey not in SessionData.sessions
         SessionData.sessions[sesskey] = self
@@ -126,6 +126,8 @@ class SessionData:
     def user(self):
         if self._user is None:
             self._user = UserData.get(self.descname)
+            sdat = SessionData.get()
+            sdat.msg += self._user.check_dirs()
         return self._user
     def make_response(self, rdat):
         """
@@ -260,16 +262,14 @@ def home():
     if SessionData.dbg: print(f"home: User is {sdat.user_name} [{sdat.sesskey}]")
     have_user = sdat.sesskey is not None
     if have_user or True:
-        if sdat.msg is not None and len(sdat.msg):
+        if len(sdat.msg):
             msg += f"<hr>\n"
-            if not isinstance(sdat.msg, list): lines = [sdat.msg]
-            else: lines = sdat.msg
             lsep = '\n'
-            for line in lines:
+            for line in sdat.msg:
                 msg += f"{lsep}{line}"
                 lsep = sep
             msg += f"<hr>{sep}"
-            sdat.msg = None
+            sdat.msg = []
     msg += f"Site: {SessionData.site}"
     msg += sep
     if have_user:
@@ -377,7 +377,7 @@ def bye():
     com = f"sleep 3; kill -9 {os.getpid()}"
     subprocess.Popen(com, shell=True)
     sdat = SessionData.get()
-    sdat.msg = 'Restarting server.'
+    sdat.msg += ['Restarting server.']
     return redirect(url_for('home'))
 
 @app.route("/login/callback")
@@ -452,12 +452,12 @@ def callback():
             descname = SessionData.google_ids[google_id][0]
         else:
             print(f"callback: Denying unauthorized user {user_label} [{email}]")
-            sdat.msg = f"User not authorized: {google_id} {fullname}"
-            sdat.msg += f"\n<br>Send the above line and your NERSC user name to admin@descprod.org to request authorization."
+            sdat.msg.append(f"User not authorized: {google_id} {fullname}")
+            sdat.msg.append(f"\n<br>Send the above line and your NERSC user name to admin@descprod.org to request authorization.")
     else:
         print(f"callback: Denying unverified user {user_label} [{email}]")
-        if not email_verified: sdat.msg = f"User has not verified email with google: {fullname} [{email}]"
-        if not have_email: sdat.msg = f"User does not have email with google: {fullname} [{google_id}]"
+        if not email_verified: sdat.msg.append(f"User has not verified email with google: {fullname} [{email}]")
+        if not have_email: sdat.msg.append(f"User does not have email with google: {fullname} [{google_id}]")
     if sesskey is not None:
         sdat = SessionData(sesskey, descname, fullname, login_info)
         if not SessionData.use_cookie_key:
@@ -500,8 +500,8 @@ def hello():
         name = ' NOONE'
     sdat = SessionData.get()
     if len(sdat.msg) == 0:
-        sdat.msg = "<h1>Hellos from desc-prod</h1>"
-    sdat.msg += f"hello{name}</br>"
+        sdat.msg = ["<h1>Hellos from desc-prod</h1>"]
+    sdat.msg += [f"hello{name}</br>"]
     return redirect(url_for('home'))
 
 @app.route('/parsltest')
@@ -526,20 +526,20 @@ def do_parsltest(cfg):
     sdat = SessionData.get()
     udat = sdat.user()
     if udat.descname == 'nologin':
-        sdat.msg = 'Log in to run parsltest'
+        sdat.msg.append('Log in to run parsltest')
         return redirect(url_for('home'))
     jobid = get_jobid()
     jdat = JobData(jobid, udat.descname, True)
     if len(jdat.errmsgs):
-        sdat.msg = jdat.errmsgs
+        sdat.msg.append(jdat.errmsgs)
         return redirect(url_for('home'))
     if jdat.configure(jobtype, cfg):
-        sdat.msg = jdat.errmsgs
+        sdat.msg += jdat.errmsgs
         return redirect(url_for('home'))
     if jdat.run():
         sdat.msg = jdat.errmsgs
         return redirect(url_for('home'))
-    sdat.msg = f"Started {jobtype} {cfg} in {jdat.run_dir()}"
+    sdat.msg.append(f"Started {jobtype} {cfg} in {jdat.run_dir()}")
     return redirect(url_for('home'))
 
 @app.route('/archivejob')
@@ -547,18 +547,18 @@ def archive_job():
     sdat = SessionData.get()
     udat = sdat.user()
     if udat.descname == 'nologin':
-        sdat.msg = 'Log in to run parsltest'
+        sdat.msg.append('Log in to run parsltest')
         return redirect(url_for('home'))
     jobid = int(request.args['id'])
     job = JobData.get_user_job(udat.descname, jobid)
     if job is None:
-        sdat.msg = f"Job {jobid} not found for user {udat.descname}"
+        sdat.msg.append(f"Job {jobid} not found for user {udat.descname}")
     else:
         arcfil = job.archive()
         if arcfil is None:
-            sdat.msg = f"Unable to archive Job {jobid} for user {udat.descname}"
+            sdat.msg.append(f"Unable to archive Job {jobid} for user {udat.descname}")
         else:
-            sdat.msg = f"Job archived at {arcfil}"
+            sdat.msg.append(f"Job archived at {arcfil}")
     return redirect(url_for('home'))
 
 @app.route('/deletejob')
@@ -566,18 +566,18 @@ def delete_job():
     sdat = SessionData.get()
     udat = sdat.user()
     if udat.descname == 'nologin':
-        sdat.msg = 'Log in to run parsltest'
+        sdat.msg.append('Log in to run parsltest')
         return redirect(url_for('home'))
     jobid = int(request.args['id'])
     job = JobData.get_user_job(udat.descname, jobid)
     if job is None:
-        sdat.msg = f"Job {jobid} not found for user {udat.descname}"
+        sdat.msg.append(f"Job {jobid} not found for user {udat.descname}")
     else:
         delfil = job.delete()
         if delfil is None:
-            sdat.msg = f"Unable to delete Job {jobid} for user {udat.descname}"
+            sdat.msg.append(f"Unable to delete Job {jobid} for user {udat.descname}")
         else:
-            sdat.msg = f"Job {jobid} scheduled for deletion at {delfil}"
+            sdat.msg.append(f"Job {jobid} scheduled for deletion at {delfil}")
     return redirect(url_for('home'))
 
 def ready():
@@ -614,7 +614,7 @@ def show_session():
 @app.route("/<path:path>")
 def req(path):
     sdat = SessionData.get()
-    sdat.msg = f"Invalid command: {request.url}"
+    sdat.msg.append(f"Invalid command: {request.url}")
     return redirect(url_for('home'))
     msg = ''
     msg += f"      url: {request.url}<br><br>"

@@ -20,17 +20,3 @@ else
     exit 2
   fi
 fi
-
-for SDIR in rundirs archive deleted; do
-  DIR=$UHOM/$SDIR
-  if [ -r $DIR ]; then
-    echo Directory exists: $DIR
-  else
-    if sudo runuser -l $UNAM -c "mkdir $DIR"; then
-      echo Created directory $DIR
-    else
-      echo Unable to create directory $DIR
-      exit 1
-    fi
-  fi
-done

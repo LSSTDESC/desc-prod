@@ -74,12 +74,6 @@ class JobData:
             cls.have_oldjobs.append(descname)
         return cls.ujobs[descname]
 
-    def checkdirs(self):
-        """Make sure the run, archive and delete directories all present for the user."""
-        myname = 'JobData.checkdirs'
-        ret = subprocess.run(['descprod-adduser', self.usr.descname])
-        return ret.returncode == 0
-
     def do_error(self, myname, msg, rstat=None):
          """Record an error."""
          errmsg = f"{myname}: ERROR: {msg}"
@@ -117,14 +111,14 @@ class JobData:
 
     def archive_file(self):
         """Return the archive file for this job."""
-        fnam = f"{usr.archive_dir()}/{self.idname()}.tz"
+        fnam = f"{self.usr.archive_dir}/{self.idname()}.tz"
         dnam = os.path.dirname(fnam)
         if not os.path.exists(dnam): os.mkdir(dnam)
         return fnam
 
     def delete_file(self):
         """Return the archive file after deletion for this job."""
-        return f"{usr.delete_dir()}/{self.idname()}.tz"
+        return f"{self.usr.delete_dir}/{self.idname()}.tz"
 
     def __init__(self, idx, descname, create):
         """
