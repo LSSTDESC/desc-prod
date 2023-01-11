@@ -151,7 +151,7 @@ if [ $OPT = server ]; then
     fi
     echo start: Current/last job ID is $(cat $JIDFIL)
     # Trsansfer the new user files. Thes are copide in when a user is added.
-    cp -r $SRCDIR/skel/* /etc/skel
+    cp -r $SRCDIR/skel/.* /etc/skel
   fi
   # Setup authentications.
   for SUP in google sfapi; do
