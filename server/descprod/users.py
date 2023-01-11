@@ -103,12 +103,12 @@ class UserData:
         return (rstat, errmsgs)
 
     def run(self, com, saveout=True):
-        """Run a command as the user descname."""
-        pre = ['sudo', 'sudo', '-u', self.descname]
+        """Run a command as the user descname in a bash login shell."""
+        pre = ['sudo', 'sudo', '-u', self.descname, 'bash', '-login', '-c']
         if isinstance(com, list):
             coms = com
         else:
-            coms = [com]
+            coms = com.split()
         runcom = pre + coms
         return subprocess.run(runcom, capture_output=saveout)
 
