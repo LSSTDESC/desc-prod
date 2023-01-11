@@ -102,14 +102,21 @@ class UserData:
              if line.find('ERROR')>=0: ++rstat
         return (rstat, errmsgs)
 
-    def run(self, com, saveout=True):
+    def run(self, com, saveout=True, shell=True):
         """Run a command as the user descname in a bash login shell."""
-        pre = ['sudo', 'sudo', '-u', self.descname, 'bash', '-login', '-c']
+        pre = ['sudo', 'sudo', '-u', self.descname]
+        if shell:
+            pre += ['bash', '-login', '-c']
         if isinstance(com, list):
             coms = com
+            shcom = ' '.join(com)
         else:
             coms = com.split()
-        runcom = pre + coms
+            shcom = com
+        if shell:
+            runcom = pre + [shcom]
+        else:
+            runcom = pre + coms
         return subprocess.run(runcom, capture_output=saveout)
 
     def mkdir(self, dnam):
@@ -122,6 +129,7 @@ class UserData:
         rstat = ret.returncode
         errmsgs = []
         if rstat:
+            errmsgs.append(f"COMMAND: {ret.args}")
             for line in ret.stdout.decode().split('\n'):
                 if len(line): errmsgs.append(f"STDOUT: {line}")
             for line in ret.stderr.decode().split('\n'):

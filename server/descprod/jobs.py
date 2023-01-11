@@ -113,7 +113,7 @@ class JobData:
         """Return the archive file for this job."""
         fnam = f"{self.usr.archive_dir}/{self.idname()}.tz"
         dnam = os.path.dirname(fnam)
-        if not os.path.exists(dnam): os.mkdir(dnam)
+        if not os.path.exists(dnam): self.usr.mkdir(dnam)
         return fnam
 
     def delete_file(self):
@@ -145,7 +145,7 @@ class JobData:
             if havedir:
                 self.do_error(myname, f"Directory already exists: {rundir}'")
             else:
-                os.mkdir(rundir)
+                self.usr.mkdir(rundir)
         else:
             if not havedir:
                 self.do_error(myname, f"Directory not found: {rundir}")
@@ -222,7 +222,12 @@ class JobData:
             rstat += self.do_error(myname, f"Run directory is not present.", 2)
         if rstat: return rstat
         com = ['sudo', 'sudo', '-u', self.usr.descname]
-        com += ['descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
+        shell = True
+        if shell:
+            shwcom = f"descprod-wrap '{self.command}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
+            com += ['bash', '-login', '-c', shwcom]
+        else:
+            com += ['descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
         logfil = open(self.wrapper_log_file(), 'w')
         self._popen = subprocess.Popen(com, cwd=self.run_dir(), stdout=logfil, stderr=logfil)
         wmap = self.get_wrapper_info()
