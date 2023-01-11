@@ -127,7 +127,7 @@ class SessionData:
         if self._user is None:
             self._user = UserData.get(self.descname)
             sdat = SessionData.get()
-            sdat.msg += self._user.check_dirs()
+            rstat, sdat.msg = self._user.check_dirs()
         return self._user
     def make_response(self, rdat):
         """
@@ -264,10 +264,12 @@ def home():
     if have_user or True:
         if len(sdat.msg):
             msg += f"<hr>\n"
-            lsep = '\n'
+            msg += f"<pre>\n"
+            lsep = ''
             for line in sdat.msg:
                 msg += f"{lsep}{line}"
-                lsep = sep
+                lsep = '\n'
+            msg += f"\n</pre>\n"
             msg += f"<hr>{sep}"
             sdat.msg = []
     msg += f"Site: {SessionData.site}"

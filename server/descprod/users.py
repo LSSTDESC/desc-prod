@@ -36,36 +36,44 @@ class UserData:
         Check the linux user is defined has has consistent uid/gid and
         check the run, archive and delete directories are present.
         If missing the user and directories are created.
-        Returns a list of error messages on failure.
-        Success returns an empty list.
+        Returns a tuple (rstat, msgs) with rsat = 0 for success and
+        msgs a list of ERROR and INFO messsages.
         """
         myname = 'UserData:check_dirs'
         errmsgs = []
-        if self.descname == 'nologin': return  errmsgs
-        if self.uid is not None:
+        if self.descname == 'nologin': return  (0, errmsgs)
+        if self.uid is None:
             # Fetch the linux user data.
             try:
-                pwi = pwd.getpwnam(descname)
+                pwi = pwd.getpwnam(self.descname)
+                errmsgs.append(f"{myname}: INFO: Found existing user {self.descname}")
             # If absent, add the linux user.
             except KeyError:
-                com = ['descprod-adduser', self.usr.descname]
+                com = ['descprod-adduser', self.descname]
                 # Fetch the persistent map and add group to the command if present.
-                jmap = None
+                jmap = {}
                 jpwi = None
-                jnam = '/etc/linux_users.json'
+                jnam = '/home/descprod/local/etc/linux_users.json'
                 if os.path.exists(jnam):
                     with open(jnam, 'r') as jfil:
                         jmap = json.load(jfil)
                     if self.descname in jmap:
                         jpwi = jmap[self.descname]
-                        uid = jpwi['pw_uid']
-                        com.append(self.uid)
+                        suid = str(jpwi[2])
+                        com.append(suid)
+                        errmsgs.append(f"{myname}: INFO: Keeping uid {suid}")
                 # Run the command to add the user.
-                ret = subprocess.run(com)
+                print(com)
+                ret = subprocess.run(com, capture_output=True)
                 if ret.returncode:
                     errmsgs.append(f"{myname}: ERROR: Unable to create user {self.descname}")
-                    return errmsgs
-                pwi = pwd.getpwnam(descname)
+                    for line in ret.stdout.decode().split('\n'):
+                        if len(line): errmsgs.append(f"{myname}:   INFO: {line}")
+                    for line in ret.stderr.decode().split('\n'):
+                        if len(line): errmsgs.append(f"{myname}:   ERROR: {line}")
+                    return (1, errmsgs)
+                pwi = pwd.getpwnam(self.descname)
+                errmsgs.append(f"{myname}: INFO: Added linux user {self.descname}")
                 # If the user was not in the persistent map, add him or her.
                 # We want the user and group IDs to stay the same.
                 if jpwi is None:
@@ -76,30 +84,23 @@ class UserData:
                 else:
                     if pwi != jpwi:
                         errmsgs.append(f"{myname}: ERROR: Current and archived user data differ:")
-                        errmsgs.append(f"{myname}:   {pwi}")
-                        errmsgs.append(f"{myname}:   {jwi}")
-                        return errmsgs
-            self.uid = pwi['pw_uid']
-            self.gid = pwi['pw_gid']
+                        errmsgs.append(f"{myname}: ERROR:   {pwi}")
+                        errmsgs.append(f"{myname}: ERROR:   {jpwi}")
+                        return (2, errmsgs)
+            self.uid = pwi[2]
+            self.gid = pwi[3]
+        errmsgs.append(f"{myname}: INFO: User {self.descname} has uid {self.uid} and gid {self.gid}")
         # Check the directories.
         if not os.path.isdir(self.home_dir):
-            errmsgs.append(f"{myname}: Home directory not found: {self.home_dir}")
-            return errmsgs
-        if not os.path.isdir(self.run_dir):
-            #os.mkdir(self.run_dir)
-            if self.mkdir(self.run_dir):
-                errmsgs.append(f"{myname}: Unable to create run directory not found: {self.run_dir}")
-            else if not os.path.isdir(self.run_dir):
-                errmsgs.append(f"{myname}: Run directory not found: {self.run_dir}")
-        if not os.path.isdir(self.archive_dir):
-            os.mkdir(self.archive_dir)
-            if not os.path.isdir(self.archive_dir):
-                errmsgs.append(f"{myname}: Archive directory not found: {self.archive_dir}")
-        if not os.path.isdir(self.delete_dir):
-            os.mkdir(self.delete_dir)
-            if not os.path.isdir(self.delete_dir):
-                errmsgs.append(f"{myname}: Delete directory not found: {self.delete_dir}")
-        return errmsgs
+            errmsgs.append(f"{myname}: ERROR: Home directory not found: {self.home_dir}")
+            return (3, errmsgs)
+        self.check_and_make_dir(    self.run_dir,     'run', myname, errmsgs)
+        self.check_and_make_dir(self.archive_dir, 'archive', myname, errmsgs)
+        self.check_and_make_dir( self.delete_dir,  'delete', myname, errmsgs)
+        rstat = 0
+        for line in errmsgs:
+             if line.find('ERROR')>=0: ++rstat
+        return (rstat, errmsgs)
 
     def run(self, com, saveout=True):
         """Run a command as the user descname."""
@@ -111,5 +112,29 @@ class UserData:
         runcom = pre + coms
         return subprocess.run(runcom, capture_output=saveout)
 
-    def mkdir(self), dir):
-        return self.run('mkdir', dir)
+    def mkdir(self, dnam):
+        """
+        Create a directory and return (rstat, msgs).
+        For sucess rstat is 0.
+        Error message prepended with pfx are in msgs.
+        """
+        ret = self.run(['mkdir', dnam])
+        rstat = ret.returncode
+        errmsgs = []
+        if rstat:
+            for line in ret.stdout.decode().split('\n'):
+                if len(line): errmsgs.append(f"STDOUT: {line}")
+            for line in ret.stderr.decode().split('\n'):
+                if len(line): errmsgs.append(f"STDERR: {line}")
+        return (rstat, errmsgs)
+
+    def check_and_make_dir(self, dnam, lab, myname, errmsgs):
+        if not os.path.isdir(dnam):
+            ret = self.mkdir(dnam)
+            if ret[0]:
+                errmsgs.append(f"{myname}: ERROR: Unable to create {lab} directory: {dnam}")
+                for line in ret[1]:
+                    errmsgs.append(f"{myname}:   {line}")
+            else:
+                if not os.path.isdir(self.run_dir):
+                    errmsgs.append(f"{myname}: ERROR: After creation, {lab} directory not found: {dnam}")

@@ -138,9 +138,6 @@ class JobData:
         self._stop_time = None
         myname = 'JobData.ctor'
         dbg = JobData.dbg
-        if not self.checkdirs():
-            self.doerror(myname, f"Unable to find/create run directories for user {descname}.")
-            return
         sidx = JobData.name_from_id(self.id)
         rundir = self.run_dir()
         havedir = os.path.isdir(rundir)

@@ -3,11 +3,10 @@
 # Add a user account.
 
 UNAM=$1 
-GNAM=$2
-if [ -n "$GNAM" ]; then
-  GFLG="--ingroup $GNAM"
-else
-  GFLG=
+UIDVAL=$2
+UIDOPT=
+if [ -n "$UIDVAL" ]; then
+  UIDOPT="--uid $UIDVAL"
 fi
 UHOM=/users/$UNAM
 
@@ -15,7 +14,7 @@ UINFO=$(getent passwd $UNAM)
 if [ -n "$UINFO" ]; then
   echo User already exists: $UINFO
 else
-  if ! sudo adduser $UNAM $GFLG --home $UHOM --disabled-password --gecos ''; then
+  if ! sudo adduser --home $UHOM $UIDOPT --disabled-password --gecos '' --ingroup users $UNAM; then
     echo Unable to add user $UNAM
     exit 2
   fi
