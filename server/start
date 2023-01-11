@@ -132,6 +132,7 @@ if [ $OPT = server ]; then
   # Mount and configure local disk.
   EXTMNT02=/mnt/dpvol02
   LOCDIR=$HOME/local
+  ETCDIR=$LOCDIR/etc
   if [ ! -r $LOCDIR ]; then
     if [ -r $EXTMNT02 ]; then
       echo start: Creating $LOCDIR 
@@ -149,6 +150,8 @@ if [ $OPT = server ]; then
       echo start: WARNING: Creating missing job ID file: $JIDFIL
     fi
     echo start: Current/last job ID is $(cat $JIDFIL)
+    # Trsansfer the new user files. Thes are copide in when a user is added.
+    cp -r $SRCDIR/skel/* /etc/skel
   fi
   # Setup authentications.
   for SUP in google sfapi; do
