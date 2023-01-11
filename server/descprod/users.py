@@ -45,7 +45,7 @@ class UserData:
         if self.uid is None:
             # Fetch the linux user data.
             try:
-                pwi = pwd.getpwnam(self.descname)
+                pwi = list(pwd.getpwnam(self.descname))
                 errmsgs.append(f"{myname}: INFO: Found existing user {self.descname}")
             # If absent, add the linux user.
             except KeyError:
@@ -72,7 +72,7 @@ class UserData:
                     for line in ret.stderr.decode().split('\n'):
                         if len(line): errmsgs.append(f"{myname}:   ERROR: {line}")
                     return (1, errmsgs)
-                pwi = pwd.getpwnam(self.descname)
+                pwi = list(pwd.getpwnam(self.descname))
                 errmsgs.append(f"{myname}: INFO: Added linux user {self.descname}")
                 # If the user was not in the persistent map, add him or her.
                 # We want the user and group IDs to stay the same.
