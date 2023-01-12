@@ -46,3 +46,4 @@ On perlmutter or cori, install with shifter:
 
 ## Version history 
 01 - Copy dockerfile parsltest:12 and add jupyterlab
+02 - Fix sudo config so descprod can run as anyone

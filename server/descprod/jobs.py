@@ -197,10 +197,6 @@ class JobData:
             else:
                return self.do_error(myname, f"Command not found for job type {jobtype}", 16)
         self.command = command
-        if True:   # Create README for desc-wfmon
-            rout = open(f"{self.run_dir()}/README.txt", 'w')
-            rout.write(f"{self.idname()}\n")
-            rout.close()
         jmap = {}
         jmap['jobtype'] = self.jobtype
         jmap['config']  = self.config
