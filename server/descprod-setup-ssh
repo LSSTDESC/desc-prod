@@ -28,7 +28,7 @@ if [ ! -r $HOMDIR ]; then
 fi
 echo Setting up ssh for $USER
 SSHDIR=$HOMDIR/.ssh
-KEYFIL=$(eval echo ~descprod/descprod_id_rsa.pub)
+KEYFIL=$(eval echo ~descprod/.ssh/descprod_id_rsa.pub)
 
 if [ ! -r $KEYFIL ]; then
   echo Key for descprod not found at: $KEYFIL
