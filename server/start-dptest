@@ -1,8 +1,31 @@
 #!/bin/bash
 
 # Entry point for dptest.
+THIS=$0
+ARG=$1
+shift
+ARGS="$*"
 
-service ssh start
+echo Action is $ARG
+
+if [ $ARG = start-ssh ]; then
+  echo Starting ssh
+  service ssh start
+
+elif [ $ARG = update ]; then
+  echo Updating desc-prod
+  cd $HOME/dev/desc-prod
+  git pull
+
+else [ -n "$ARG" ];  then
+  echo Skipping invalid command: $ARG
+
+fi
+
+if [ -n "$ARG" ]; then
+  $THIS $ARGS
+  exit $?
+fi
 
 COMFIL=request/command
 ACTFIL=${COMFIL}-in-progress
