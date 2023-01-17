@@ -40,7 +40,7 @@ elif [ $ARG = runcoms ]; then
       rm -f $OUTFIL $RSTFIL
       COM="$(cat $ACTFIL)"
       echo $(date): Executing "$COM"
-      $COM 2>&1 >$OUTFIL
+      bash -c "$COM" 2>&1 >$OUTFIL
       RST=$?
       echo $(date): Command returned $RST
       echo $RST >$RSTFIL
