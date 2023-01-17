@@ -30,18 +30,23 @@ elif [ $ARG = runcoms ]; then
   OUTFIL=$REQDIR/out
   RSTFIL=$REQDIR/status
   LOGFIL=$REQDIR/log
-  echo Starting command loop.
+  SHOW=true
+  echo $(date): Starting command loop.
   while true; do
-    echo Waiting for command at $COMFIL
+    if [ -n "$SHOW" ]; then echo $(date): Waiting for command at $COMFIL; fi
+    SHOW=
     if [ -r $COMFIL ]; then
       mv $COMFIL $ACTFIL
-      COM="$(cat $COMFIL)"
-      echo $(DATE): Executing "$COM"
+      rm -f $OUTFIL $RSTFIL
+      COM="$(cat $ACTFIL)"
+      echo $(date): Executing "$COM"
       $COM 2>&1 >$OUTFIL
       RST=$?
       echo $(date): Command returned $RST
       echo $RST >$RSTFIL
       echo $RST $COM >>$LOGFIL
+      echo
+      SHOW=true
     fi
     sleep 5
   done
