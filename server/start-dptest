@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Entry point for dptest.
+
+service ssh start
+
+COMFIL=request/command
+ACTFIL=${COMFIL}-in-progress
+OUTFIL=request/out
+RSTFIL=request/status
+LOGFIL=request/log
+while true; do
+  if [ -r $COMFIL ]; then
+    mv $COMFIL $ACTFIL
+    COM=$(cat $COMFIL)
+    RCOM 2>&1 >$OUTFIL
+    RST=$?
+    echo $RST >$RSTFIL
+    echo $RST $COM >>$LOGFIL
+  fi
+  sleep 5
+done
