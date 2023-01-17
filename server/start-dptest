@@ -17,7 +17,7 @@ elif [ $ARG = update ]; then
   cd $HOME/dev/desc-prod
   git pull
 
-else [ -n "$ARG" ];  then
+elif [ -n "$ARG" ];  then
   echo Skipping invalid command: $ARG
 
 fi
