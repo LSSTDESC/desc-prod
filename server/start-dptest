@@ -5,6 +5,7 @@ THIS=$0
 ARG=$1
 shift
 ARGS="$*"
+HOMDIR=/home/descprod
 
 if [ -z "$ARG" ]; then
   echo Exiting...
@@ -19,18 +20,19 @@ if [ $ARG = start-ssh ]; then
 
 elif [ $ARG = update ]; then
   echo Updating desc-prod
-  cd $HOME/dev/desc-prod
-  git pull
+  cd $HOMDIR/dev/desc-prod
+  sudo descprod git pull
 
 elif [ $ARG = runcoms ]; then
-  echo Starting command loop.
-  REQDIR=$HOME/request
+  REQDIR=$HOMDIR/request
   COMFIL=$REQDIR/command
   ACTFIL=${COMFIL}-in-progress
   OUTFIL=$REQDIR/out
   RSTFIL=$REQDIR/status
   LOGFIL=$REQDIR/log
+  echo Starting command loop.
   while true; do
+    echo Waiting for command at $COMFIL
     if [ -r $COMFIL ]; then
       mv $COMFIL $ACTFIL
       COM="$(cat $COMFIL)"
