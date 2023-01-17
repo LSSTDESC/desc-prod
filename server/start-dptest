@@ -24,11 +24,12 @@ elif [ $ARG = update ]; then
 
 elif [ $ARG = runcoms ]; then
   echo Starting command loop.
-  COMFIL=request/command
+  REQDIR=$HOME/request
+  COMFIL=$REQDIR/command
   ACTFIL=${COMFIL}-in-progress
-  OUTFIL=request/out
-  RSTFIL=request/status
-  LOGFIL=request/log
+  OUTFIL=$REQDIR/out
+  RSTFIL=$REQDIR/status
+  LOGFIL=$REQDIR/log
   while true; do
     if [ -r $COMFIL ]; then
       mv $COMFIL $ACTFIL
