@@ -57,6 +57,7 @@ echo "# This file generated automatically by $THIS" > $CFGFIL
 echo "# Changes will be discarded next time the script is run." >>$CFGFIL
 echo "# Generated at $(date)" >>$CFGFIL
 echo "#" >>$CFGFIL
+echo "IdentityFile $USRKEYFIL" >>$CFGFIL
 echo 'StrictHostKeyChecking no   # Remove new key warning/prompt' >>$CFGFIL
 echo 'PasswordAuthentication no  # No ssh password authentication' >>$CFGFIL
 
