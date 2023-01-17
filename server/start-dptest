@@ -6,6 +6,11 @@ ARG=$1
 shift
 ARGS="$*"
 
+if [ -z "$ARG" ]; then
+  echo Exiting...
+  exit 0
+fi
+
 echo Action is $ARG
 
 if [ $ARG = start-ssh ]; then
@@ -17,29 +22,32 @@ elif [ $ARG = update ]; then
   cd $HOME/dev/desc-prod
   git pull
 
-elif [ -n "$ARG" ];  then
+elif [ $ARG = runcoms ]; then
+  echo Starting command loop.
+  COMFIL=request/command
+  ACTFIL=${COMFIL}-in-progress
+  OUTFIL=request/out
+  RSTFIL=request/status
+  LOGFIL=request/log
+  while true; do
+    if [ -r $COMFIL ]; then
+      mv $COMFIL $ACTFIL
+      COM="$(cat $COMFIL)"
+      echo $(DATE): Executing "$COM"
+      $COM 2>&1 >$OUTFIL
+      RST=$?
+      echo $(date): Command returned $RST
+      echo $RST >$RSTFIL
+      echo $RST $COM >>$LOGFIL
+    fi
+    sleep 5
+  done
+
+else
   echo Skipping invalid command: $ARG
 
 fi
 
-if [ -n "$ARG" ]; then
-  $THIS $ARGS
-  exit $?
-fi
-
-COMFIL=request/command
-ACTFIL=${COMFIL}-in-progress
-OUTFIL=request/out
-RSTFIL=request/status
-LOGFIL=request/log
-while true; do
-  if [ -r $COMFIL ]; then
-    mv $COMFIL $ACTFIL
-    COM=$(cat $COMFIL)
-    RCOM 2>&1 >$OUTFIL
-    RST=$?
-    echo $RST >$RSTFIL
-    echo $RST $COM >>$LOGFIL
-  fi
-  sleep 5
-done
+# Excute the next command.
+$THIS $ARGS
+exit $?
