@@ -27,30 +27,27 @@ if [ ! -r $HOMDIR ]; then
   exit 2
 fi
 SSHDIR=$HOMDIR/.ssh
+USRKEYFIL=$SSHDIR/${USER}_id_rsa
 echo Setting up ssh for $USER at $SSHDIR
 
 # Check and create the ssh direcctory.
-if [ -r $SSHDIR ]; then
-  if [ $USER = descprod ]; then
-    echo The ssh directory for $USER already exists: $SSHDIR
+if [ -r $USRKEYFIL ]; then
+    echo The key file for $USER already exists: $USRKEYFIL
     echo Delete it before running this command.
     echo But think first: this will prevent descprod from running on behalf of
     echo "users (including root) who have registered the current descprod key."
     exit 4
-  else
-    echo "Removing the current ssh directory: $SSHDIR."
-    rm -rf $SSHDIR
-  fi
 fi
 if [ ! -r $SSHDIR ]; then
+  echo Creating $SSHDIR.
   mkdir $SSHDIR
-  chmod 700 $SSHDIR
 fi
+chmod 700 $SSHDIR
 
 # Generate the key for this user.
 echo Generating ssh key for $USER.
-SSHFIL=$SSHDIR/${USER}_id_rsa
-ssh-keygen -b 2048 -t rsa -f $SSHFIL -q -N ''
+ssh-keygen -b 2048 -t rsa -f $USRKEYFIL -q -N ''
+cp $USRKEYFIL.pub $HOMDIR
 
 # Create config
 CFGFIL=$SSHDIR/config
@@ -64,9 +61,9 @@ echo 'StrictHostKeyChecking no   # Remove new key warning/prompt' >>$CFGFIL
 echo 'PasswordAuthentication no  # No ssh password authentication' >>$CFGFIL
 
 # Locate the key for descprod.
-KEYFIL=$(eval echo ~descprod/.ssh/descprod_id_rsa.pub)
-if [ ! -r $KEYFIL ]; then
-  echo Key for descprod not found at: $KEYFIL
+DSCKEYFIL=$(eval echo ~descprod/descprod_id_rsa.pub)
+if [ ! -r $DSCKEYFIL ]; then
+  echo Key for descprod not found at: $DSCKEYFIL
   echo Please run $THIS for descprod to generate that file before
   echo running it for any other user.
   exit 3
@@ -74,10 +71,10 @@ fi
 
 # Copy descprod key to authorized keys.
 AUTFIL=$SSHDIR/authorized_keys
-if [ -r $KEYFIL ]; then
+if [ -r $DSCKEYFIL ]; then
   echo Registering ssh key for descprod.
-  cat $KEYFIL >>$AUTFIL
+  cat $DSCKEYFIL >>$AUTFIL
 else
   echo Unable to give ssh access to descprod.
-  echo File not found: $KEYFIL
+  echo File not found: $DSCKEYFIL
 fi
