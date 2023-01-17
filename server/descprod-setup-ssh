@@ -26,16 +26,8 @@ if [ ! -r $HOMDIR ]; then
   echo User $USER home directory not found: $HOMDIR
   exit 2
 fi
-echo Setting up ssh for $USER
 SSHDIR=$HOMDIR/.ssh
-KEYFIL=$(eval echo ~descprod/.ssh/descprod_id_rsa.pub)
-
-if [ ! -r $KEYFIL ]; then
-  echo Key for descprod not found at: $KEYFIL
-  echo Please run $THIS for descprod to generate that file before
-  echo running it for any other user.
-  exit 3
-fi
+echo Setting up ssh for $USER at $SSHDIR
 
 # Check and create the ssh direcctory.
 if [ -r $SSHDIR ]; then
@@ -71,6 +63,15 @@ echo "# Generated at $(date)" >>$FNAM
 echo "#" >>$FNAM
 echo 'StrictHostKeyChecking no   # Remove new key warning/prompt' >>$FNAM
 echo 'PasswordAuthentication no  # No ssh password authentication' >>$FNAM
+
+# Locate the key for descprod.
+KEYFIL=$(eval echo ~descprod/.ssh/descprod_id_rsa.pub)
+if [ ! -r $KEYFIL ]; then
+  echo Key for descprod not found at: $KEYFIL
+  echo Please run $THIS for descprod to generate that file before
+  echo running it for any other user.
+  exit 3
+fi
 
 # Copy descprod key to authorized keys.
 FNAM=$SSHDIR/authorized_keys
