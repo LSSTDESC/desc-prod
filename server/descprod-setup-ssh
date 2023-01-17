@@ -49,20 +49,19 @@ fi
 
 # Generate the key for this user.
 echo Generating ssh key for $USER.
-FNAM=$SSHDIR/${USER}_id_rsa
-ssh-keygen -b 2048 -t rsa -f $FNAM -q -N ''
-cp $FNAM.pub $HOME
+SSHFIL=$SSHDIR/${USER}_id_rsa
+ssh-keygen -b 2048 -t rsa -f $SSHFIL -q -N ''
 
 # Create config
-FNAM=$SSHDIR/config
+CFGFIL=$SSHDIR/config
 THIS=$(basename $0)
-rm -f $FNAM
-echo "# This file generated automatically by $THIS" > $FNAM
-echo "# Changes will be discarded next time the script is run." >>$FNAM
-echo "# Generated at $(date)" >>$FNAM
-echo "#" >>$FNAM
-echo 'StrictHostKeyChecking no   # Remove new key warning/prompt' >>$FNAM
-echo 'PasswordAuthentication no  # No ssh password authentication' >>$FNAM
+rm -f $CFGFIL
+echo "# This file generated automatically by $THIS" > $CFGFIL
+echo "# Changes will be discarded next time the script is run." >>$CFGFIL
+echo "# Generated at $(date)" >>$CFGFIL
+echo "#" >>$CFGFIL
+echo 'StrictHostKeyChecking no   # Remove new key warning/prompt' >>$CFGFIL
+echo 'PasswordAuthentication no  # No ssh password authentication' >>$CFGFIL
 
 # Locate the key for descprod.
 KEYFIL=$(eval echo ~descprod/.ssh/descprod_id_rsa.pub)
@@ -74,10 +73,10 @@ if [ ! -r $KEYFIL ]; then
 fi
 
 # Copy descprod key to authorized keys.
-FNAM=$SSHDIR/authorized_keys
+AUTFIL=$SSHDIR/authorized_keys
 if [ -r $KEYFIL ]; then
   echo Registering ssh key for descprod.
-  cat $KEYFIL >$FNAM
+  cat $KEYFIL >>$AUTFIL
 else
   echo Unable to give ssh access to descprod.
   echo File not found: $KEYFIL
