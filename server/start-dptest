@@ -27,6 +27,7 @@ elif [ $ARG = runcoms ]; then
   REQDIR=$HOMDIR/request
   COMFIL=$REQDIR/command
   ACTFIL=${COMFIL}-in-progress
+  ACTFIL=${COMFIL}-done
   OUTFIL=$REQDIR/out
   RSTFIL=$REQDIR/status
   LOGFIL=$REQDIR/log
@@ -37,11 +38,12 @@ elif [ $ARG = runcoms ]; then
     SHOW=
     if [ -r $COMFIL ]; then
       mv $COMFIL $ACTFIL
-      rm -f $OUTFIL $RSTFIL
+      rm -f $DONFIL $OUTFIL $RSTFIL
       COM="$(cat $ACTFIL)"
       echo $(date): Executing "$COM"
       bash -c "$COM" 2>&1 >$OUTFIL
       RST=$?
+      mv $ACTFIL $DONFIL
       echo $(date): Command returned $RST
       echo $RST >$RSTFIL
       echo $RST $COM >>$LOGFIL

@@ -478,11 +478,13 @@ def versions():
         vers = line[len(prod):]
         tbl[prod.strip()] = vers.strip()
     tbl['desc-prod'] = subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt')
-    msg = '<table>'
+    wprod = 0
     for prod in tbl:
-        msg += f"""<tr><td style="text-align:right">{prod}</td><td style="text-align:left">{tbl[prod]}</td></tr>\n"""
-    msg += '</table>\n'
-    SessionData.get().msg = msg
+        wprod = max(wprod, len(prod))
+    outmsg = []
+    for prod in tbl:
+        outmsg += [f"{prod.rjust(wprod+4)}: {tbl[prod]}"]
+    SessionData.get().msg = outmsg
     return redirect(url_for('home'))
 
 @app.route("/pmstatus")
