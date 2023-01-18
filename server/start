@@ -51,15 +51,15 @@ if [ $# -gt 0 ]; then
   elif [ $OPT = update-desc-wfmon ]; then
     echo start: Updating desc-wfmon
     cd /home/descprod/dev/desc-wfmon
-    cat version.txt
     git pull
-    cat version.txt
     pip install .
   # Update desc-prod
   elif [ $OPT = update-desc-prod ]; then
     echo start: Updating desc-prod.
     cd /home/descprod/dev/desc-prod
+    echo "Version before: $(cat version.txt)"
     git pull
+    echo "Version after: $(cat version.txt)"
   # Enable SSL with cert and key on local disk.
   elif [ $OPT = ssl ]; then
     echo start: Enabling SSL.

@@ -220,10 +220,10 @@ class JobData:
         com = ['sudo', 'sudo', '-u', self.usr.descname]
         shell = True
         if shell:
-            shwcom = f"descprod-wrap '{self.command}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
-            com += ['bash', '-login', '-c'
-            shwcom = 'source /home/descprod/conda/setup.sh; ' + shwcom
-            com += [shwcom]
+            shwcom = ""
+            shwcom += 'source /home/descprod/conda/setup.sh; '
+            shwcom += f"descprod-wrap '{self.command}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
+            com += ['bash', '-login', '-c', shwcom]
         else:
             com += ['descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
         logfil = open(self.wrapper_log_file(), 'w')
