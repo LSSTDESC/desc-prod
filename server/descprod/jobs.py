@@ -298,7 +298,7 @@ class JobData:
         ts2 = self.get_stop_time()
         if ts2 is None: ts2 = timestamp()
         dur = ts2 - ts1
-        print(f"Duration: {dur} = {ts2} - {ts1}")
+        #print(f"Duration: {dur} = {ts2} - {ts1}")
         return dur
 
     def dropdown_content(self, baseurl):
