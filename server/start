@@ -122,7 +122,7 @@ BINDIR=$DESCHOME/bin
 if [ ! -r $BINDIR ]; then
   $ASDESC mkdir $BINDIR
 fi
-PKGDIR=$DESCPROD/dev/desc-prod
+PKGDIR=$DESCHOME/dev/desc-prod
 SRCDIR=$PKGDIR/server
 linkit $SRCDIR/run-server $BINDIR
 linkit $SRCDIR/sfapi $BINDIR
