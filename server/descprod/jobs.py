@@ -288,10 +288,10 @@ class JobData:
 
     def get_stop_time(self):
         if self._stop_time is None:
-            get_return_status()
+            return None
         return self._stop_time
 
-    def duration():
+    def duration(self):
         ts1 = self.get_start_time()
         ts2 = self.get_stop_time()
         if ts2 is None: ts2 = timestamp()
