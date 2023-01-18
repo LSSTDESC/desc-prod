@@ -51,7 +51,9 @@ if [ $# -gt 0 ]; then
   elif [ $OPT = update-desc-wfmon ]; then
     echo start: Updating desc-wfmon
     cd /home/descprod/dev/desc-wfmon
+    cat version.txt
     git pull
+    cat version.txt
     pip install .
   # Update desc-prod
   elif [ $OPT = update-desc-prod ]; then

@@ -19,7 +19,7 @@ class JobData:
       _return_status - Return status.
       _stop_time - stop timestamp
     """
-    dbg = 1
+    dbg = 0
     jindent = 2
     jsep = (',', ': ')
     jobs = {}  # All known jobs indexed by id
@@ -221,7 +221,9 @@ class JobData:
         shell = True
         if shell:
             shwcom = f"descprod-wrap '{self.command}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
-            com += ['bash', '-login', '-c', shwcom]
+            com += ['bash', '-login', '-c'
+            shwcom = 'source /home/descprod/conda/setup.sh; ' + shwcom
+            com += [shwcom]
         else:
             com += ['descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
         logfil = open(self.wrapper_log_file(), 'w')
