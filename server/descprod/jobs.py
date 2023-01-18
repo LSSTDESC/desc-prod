@@ -2,6 +2,7 @@ import os
 import shutil
 import json
 import subprocess
+from descprod import timestamp
 from descprod import UserData
 
 class JobData:
@@ -289,6 +290,13 @@ class JobData:
         if self._stop_time is None:
             get_return_status()
         return self._stop_time
+
+    def duration():
+        ts1 = self.get_start_time()
+        ts2 = self.get_stop_time()
+        if ts2 is None: ts2 = timestamp()
+        dur = ts2 - ts1
+        return dur
 
     def dropdown_content(self, baseurl):
         q = '"'

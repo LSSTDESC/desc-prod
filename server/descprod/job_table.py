@@ -18,6 +18,7 @@ class JobTable:
         self.configs = []
         self.pids = []
         self.starts = []
+        self.durations = []
         self.rstats = []
         self.errmsgs = []
         self.stamsgs = []
@@ -36,13 +37,15 @@ class JobTable:
             self.errmsgs.append(errmsg)
             self.stamsgs.append(job.get_status_message())
             sstim = sdate(job.get_start_time())
-            self.starts.append[sstim]
+            self.starts.append(sstim)
+            self.durations.append(job.duration())
         self.map = {}
         self.map['id'] = self.jobids
         self.map['jobtype'] = self.jobtypes
         self.map['config'] = self.configs
         self.map['pid'] = self.pids
         self.map['start'] = self.starts
+        self.map['duration'] = self.durations
         self.map['rstat'] = self.rstats
         self.map['msg'] = self.errmsgs
         self.df = DataFrame(self.map)
@@ -61,6 +64,8 @@ class JobTable:
         txt += '    <th>ID</th>\n'
         txt += '    <th>Type</th>\n'
         txt += '    <th>Configuration</th>\n'
+        txt += '    <th>Start time</th>\n'
+        txt += '    <th>Dur. [s]</th>\n'
         txt += '    <th>PID</th>\n'
         txt += '    <th>Rstat</th>\n'
         txt += '    <th style="text-align:left"></th>\n'
@@ -91,6 +96,8 @@ class JobTable:
             txt += f"""    <td{clsarg}>{sid}</td>{eol}"""
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"
             txt += f"    <td>{self.configs[row]}</td>{eol}"
+            txt += f"    <td>{self.starts[row]}</td>{eol}"
+            txt += f"    <td>{str(self.durations[row])}</td>{eol}"
             txt += f"    <td>{spid}</td>{eol}"
             txt += f"    <td>{srstat}</td>{eol}"
             txt += f"""    <td style="text-align:left">{msg}</td>{eol}"""
