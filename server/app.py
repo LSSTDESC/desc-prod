@@ -52,6 +52,7 @@ def get_google_ids():
 
 app = Flask(__name__, static_url_path='/home/descprod/static')
 
+from descprod import sdate
 from descprod import UserData
 from descprod import JobData
 from descprod import JobTable
@@ -286,6 +287,8 @@ def home():
         #msg += f"Login info: {sdat.login_info}"
         #msg += sep
         msg += f"Session: {sdat.session_id}"
+        msg += sep
+        msg += f"UTC time: {sdate()}"
         #msg += f" [{sdat.sesskey}]"
         msg += sep
         msg += sep

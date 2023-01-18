@@ -1,5 +1,6 @@
 # descprod
 
+from .utils      import sdate
 from .users      import UserData
 from .jobs       import JobData
 from .job_table  import JobTable

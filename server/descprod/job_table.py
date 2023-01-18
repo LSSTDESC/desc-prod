@@ -1,3 +1,4 @@
+from descprod import sdate
 from descprod import JobData
 from pandas import DataFrame
 
@@ -16,6 +17,7 @@ class JobTable:
         self.jobtypes = []
         self.configs = []
         self.pids = []
+        self.starts = []
         self.rstats = []
         self.errmsgs = []
         self.stamsgs = []
@@ -33,11 +35,14 @@ class JobTable:
             if len(job.errmsgs): errmsg = job.errmsgs[-1]
             self.errmsgs.append(errmsg)
             self.stamsgs.append(job.get_status_message())
+            sstim = sdate(job.get_start_time())
+            self.starts.append[sstim]
         self.map = {}
         self.map['id'] = self.jobids
         self.map['jobtype'] = self.jobtypes
         self.map['config'] = self.configs
         self.map['pid'] = self.pids
+        self.map['start'] = self.starts
         self.map['rstat'] = self.rstats
         self.map['msg'] = self.errmsgs
         self.df = DataFrame(self.map)

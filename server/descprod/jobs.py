@@ -282,6 +282,9 @@ class JobData:
            return self._return_status
         return None
 
+    def get_start_time(self):
+        return self.start_time
+
     def get_stop_time(self):
         if self._stop_time is None:
             get_return_status()
