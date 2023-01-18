@@ -263,10 +263,14 @@ def home():
     have_user = sdat.sesskey is not None
     if have_user or True:
         if len(sdat.msg):
+            if isinstance(sdat.msg, list):
+                lines = sdat.msg
+            else:
+                lines = [str(sdat.msg)]
             msg += f"<hr>\n"
             msg += f"<pre>\n"
             lsep = ''
-            for line in sdat.msg:
+            for line in lines:
                 msg += f"{lsep}{line}"
                 lsep = '\n'
             msg += f"\n</pre>\n"
