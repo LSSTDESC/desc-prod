@@ -164,7 +164,7 @@ class JobData:
                             if 'pid' in jmap: self.pid = jmap['pid']
                             if 'start_time' in jmap: self.start_time = jmap['start_time']
                             if 'return_status' in jmap: self._return_status = jmap['return_status']
-                            if 'stop_time' in jmap: self.stop_time = jmap['stop_time']
+                            if 'stop_time' in jmap: self._stop_time = jmap['stop_time']
                     except json.decoder.JSONDecodeError:
                         self.do_error(myname, f"Unable to parse config file: {jnam}")
         JobData.jobs[idx] = self
@@ -273,13 +273,14 @@ class JobData:
         if wmap is not None and 'return_code' in wmap:
            self._return_status = wmap['return_code']
            self._stop_time = wmap['stop_time']
+           print(f"Job {self.idname()} ended at {self._stop_time} with status {self._return_status}.")
            jnam = self.job_config_file()
            with open(jnam, 'r') as jfil:
                jmap = json.load(jfil)
            jmap.update({'return_status':self._return_status})
            jmap.update({'stop_time':self._stop_time})
            with open(jnam, 'w') as jfil:
-               json.dump(jmap, jfil)
+               json.dump(jmap, jfil, indent=JobData.jindent)
            return self._return_status
         return None
 
@@ -293,9 +294,11 @@ class JobData:
 
     def duration(self):
         ts1 = self.get_start_time()
+        if ts1 is None: return -999
         ts2 = self.get_stop_time()
         if ts2 is None: ts2 = timestamp()
         dur = ts2 - ts1
+        print(f"Duration: {dur} = {ts2} - {ts1}")
         return dur
 
     def dropdown_content(self, baseurl):
