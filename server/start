@@ -12,11 +12,22 @@
 #     update-desc-wfmon - Update desc-wfmon
 # start - update server
 
+# This script may be called as either descrpod or root.
+# Define command prefixes to execute commnds as one or the other.
+UNAM=$(whoami)
+if [ $UNAM = descprod ]; then
+  ASROOT="sudo"
+  ASDESC=""
+elif [ $UNAM = root ]; then
+  ASROOT=""
+  ASDESC="sudo -u descprod"
+fi
+  
 linkit() {
   FROM=$1
   TO=$2/$(basename $FROM)
   if [ ! -r $TO ]; then
-    ln -s $FROM $TO
+    $ASDESC ln -s $FROM $TO
   fi
 }
 
@@ -24,7 +35,7 @@ copyit() {
   FROM=$1
   TO=$2/$(basename $FROM)
   if [ ! -r $TO ]; then
-    cp $FROM $TO
+    $ASDESC cp $FROM $TO
   fi
 }
 
@@ -46,19 +57,19 @@ if [ $# -gt 0 ]; then
   fi
   if [ $OPT = update-parsl ]; then
     echo start: Updating parsl
-    pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
+    $ASDESC pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
   # Update desc-wfmon
   elif [ $OPT = update-desc-wfmon ]; then
     echo start: Updating desc-wfmon
     cd /home/descprod/dev/desc-wfmon
-    git pull
-    pip install .
+    $ASDESC git pull
+    $ASDESC pip install .
   # Update desc-prod
   elif [ $OPT = update-desc-prod ]; then
     echo start: Updating desc-prod.
     cd /home/descprod/dev/desc-prod
     echo "Version before: $(cat version.txt)"
-    git pull
+    $ASDESC git pull
     echo "Version after: $(cat version.txt)"
   # Enable SSL with cert and key on local disk.
   elif [ $OPT = ssl ]; then
@@ -95,50 +106,51 @@ LOGDIR=$HOMDIR/logs
 if [ ! -r $HOMDIR ]; then
   if [ -r $EXTMNT01 ]; then
     echo start: Creating $HOMDIR 
-    sudo ln -s $EXTMNT01 $HOMDIR
+    $ASROOT ln -s $EXTMNT01 $HOMDIR
   fi
 fi
 # Startup config.
 if [ ! -r $LOGDIR ]; then
   echo start: Creating log directory: $LOGDIR
-  mkdir $LOGDIR
+  $ASDESC mkdir $LOGDIR
 fi
 echo $(date): $HOSTNAME >> $LOGDIR/host.log
 
-PKGDIR=$HOME/dev/desc-prod
-BINDIR=$HOME/bin
+DESCHOME=/home/descprod
+PKGDIR=$DESCHOME/dev/desc-prod
+BINDIR=$DESCHOME/bin
 if [ ! -r $BINDIR ]; then
-  mkdir $BINDIR
+  $ASDESC mkdir $BINDIR
 fi
-PKGDIR=$HOME/dev/desc-prod
+PKGDIR=$DESCPROD/dev/desc-prod
 SRCDIR=$PKGDIR/server
 linkit $SRCDIR/run-server $BINDIR
 linkit $SRCDIR/sfapi $BINDIR
-copyit $SRCDIR/setup.sh $HOME
+copyit $SRCDIR/setup.sh $DESCHOME
 for FIL in l nersc-proxy show-open-ports nersc-proxy descprod-next-jobid descprod-next-sessionid \
            descprod-current-jobid setup-jupyter-job descprod-wrap descprod-adduser; do
   copyit $SRCDIR/$FIL $BINDIR
 done
 for FIL in descprod-wrap; do
-  sudo cp $SRCDIR/$FIL /bin
+  $ASROOT cp $SRCDIR/$FIL /bin
 done
-cp -r $SRCDIR/static $HOME
-JUPCFGDIR=$HOME/.jupyter
+cp -r $SRCDIR/static $DESCHOME
+JUPCFGDIR=$DESCHOME/.jupyter
 if [ ! -r $JUPCFGDIR ]; then
-  mkdir $JUPCFGDIR
+  $ASDESC mkdir $JUPCFGDIR
 fi
-copyit $SRCDIR/jupyter_notebook_config.py $JUPCFGDIR
+$ASDESC copyit $SRCDIR/jupyter_notebook_config.py $JUPCFGDIR
 
 # start the parsltest server
 if [ $OPT = server ]; then
   # Mount and configure local disk.
   EXTMNT02=/mnt/dpvol02
-  LOCDIR=$HOME/local
+  LOCDIR=$DESCHOME/local
   ETCDIR=$LOCDIR/etc
   if [ ! -r $LOCDIR ]; then
     if [ -r $EXTMNT02 ]; then
       echo start: Creating $LOCDIR 
-      ln -s $EXTMNT02 $LOCDIR
+      $ASDESC ln -s $EXTMNT02 $LOCDIR
     fi
     SITFIL=$LOCDIR/etc/site.txt
     if [ -r $SITFIL ]; then
@@ -152,8 +164,8 @@ if [ $OPT = server ]; then
       echo start: WARNING: Creating missing job ID file: $JIDFIL
     fi
     echo start: Current/last job ID is $(cat $JIDFIL)
-    # Trsansfer the new user files. Thes are copide in when a user is added.
-    sudo cp $SRCDIR/skel/.bash* /etc/skel
+    # Trsansfer the new user files. Thes are copied in when a user is added.
+    $ASROOT cp $SRCDIR/skel/.bash* /etc/skel
   fi
   # Setup authentications.
   for SUP in google sfapi; do
@@ -171,8 +183,8 @@ if [ $OPT = server ]; then
     echo GOOGLE client secret not found
     exit 1
   fi
-  # Start server.
-  echo start: Starting server.
+  # Start server. Run as the current user.
+  echo start: Starting server as $UNAM.
   /home/descprod/dev/desc-prod/server/run-server
   echo start: Server exited.
   exit 0
@@ -190,7 +202,7 @@ fi
 if [ $OPT = rptest ]; then
   echo starting rp test...
   cd data/dev/materials-flask-google-login
-  pip install -r requirements.txt
+  $ASDESC pip install -r requirements.txt
   while true; do
     echo Running app
     python app.py
