@@ -217,11 +217,13 @@ class JobData:
         if not os.path.exists(self.run_dir()):
             rstat += self.do_error(myname, f"Run directory is not present.", 2)
         if rstat: return rstat
-        com = ['sudo', 'sudo', '-u', self.usr.descname]
+        com = ['sudo', '-u', self.usr.descname]
         shell = True
+        conda = True
         if shell:
             shwcom = ""
-            shwcom += 'source /home/descprod/conda/setup.sh; '
+            if conda:
+                shwcom += 'source /home/descprod/conda/setup.sh; '
             shwcom += f"descprod-wrap '{self.command}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
             com += ['bash', '-login', '-c', shwcom]
         else:
