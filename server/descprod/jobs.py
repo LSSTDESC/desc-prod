@@ -28,6 +28,7 @@ class JobData:
     jobs = {}  # All known jobs indexed by id
     ujobs = {} # Known user jobs indexed by descname and id.
     have_oldjobs = []  # List of users for which old jobs have been retrieved.
+    bindir = '/home/descprod/bin'
 
     @classmethod
     def name_from_id(cls, idx):
@@ -275,7 +276,7 @@ class JobData:
         if self.port is None:
             myname = 'JobData.get_port'
             rundir = self.run_dir()
-            com = f"descprod-get-parsl-port {rundir}"
+            com = f"{JobData.bindir}/descprod-get-parsl-port {rundir}"
             (rstat, sout) = subprocess.getstatusoutput(com)
             if rstat:
                 self.port_errors.append(f"Unable to retrieve parsl port. {sout}")
