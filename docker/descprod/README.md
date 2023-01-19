@@ -47,3 +47,6 @@ On perlmutter or cori, install with shifter:
 ## Version history 
 01 - Copy dockerfile parsltest:12 and add jupyterlab
 02 - Fix sudo config so descprod can run as anyone
+03 - Add ssh. Add cond setup file.
+04 - Move to descprod 0.2.45 to allow update of self.
+     Move to desc-wfmon 0.26.11 to allow simultaneous parsl jobs.
