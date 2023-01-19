@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# descpro-get-parsl-port
+#
+# David Adams
+# January 2023
+#
+# Find the port parsl is listening on.
+
+DIR=${1:-.}
+FILES=($(find $DIR -name parsl.log))
+NFIL=${#FILES[@]}
+if [ $NFIL != 1 ]; then
+  echo "Found $NFIL (instead of 1) parsl logs." >&2
+  exit 1
+fi
+
+FILE=${FILES[0]}
+TEXT="Listening on port "
+PORT=$(grep "$TEXT" $FILE | sed "s/.*$TEXT//g")
+if [ -n "$PORT" ]; then
+  echo $PORT
+  exit 0
+fi
+
+echo Port not found in $FILE. >&2
+exit 2

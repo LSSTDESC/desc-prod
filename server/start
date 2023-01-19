@@ -128,7 +128,7 @@ linkit $SRCDIR/run-server $BINDIR
 linkit $SRCDIR/sfapi $BINDIR
 copyit $SRCDIR/setup.sh $DESCHOME
 for FIL in l nersc-proxy show-open-ports nersc-proxy descprod-next-jobid descprod-next-sessionid \
-           descprod-current-jobid setup-jupyter-job descprod-wrap descprod-adduser; do
+           descprod-current-jobid setup-jupyter-job descprod-wrap descprod-adduser descprod-get-port; do
   copyit $SRCDIR/$FIL $BINDIR
 done
 for FIL in descprod-wrap; do
