@@ -17,10 +17,12 @@ class JobData:
       _popen - Popen object. E.g. use poll to see if job has completed.
       pid - process ID
       start_time - start timestamp
+      port - parsl worker port
+      port_errors - Error messages retrieving the port.
       _return_status - Return status.
       _stop_time - stop timestamp
     """
-    dbg = 0
+    dbg = 1
     jindent = 2
     jsep = (',', ': ')
     jobs = {}  # All known jobs indexed by id
@@ -135,6 +137,8 @@ class JobData:
         self._popen = None
         self.pid = None
         self.start_time = None
+        self.port = None
+        self.port_errors = []
         self._return_status = None
         self._stop_time = None
         myname = 'JobData.ctor'
@@ -165,6 +169,8 @@ class JobData:
                             if 'start_time' in jmap: self.start_time = jmap['start_time']
                             if 'return_status' in jmap: self._return_status = jmap['return_status']
                             if 'stop_time' in jmap: self._stop_time = jmap['stop_time']
+                            if 'port' in jmap: self.port = jmap['port']
+                            else: self.get_port(-1)
                     except json.decoder.JSONDecodeError:
                         self.do_error(myname, f"Unable to parse config file: {jnam}")
         JobData.jobs[idx] = self
@@ -264,6 +270,25 @@ class JobData:
                 json.dump(jmap, jfil, separators=JobData.jsep, indent=JobData.jindent)
                 jfil.write('\n')
         return jmap
+
+    def get_port(self, badval=None):
+        if self.port is None:
+            myname = 'JobData.get_port'
+            rundir = self.run_dir()
+            com = f"descprod-get-parsl-port {rundir}"
+            (rstat, sout) = subprocess.getstatusoutput(com)
+            if rstat:
+                self.port_errors.append(f"Unable to retrieve parsl port. {sout}")
+                self.port = badval
+                return badval
+            sport = sout
+            try:
+                self.port = int(sout)
+            except:
+                self.port_errors(f"Invalid parsl port: {sout}")
+                self.port = badval
+                return badval
+        return self.port
 
     def get_return_status(self):
         if self._return_status is not None: return self._return_status

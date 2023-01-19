@@ -23,6 +23,7 @@ class JobTable:
         self.rstats = []
         self.errmsgs = []
         self.stamsgs = []
+        self.ports = []
         for job in self.jobs.values():
             self.jobids.append(job.id)
             self.jobtypes.append(job.jobtype)
@@ -40,6 +41,7 @@ class JobTable:
             sstim = sdate(job.get_start_time())
             self.starts.append(sstim)
             self.durations.append(job.duration())
+            self.ports.append(job.get_port())
         self.map = {}
         self.map['id'] = self.jobids
         self.map['jobtype'] = self.jobtypes
@@ -65,6 +67,7 @@ class JobTable:
         txt += '    <th>ID</th>\n'
         txt += '    <th>Type</th>\n'
         txt += '    <th>Configuration</th>\n'
+        txt += '    <th>Port</th>\n'
         txt += '    <th>Start time</th>\n'
         txt += '    <th>Duration</th>\n'
         txt += '    <th>PID</th>\n'
@@ -91,12 +94,15 @@ class JobTable:
             srstat = '' if rstat is None else str(rstat)
             pid = self.pids[row]
             spid = '' if pid is None else str(pid)
+            port = self.ports[row]
+            sport = '' if port is None or port <= 0 else str(port)
             stamsg = self.stamsgs[row]
             errmsg = self.errmsgs[row]
             msg = stamsg if len(stamsg) else errmsg if len(errmsg) else ''
             txt += f"""    <td{clsarg}>{sid}</td>{eol}"""
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"
             txt += f"    <td>{self.configs[row]}</td>{eol}"
+            txt += f"    <td>{sport}</td>{eol}"
             txt += f"    <td>{self.starts[row]}</td>{eol}"
             txt += f"    <td>{str(sduration(self.durations[row]))}</td>{eol}"
             txt += f"    <td>{spid}</td>{eol}"
