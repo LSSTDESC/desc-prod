@@ -172,7 +172,7 @@ def html_head():
     msg += '}\n'
     msg += '.dropdown {\n'
     msg += '  position: relative;\n'
-    msg += '  text-align: right;\n'
+    msg += '  float: right;\n'
     msg += '  display: inline-block;\n'
     msg += '}\n'
     msg += '.dropdown-content {\n'
