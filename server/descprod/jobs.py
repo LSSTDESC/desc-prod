@@ -30,10 +30,11 @@ class JobData:
     have_oldjobs = []  # List of users for which old jobs have been retrieved.
     bindir = '/home/descprod/bin'
     class runopts:
-      use_shell = True                 # Submit jobs in a new shell
-      use_sudo = True                  # Sudo to current user to launch jobs
-      setup_conda = True               # Setup the local conda base
-      env_file = 'descprod-env.log'    # env is dumped to this file
+        use_shell = True                 # Submit jobs in a new shell
+        use_sudo = True                  # Sudo to current user to launch jobs
+        setup_conda = True               # Setup the local conda base
+        setup_parsl = True               # Use the local parsl setup: ~deschome/local/etc/setup_parsl.sh
+        env_file = 'descprod-env.log'    # env is dumped to this file
 
     @classmethod
     def name_from_id(cls, idx):
@@ -237,6 +238,8 @@ class JobData:
             shwcom = ""
             if runopts.setup_conda:
                 shwcom += 'source /home/descprod/conda/setup.sh; '
+            if runopts.setup_parsl:
+                shwcom += 'source /home/descprod/local/etc/setup_parsl.sh; '
             if len(runopts.env_file):
                 shwcom += f"set >{runopts.env_file}; "
             shwcom += f"descprod-wrap '{self.command}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
@@ -244,6 +247,7 @@ class JobData:
         else:
             com += ['descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
         logfil = open(self.wrapper_log_file(), 'w')
+        print(shwcom, logfil)
         self._popen = subprocess.Popen(com, cwd=self.run_dir(), stdout=logfil, stderr=logfil)
         wmap = self.get_wrapper_info()
         return 0
