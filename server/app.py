@@ -535,6 +535,7 @@ def run_form_parsltest():
 
 def do_parsltest(cfg):
     myname = 'do_parsltest'
+    if len(cfg) == 0: return redirect(url_for('home'))
     jobtype = 'parsltest'
     sdat = SessionData.get()
     udat = sdat.user()

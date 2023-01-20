@@ -29,6 +29,11 @@ class JobData:
     ujobs = {} # Known user jobs indexed by descname and id.
     have_oldjobs = []  # List of users for which old jobs have been retrieved.
     bindir = '/home/descprod/bin'
+    class runopts:
+      use_shell = True                 # Submit jobs in a new shell
+      use_sudo = True                  # Sudo to current user to launch jobs
+      setup_conda = True               # Setup the local conda base
+      env_file = 'descprod-env.log'    # env is dumped to this file
 
     @classmethod
     def name_from_id(cls, idx):
@@ -225,16 +230,15 @@ class JobData:
         if not os.path.exists(self.run_dir()):
             rstat += self.do_error(myname, f"Run directory is not present.", 2)
         if rstat: return rstat
-        com = ['sudo', '-u', self.usr.descname]
-        shell = True
-        conda = True
-        saveenv = True
+        runopts = JobData.runopts
+        com = ['sudo', '-u', self.usr.descname] if runopts.use_sudo else []
+        shell = runopts.use_shell
         if shell:
             shwcom = ""
-            if conda:
+            if runopts.setup_conda:
                 shwcom += 'source /home/descprod/conda/setup.sh; '
-            if saveenv:
-                shwcom += 'set >descprod-env.log; '
+            if len(runopts.env_file):
+                shwcom += f"set >{runopts.env_file}; "
             shwcom += f"descprod-wrap '{self.command}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
             com += ['bash', '-login', '-c', shwcom]
         else:
