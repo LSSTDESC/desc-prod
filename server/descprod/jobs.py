@@ -228,10 +228,13 @@ class JobData:
         com = ['sudo', '-u', self.usr.descname]
         shell = True
         conda = True
+        saveenv = True
         if shell:
             shwcom = ""
             if conda:
                 shwcom += 'source /home/descprod/conda/setup.sh; '
+            if saveenv:
+                shwcom += 'set >descprod-env.log; '
             shwcom += f"descprod-wrap '{self.command}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
             com += ['bash', '-login', '-c', shwcom]
         else:
