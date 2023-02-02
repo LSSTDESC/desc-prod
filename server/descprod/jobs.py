@@ -8,19 +8,21 @@ from descprod import UserData
 class JobData:
     """
     Holds the data describing a job.
+      # State data held in DB
+      index() - Job integer ID, unique to the site.
+      jobtype() - Job type: parsltest, ...
+      config() - config string for the job
+      command() - Array holding the job command line for Popen.
+      pid() - process ID
+      start_time() - start timestamp
+      port() - parsl worker port
+      return_status() - Return status.
+      stop_time() - stop timestamp
+      # Derived data
       usr - User data constructed from DESC user name
-      id - Job integer ID
       errmsgs - Error messages
-      jobtype - Job type: parsltest, ...
-      config - config string for the job
-      command - Array holding the job command line for Popen.
       _popen - Popen object. E.g. use poll to see if job has completed.
-      pid - process ID
-      start_time - start timestamp
-      port - parsl worker port
       port_errors - Error messages retrieving the port.
-      _return_status - Return status.
-      _stop_time - stop timestamp
     """
     dbg = 1
     jindent = 2
@@ -93,7 +95,7 @@ class JobData:
 
     def idname(self):
         """Return the name of the job: jobXXXXXX."""
-        return self.name_from_id(self.id)
+        return self.name_from_id(self.index())
 
     def run_dir(self):
         """Return the run directory for this job."""
@@ -130,27 +132,60 @@ class JobData:
         """Return the archive file after deletion for this job."""
         return f"{self.usr.delete_dir}/{self.idname()}.tz"
 
-    def __init__(self, idx, descname, create):
+    def set_data(self, nam, val):
+        """Set a job property."""
+        self._data[nam] = val
+
+    def data(self, nam):
+        """Retrieve a job property."""
+        if nam in self._data: return self._data[nam]
+        return None
+
+    def index(self):         return self.data('id')      # python uses object.id()
+    def descname(self):      return self.data('descname')
+    def jobtype(self):       return self.data('jobtype')
+    def config(self):        return self.data('config')
+    def pid(self):           return self.data('pid')
+    def start_time(self):    return self.data('start_time')
+    def port(self):          return self.data('port')
+    def command(self):       return self.data('command')
+    def return_status(self): return self.get_return_status()
+    def stop_time(self):     return self.get_stop_time()
+
+    def jmap_update(self, jmap):
+        """Update the job dat using a json map."""
+        myname = 'JobData.jmap_update'
+        if 'id' not in jmap:
+            #return (1, f"Map does not containe the job ID.")
+            pass
+        else:
+            if jmap['id'] != self.index(): return (2, f"IDs do not match: {jmap['id']} != {self.index()}")
+        if 'descname' not in jmap:
+            #return (3, f"Map does not containe the user name.")
+            pass
+        else:
+            if jmap['descname'] != self.descname(): return (3, f"User names do not match: {jmap['descname']} != {self.descname()}")
+        for nam in ['jobtype', 'config', 'command', 'pid', 'start_time', 'port', 'return_status', 'stop_time']:
+            if nam in jmap: self.set_data(nam, jmap[nam])
+        return (0, '')
+
+    def __init__(self, a_idx, a_descname, create):
         """
         Create or locate job idx for user descname.
         If create is True, the directory is created.
         """
-        self.id = idx
+        self._data = {}       # All persistent data is stored here.
+        self.set_data('id', a_idx)
+        self.set_data('descname', a_descname)
+        idx = self.index()
+        descname = self.descname()
         self.usr = UserData(descname)
         self.errmsgs = []
-        self.jobtype = None
-        self.config = None
-        self.command = None
         self._popen = None
-        self.pid = None
-        self.start_time = None
-        self.port = None
         self.port_errors = []
-        self._return_status = None
-        self._stop_time = None
         myname = 'JobData.ctor'
         dbg = JobData.dbg
-        sidx = JobData.name_from_id(self.id)
+        sidx = JobData.name_from_id(idx)
         rundir = self.run_dir()
         havedir = os.path.isdir(rundir)
         if create:
@@ -169,15 +204,12 @@ class JobData:
                     try:
                         with open(jnam, 'r') as jfil:
                             jmap = json.load(jfil)
-                            self.jobtype = jmap['jobtype']
-                            self.config = jmap['config']
-                            self.command = jmap['command']
-                            if 'pid' in jmap: self.pid = jmap['pid']
-                            if 'start_time' in jmap: self.start_time = jmap['start_time']
-                            if 'return_status' in jmap: self._return_status = jmap['return_status']
-                            if 'stop_time' in jmap: self._stop_time = jmap['stop_time']
-                            if 'port' in jmap: self.port = jmap['port']
-                            else: self.get_port(-1)
+                            rs, rmsg = self.jmap_update(jmap)
+                            if rs:
+                                print(f"{myname}: Update from file {jnam} failed.")
+                                print(f"{myname}: {rmsg}")
+                                print(f"{myname}: Map contents:")
+                                for key, val in jmap.items(): print(f"{myname}:   {key}: {val}")
                     except json.decoder.JSONDecodeError:
                         self.do_error(myname, f"Unable to parse config file: {jnam}")
         JobData.jobs[idx] = self
@@ -193,28 +225,28 @@ class JobData:
         """
         myname = 'JobData.configure'
         rstat = 0
-        if self.jobtype is not None:
-            rstat += self.do_error(myname, f"Job type is already set: {self.jobtype}", 1)
-        if self.config is not None:
-            rstat += self.do_error(myname, f"Job config is already set: {self.config}", 2)
-        if self.pid is not None:
-            rstat += self.do_error(myname, f"Job has already been started. Process ID: {self.pid}", 4)
+        if self.jobtype() is not None:
+            rstat += self.do_error(myname, f"Job type is already set: {self.jobtype()}", 1)
+        if self.config() is not None:
+            rstat += self.do_error(myname, f"Job config is already set: {self.config()}", 2)
+        if self.pid() is not None:
+            rstat += self.do_error(myname, f"Job has already been started. Process ID: {self.pid()}", 4)
         if self.get_return_status() is not None:
             rstat += self.do_error(myname, f"Job has already completed. Return status: {self.get_return_status()}", 8)
         if rstat: return rstat
-        self.jobtype = jobtype
-        self.config = config
+        self.set_data('jobtype', jobtype)
+        self.set_data('config', config)
         command = a_command
         if command is None:
             if jobtype == 'parsltest':
                command = f"desc-wfmon-parsltest {config}"
             else:
                return self.do_error(myname, f"Command not found for job type {jobtype}", 16)
-        self.command = command
+        self.set_data('command', command)
         jmap = {}
-        jmap['jobtype'] = self.jobtype
-        jmap['config']  = self.config
-        jmap['command'] = self.command
+        jmap['jobtype'] = self.jobtype()
+        jmap['config']  = self.config()
+        jmap['command'] = self.command()
         jnam = self.job_config_file()
         with open(jnam, 'w') as jfil:
             json.dump(jmap, jfil, separators=JobData.jsep, indent=JobData.jindent)
@@ -226,7 +258,7 @@ class JobData:
         """
         myname = 'JobData.run'
         rstat = 0
-        if self.command is None:
+        if self.command() is None:
             rstat += self.do_error(myname, f"Command is not specified.", 1)
         if not os.path.exists(self.run_dir()):
             rstat += self.do_error(myname, f"Run directory is not present.", 2)
@@ -242,10 +274,10 @@ class JobData:
                 shwcom += 'source /home/descprod/local/etc/setup_parsl.sh; '
             if len(runopts.env_file):
                 shwcom += f"set >{runopts.env_file}; "
-            shwcom += f"descprod-wrap '{self.command}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
+            shwcom += f"descprod-wrap '{self.command()}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
             com += ['bash', '-login', '-c', shwcom]
         else:
-            com += ['descprod-wrap', self.command, self.run_dir(), self.log_file(), self.wrapper_config_file()]
+            com += ['descprod-wrap', self.command(), self.run_dir(), self.log_file(), self.wrapper_config_file()]
         logfil = open(self.wrapper_log_file(), 'w')
         print(shwcom, logfil)
         self._popen = subprocess.Popen(com, cwd=self.run_dir(), stdout=logfil, stderr=logfil)
@@ -264,75 +296,84 @@ class JobData:
           "stop_time":     1672871253,
           "return_code":   0
         """
+        myname = 'JobData.get_wrapper_info'
         jnam = self.wrapper_config_file()
         if not os.path.exists(jnam): return None
         with open(jnam, 'r') as jfil:
             jmap = json.load(jfil)
         # If we have the pid for the first time, record it and the start time
         # in the job data and config file.
-        if self.pid is None and 'pid' in jmap:
-            self.pid = jmap['pid']
-            self.start_time = jmap['start_time']
+        if self.pid() is None and 'pid' in jmap:
+            self.set_data('pid', jmap['pid'])
+            self.set_data('start_time', jmap['start_time'])
             jnam = self.job_config_file()
             with open(jnam, 'r') as jfil:
-                jmap = json.load(jfil)
-            jmap.update({'pid':self.pid})
-            jmap.update({'start_time':self.start_time})
+                try:
+                    jmap = json.load(jfil)
+                except json.JSONDecodeError as e:
+                    print(f"{myname}: ERROR: Json decode error reading {jnam}.")
+                    return None
+            jmap.update({'pid':self.pid()})
+            jmap.update({'start_time':self.start_time()})
             with open(jnam, 'w') as jfil:
                 json.dump(jmap, jfil, separators=JobData.jsep, indent=JobData.jindent)
                 jfil.write('\n')
         return jmap
 
     def get_port(self, badval=None):
-        if self.port is None:
-            myname = 'JobData.get_port'
+        myname = 'JobData.get_port'
+        if 'port' not in self._data:
             rundir = self.run_dir()
             com = f"{JobData.bindir}/descprod-get-parsl-port {rundir}"
             (rstat, sout) = subprocess.getstatusoutput(com)
             if rstat:
                 self.port_errors.append(f"Unable to retrieve parsl port. {sout}")
-                self.port = badval
+                port = badval
                 return badval
-            sport = sout
             try:
-                self.port = int(sout)
+                port = int(sout)
             except:
                 self.port_errors(f"Invalid parsl port: {sout}")
-                self.port = badval
+                port = badval
                 return badval
-        return self.port
+            self.set_data('port', badval)
+        else:
+            port = self.data('port')
+        return self.port()
 
     def get_return_status(self):
-        if self._return_status is not None: return self._return_status
+        myname = 'JobData.get_return_status'
+        rs = self.data('return_status')
+        if rs is not None: return rs
         wmap = self.get_wrapper_info()
         # If we have the return status for the first time, record it and
         # the stop time in the the job data and config file.
         if wmap is not None and 'return_code' in wmap:
-           self._return_status = wmap['return_code']
-           self._stop_time = wmap['stop_time']
-           print(f"Job {self.idname()} ended at {self._stop_time} with status {self._return_status}.")
+           self.set_data('return_status', wmap['return_code'])
+           self.set_data('stop_time', wmap['stop_time'])
+           print(f"Job {self.idname()} ended at {self.stop_time()} with status {self.return_status()}.")
            jnam = self.job_config_file()
            with open(jnam, 'r') as jfil:
-               jmap = json.load(jfil)
-           jmap.update({'return_status':self._return_status})
-           jmap.update({'stop_time':self._stop_time})
+               try:
+                   jmap = json.load(jfil)
+               except json.JSONDecodeError:
+                   print(f"{myname}: Unable to decode json file {jnam}.")
+                   jmap = {}
+           jmap.update({'return_status':self.return_status()})
+           jmap.update({'stop_time':self.stop_time()})
            with open(jnam, 'w') as jfil:
                json.dump(jmap, jfil, indent=JobData.jindent)
-           return self._return_status
+           return self.return_status()
         return None
 
-    def get_start_time(self):
-        return self.start_time
-
     def get_stop_time(self):
-        if self._stop_time is None:
-            return None
-        return self._stop_time
+        self.get_return_status()
+        return self.data('stop_time')
 
     def duration(self):
-        ts1 = self.get_start_time()
+        ts1 = self.start_time()
         if ts1 is None: return -999
-        ts2 = self.get_stop_time()
+        ts2 = self.stop_time()
         if ts2 is None: ts2 = timestamp()
         dur = ts2 - ts1
         #print(f"Duration: {dur} = {ts2} - {ts1}")
@@ -340,9 +381,9 @@ class JobData:
 
     def dropdown_content(self, baseurl):
         q = '"'
-        txt = f"<a href={q}{baseurl}/archivejob?id={self.id}{q}>Archive job {self.id}</a>"
+        txt = f"<a href={q}{baseurl}/archivejob?id={self.index()}{q}>Archive job {self.index()}</a>"
         txt += '<br>'
-        txt += f"<a href={q}{baseurl}/deletejob?id={self.id}{q}>Delete job {self.id}</a>"
+        txt += f"<a href={q}{baseurl}/deletejob?id={self.index()}{q}>Delete job {self.index()}</a>"
         return txt
 
     def is_active(self):
@@ -359,11 +400,11 @@ class JobData:
     def deactivate(self):
         """Deactivate this job: remove from jobs and ujobs."""
         myname = 'JobData.deactivate'
-        if self.id in JobData.jobs:
-            del JobData.jobs[self.id]
+        if self.index() in JobData.jobs:
+            del JobData.jobs[self.index()]
         if self.usr.descname in JobData.ujobs:
-            if self.id in JobData.ujobs[self.usr.descname]:
-                del JobData.ujobs[self.usr.descname][self.id]
+            if self.index() in JobData.ujobs[self.usr.descname]:
+                del JobData.ujobs[self.usr.descname][self.index()]
 
     def archive(self, force=False, if_present=False):
         """
@@ -414,8 +455,8 @@ class JobData:
         else:
             os.remove(arcfil)
         if os.path.exists(delfil): return delfil
-        del JobData.jobs[job.id]
-        del JobData.ujobsjob[self.usr.descname][job.id]
+        del JobData.jobs[job.index()]
+        del JobData.ujobsjob[self.usr.descname][job.index()]
         return None
 
     def get_status_message(self):

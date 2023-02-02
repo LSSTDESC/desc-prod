@@ -25,23 +25,23 @@ class JobTable:
         self.stamsgs = []
         self.ports = []
         for job in self.jobs.values():
-            self.jobids.append(job.id)
-            self.jobtypes.append(job.jobtype)
-            self.configs.append(job.config)
-            pid = job.pid
+            self.jobids.append(job.index())
+            self.jobtypes.append(job.jobtype())
+            self.configs.append(job.config())
+            pid = job.pid()
             #if pid is None: pid = -1
             self.pids.append(pid)
-            rstat = job.get_return_status()
+            rstat = job.return_status()
             #if rstat is None: rstat = -1
             self.rstats.append(rstat)
             errmsg = ''
             if len(job.errmsgs): errmsg = job.errmsgs[-1]
             self.errmsgs.append(errmsg)
             self.stamsgs.append(job.get_status_message())
-            sstim = sdate(job.get_start_time())
+            sstim = sdate(job.start_time())
             self.starts.append(sstim)
             self.durations.append(job.duration())
-            self.ports.append(job.get_port())
+            self.ports.append(job.port())
         self.map = {}
         self.map['id'] = self.jobids
         self.map['jobtype'] = self.jobtypes
