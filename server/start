@@ -91,6 +91,10 @@ if [ $# -gt 0 ]; then
   elif [ $OPT = debug ]; then
     echo start: Setting debug.
     export SERVER_OPTS="$SERVER_OPTS debug"
+  # Start mysql server.
+  elif [ $OPT = mysql ]; then
+    echo start: Starting mysql server.
+    $ASROOT service mysql start
   else
     echo start: WARNING: Ignoring unknown flag: $OPT
   fi
