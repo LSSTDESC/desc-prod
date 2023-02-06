@@ -4,6 +4,8 @@ import json
 import subprocess
 from descprod import timestamp
 from descprod import UserData
+import mysql.connector
+from mysql.connector import errorcode
 
 class JobData:
     """
@@ -86,12 +88,114 @@ class JobData:
             cls.have_oldjobs.append(descname)
         return cls.ujobs[descname]
 
+    @classmethod
+    def db_name(cls):
+        """Default DB name."""
+        return 'descprod'
+
+    @classmethod
+    def table_name(cls):
+        """Default table name."""
+        return 'jobdata'
+
+    @classmethod
+    def connect_db(cls, db_name=None, create_db=False):
+        """Connect to a database."""
+        myname = 'JobData.connect_db'
+        if db_name is None: db_name = cls.db_name()
+        conmy = None
+        try:
+            conmy = mysql.connector.connect(port=3306)
+        except:
+            print(f"{myname}: Unable to access mysql server.")
+            return None
+        curmy = conmy.cursor()
+        con = None
+        try:
+            con = mysql.connector.connect(database=db_name)
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                print(f"{myname}: Unable to access mysql DB {db_name}.")
+            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                if create_db:
+                    print(f"{myname}: Creating DB {db_name}")
+                    com = f"CREATE DATABASE {db_name}"
+                    cur = conmy.cursor()
+                    cur.execute(com)
+                    conmy.commit()
+                    con = mysql.connector.connect(database=db_name)
+                else:
+                    print(f"{myname}: Database not found: {db_name}")
+            else:
+                print(err)
+        return con
+
+    @classmethod
+    def have_table(cls, table_name=None, create_table=False, drop_table=False, db_name=None, create_db=False):
+        """Return if a table exists."""
+        myname = 'JobData.have_table'
+        if table_name is None: table_name = cls.table_name()
+        if db_name is None: db_name = cls.db_name()
+        con = cls.connect_db(db_name, create_db)
+        if con is None:
+            print(f"{myname}: Unable to connect to DB {db_name}")
+            return None
+        cur = con.cursor()
+        check_query = f"SHOW TABLES LIKE '{table_name}'"
+        cur.execute(check_query)
+        haveit = bool(len(cur.fetchall()))
+        if drop_table and haveit:
+            print(f"{myname}: Dropping table {table_name}")
+            com = f"DROP TABLE {table_name}"
+            cur.execute(com)
+            con.commit()
+            haveit = cls.have_table(table_name, create_table=False, db_name=db_name)
+        if create_table and not haveit:
+            print(f"{myname}: Creating table {table_name}")
+            com = (
+              f"CREATE TABLE {table_name} ( "
+              f"idx int NOT NULL, "
+              f"descname varchar(64) NOT NULL, "
+              f"jobtype varchar(128), "
+              f"config varchar(512), "
+              f"command varchar(256), "
+              f"pid int, "
+              f"start_time int, "
+              f"port int, "
+              f"return_status int, "
+              f"stop_time int, "
+              f"PRIMARY KEY (idx) )"
+            )
+            cur.execute(com)
+            con.commit()
+            haveit = cls.have_table(table_name, create_table=False, db_name=db_name)
+        return haveit
+
+    @classmethod
+    def query_table(cls, query='*', table_name=None, create_table=False, db_name=None, create_db=False):
+        """
+        Query a job table table_name in DB db_name.
+        If a query is provided, a cursor with the reults is returned.
+        If not, returns whether the table exists.
+        Connection is cached so caller can use the cursor.
+        """
+        if table_name is None: table_name = cls.table_name()
+        haveit = cls.have_table(table_name)
+        if haveit is None or not haveit:
+            print(f"{myname}: Job table not found: {table_name}")
+            return None
+        cls.query_con = cls.connect_db(db_name, create_db)
+        com = f"SELECT {query} FROM {table_name}"
+        cur = cls.query_con.cursor()
+        cur.execute(com)
+        return cur
+
     def do_error(self, myname, msg, rstat=None):
-         """Record an error."""
-         errmsg = f"{myname}: ERROR: {msg}"
-         self.errmsgs += [errmsg]
-         if JobData.dbg: print(errmsg)
-         return rstat
+        """Record an error."""
+        errmsg = f"{myname}: ERROR: {msg}"
+        self.errmsgs += [errmsg]
+        if JobData.dbg: print(errmsg)
+        return rstat
 
     def idname(self):
         """Return the name of the job: jobXXXXXX."""

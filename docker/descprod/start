@@ -49,16 +49,18 @@ CNAME=$NAME
 # Configure mounts.
 DATDIR=$HOME/desc/dpvol01
 LOCDIR=$HOME/desc/dpvol02
+MSQDIR=$HOME/desc/dpvol03
 MOUNT_DATA="-v $DATDIR:/mnt/dpvol01"
+MOUNT_MYSQL="-v $MSQDIR:/mnt/dpvol03"
 MOUNT_LOCAL=
 for ARG in $COPTS; do
   if [ $ARG = server ]; then
-    MOUNT_LOCAL="-v $LOCDIR:/mnt/dpvol02"
+    MOUNT_LOCAL="$MOUNT_LOCAL -v $LOCDIR:/mnt/dpvol02"
   fi
 done
 
 echo Starting $CNAME with $FROM
-COM="docker run --name $CNAME --rm -p 88:5000 -p 8888:8888 $MOUNT_DATA $MOUNT_LOCAL $DOPTS -it $FROM $COPTS"
+COM="docker run --name $CNAME --rm -p 88:5000 -p 8888:8888 $MOUNT_DATA $MOUNT_LOCAL $MOUNT_MYSQL $DOPTS -it $FROM $COPTS"
 echo "Command: $COM"
 echo
 echo
