@@ -10,16 +10,16 @@ from mysql.connector import errorcode
 class JobData:
     """
     Holds the data describing a job.
-      # State data held in DB
-      index() - Job integer ID, unique to the site.
-      jobtype() - Job type: parsltest, ...
-      config() - config string for the job
-      command() - Array holding the job command line for Popen.
-      pid() - process ID
-      start_time() - start timestamp
-      port() - parsl worker port
-      return_status() - Return status.
-      stop_time() - stop timestamp
+      # State data held in DB:
+        index() - Job integer ID, unique to the site.
+        jobtype() - Job type: parsltest, ...
+        config() - config string for the job
+        command() - Array holding the job command line for Popen.
+        pid() - process ID
+        start_time() - start timestamp
+        port() - parsl worker port
+        return_status() - Return status.
+        stop_time() - stop timestamp
       # Derived data
       usr - User data constructed from DESC user name
       errmsgs - Error messages
@@ -33,6 +33,9 @@ class JobData:
     ujobs = {} # Known user jobs indexed by descname and id.
     have_oldjobs = []  # List of users for which old jobs have been retrieved.
     bindir = '/home/descprod/bin'
+    connections = {}   # Pool of mysql connectors
+    _default_table_name = None # Current table name
+    _db_name = None    # Current db name
     class runopts:
         use_shell = True                 # Submit jobs in a new shell
         use_sudo = True                  # Sudo to current user to launch jobs
@@ -89,18 +92,37 @@ class JobData:
         return cls.ujobs[descname]
 
     @classmethod
-    def db_name(cls):
-        """Default DB name."""
-        return 'descprod'
+    def db_name(cls, new_name=None):
+        """
+        Return the current db name.
+        If new_name is provided, it is first assigned as the current value.
+        If no value has been set or new_name is '', the default 'descprod' is used.
+        """
+        if new_name is not None:
+            cls._db_name = new_name
+        if cls._db_name is None or len(cls._db_name) == 0:
+            cls._db_name = 'descprod'
+        return cls._db_name
 
     @classmethod
-    def table_name(cls):
-        """Default table name."""
-        return 'jobdata'
+    def current_table_name(cls, new_name=None):
+        """
+        Return the current db table name.
+        If new_name is provided, it is first assigned as the current value.
+        If no value has been set or new_name is '', the default 'jobdata' is used.
+        """
+        if new_name is not None:
+            cls._default_table_name = new_name
+        if cls._default_table_name is None or len(cls._default_table_name) == 0:
+            cls._default_table_name = 'jobdata'
+        return cls._default_table_name
 
     @classmethod
-    def connect_db(cls, db_name=None, create_db=False):
-        """Connect to a database."""
+    def connect_db(cls, *, cname=None, db_name=None, create_db=False):
+        """
+        Return a connection to the named or current database.
+        If cname is provided, the connection is cached.
+        """
         myname = 'JobData.connect_db'
         if db_name is None: db_name = cls.db_name()
         conmy = None
@@ -128,33 +150,34 @@ class JobData:
                     print(f"{myname}: Database not found: {db_name}")
             else:
                 print(err)
+        if cname is not None and con is not None: cls.connections[cname] = con
         return con
 
     @classmethod
     def have_table(cls, table_name=None, create_table=False, drop_table=False, db_name=None, create_db=False):
         """Return if a table exists."""
         myname = 'JobData.have_table'
-        if table_name is None: table_name = cls.table_name()
-        if db_name is None: db_name = cls.db_name()
-        con = cls.connect_db(db_name, create_db)
+        tnam = cls.current_table_name(table_name)
+        dbnam = cls.db_name(db_name)
+        con = cls.connect_db(create_db=create_db)
         if con is None:
-            print(f"{myname}: Unable to connect to DB {db_name}")
+            print(f"{myname}: Unable to connect to DB {dbnam}")
             return None
         cur = con.cursor()
-        check_query = f"SHOW TABLES LIKE '{table_name}'"
+        check_query = f"SHOW TABLES LIKE '{tnam}'"
         cur.execute(check_query)
         haveit = bool(len(cur.fetchall()))
         if drop_table and haveit:
-            print(f"{myname}: Dropping table {table_name}")
-            com = f"DROP TABLE {table_name}"
+            print(f"{myname}: Dropping table {tnam}")
+            com = f"DROP TABLE {tnam}"
             cur.execute(com)
             con.commit()
-            haveit = cls.have_table(table_name, create_table=False, db_name=db_name)
+            haveit = cls.have_table()
         if create_table and not haveit:
-            print(f"{myname}: Creating table {table_name}")
+            print(f"{myname}: Creating table {tnam}")
             com = (
-              f"CREATE TABLE {table_name} ( "
-              f"idx int NOT NULL, "
+              f"CREATE TABLE {tnam} ( "
+              f"id int NOT NULL, "
               f"descname varchar(64) NOT NULL, "
               f"jobtype varchar(128), "
               f"config varchar(512), "
@@ -164,31 +187,165 @@ class JobData:
               f"port int, "
               f"return_status int, "
               f"stop_time int, "
-              f"PRIMARY KEY (idx) )"
+              f"PRIMARY KEY (id) )"
             )
             cur.execute(com)
             con.commit()
-            haveit = cls.have_table(table_name, create_table=False, db_name=db_name)
+            haveit = cls.have_table()
         return haveit
 
     @classmethod
-    def query_table(cls, query='*', table_name=None, create_table=False, db_name=None, create_db=False):
+    def db_query(cls, query='*', table_name=None, fix=True, verbose=0):
         """
         Query a job table table_name in DB db_name.
-        If a query is provided, a cursor with the reults is returned.
-        If not, returns whether the table exists.
-        Connection is cached so caller can use the cursor.
+        If no query is provided, returns whether the table exists.
+        If a query is provided, a cursor with the results is returned.
+        If fix and "SELECT" does not appear in the query, "SELECT " is prepended.
+        If fix and "FROM" does not appear in the query, " FROM <table_name>" is appended.
+        Connection is cached until the next call so caller can use the cursor.
         """
-        if table_name is None: table_name = cls.table_name()
-        haveit = cls.have_table(table_name)
+        myname = 'JobData.db_query'
+        tnam = cls.current_table_name(table_name)
+        haveit = cls.have_table(tnam)
         if haveit is None or not haveit:
             print(f"{myname}: Job table not found: {table_name}")
             return None
-        cls.query_con = cls.connect_db(db_name, create_db)
-        com = f"SELECT {query} FROM {table_name}"
-        cur = cls.query_con.cursor()
-        cur.execute(com)
+        com = query
+        if fix:
+            if com.find('SELECT') == -1: com = 'SELECT ' + com
+            if com.find('FROM') == -1: com = f"{com} FROM {table_name}"
+        if verbose > 1: print(f"{myname}: {com}")
+        con = cls.connect_db(cname ='query')
+        cur = con.cursor()
+        cur.execute(query)
         return cur
+
+    @classmethod
+    def get_table_schema(cls, *, table_name=None, field='Field', verbose=0):
+        """
+        Return info about the table schema with a value or None for each column.
+        Value to return is specified by field:
+          Field - Column name
+          Type - Data type
+          Null - Can be null?
+          Key - Is use in key?
+          Default - Default value?
+          Extra - User defined?
+        """
+        myname = 'JobData.get_table_schema'
+        tnam = cls.current_table_name(table_name)
+        if not cls.have_table():
+            print(f"{myname}: Table not found: {tnam}")
+            return []
+        con = cls.connect_db()
+        cur = con.cursor()
+        cur.execute(f"DESCRIBE {tnam}")
+        vals = []
+        fmap = {'Field':0, 'Type':1, 'Null':2, 'Key':3, 'Default':4, 'Extra':5}
+        if field not in fmap:
+            print(f"{myname}: Invalid field name: {field}")
+        fidx = fmap[field]
+        for col in cur.fetchall():
+            val = col[fidx]
+            if verbose > 1: print(f"{myname}: {col}")
+            vals.append(val)
+        return vals
+
+    def db_row(self, key, table_name=None):
+        """Fetcha job description from a DB table."""
+        myname = 'JobData.db_row'
+        tnam = self.current_table_name(table_name)
+        if not self.have_table():
+            print(f"{myname}: Table not found: {tnam}")
+            return []
+        cur = self.db_query(f"SELECT * FROM {tnam} WHERE id = {self.index()}")
+        return cur.fetchone()
+
+    def db_insert(self, *, table_name=None, verbose=0):
+        """Insert this job into a DB table."""
+        myname = 'JobData.db_insert'
+        tnam = self.current_table_name(table_name)
+        if not self.have_table():
+            print(f"{myname}: Table not found: {tnam}")
+            return 1
+        idx = self.index()
+        oldrow = self.db_row(idx)
+        if oldrow is not None:
+            print(f"{myname}: Job {idx} is already in table {tnam}:")
+            print(f"{myname}: {oldrow}")
+            return 2
+        cnams = self.get_table_schema()
+        ctyps = self.get_table_schema(field='Type')
+        if len(cnams) < 5:
+            print(f"{myname}: Unable to find schema for table {tnam}")
+            return 3
+        cvals = []
+        scnams = ''
+        scvals = ''
+        first = True
+        for icol in range(len(cnams)):
+            cnam = cnams[icol]
+            if cnam == 'idx': jnam = 'id'
+            else: jnam = cnam
+            jval = self.data(jnam)
+            if jval is None: jval = 'NULL'
+            cvals.append(jval)
+            if first: first = False
+            else:
+                scnams += ', '
+                scvals += ', '
+            scnams += cnam
+            styp = ctyps[icol].decode('utf-8')
+            addquote = styp.find('varchar') >= 0
+            if addquote: scvals += "'"
+            scvals += str(jval)
+            if addquote: scvals += "'"
+        con = self.connect_db()
+        cur = con.cursor()
+        com = f"INSERT INTO {tnam} ({scnams}) VALUES ({scvals})"
+        if verbose > 1: print(f"{myname}: {com}")
+        cur.execute(com)
+        con.commit()
+        self.job_table_name = tnam
+        self.nset_db = 0
+        self.stale_vars.difference_update(cnams)
+
+    def db_update(self, *, verbose=0):
+        """Update this job in its DB table."""
+        myname = 'JobData.db_update'
+        tnam = self.job_table_name
+        if not self.have_table(table_name=tnam):
+            print(f"{myname}: Table not found: {tnam}")
+            return 1
+        idx = self.index()
+        cnams = self.get_table_schema()
+        ctyps = self.get_table_schema(field='Type')
+        if len(cnams) < 5:
+            print(f"{myname}: Unable to find schema for table {tnam}")
+            return 3
+        coms = []
+        upcnams = set()
+        for icol in range(len(cnams)):
+            cnam = cnams[icol]
+            if cnam not in self.stale_vars: continue
+            upcnams.add(cnam)
+            jnam = cnam
+            jval = self.data(jnam)
+            if jval is None: jval = 'NULL'
+            styp = ctyps[icol].decode('utf-8')
+            if styp.find('varchar') >= 0: squot = "'"
+            else: squot = ''
+            cval = f"{squot}{jval}{squot}"
+            com = f"UPDATE {tnam} SET {cnam} = {cval} WHERE id = {idx}"
+            coms.append(com)
+        con = self.connect_db()
+        cur = con.cursor()
+        for com in coms:
+            if verbose > 1: print(f"{myname}: {com}")
+            cur.execute(com)
+        con.commit()
+        self.nset_db = 0
+        self.stale_vars.difference_update(upcnams)
 
     def do_error(self, myname, msg, rstat=None):
         """Record an error."""
@@ -238,7 +395,12 @@ class JobData:
 
     def set_data(self, nam, val):
         """Set a job property."""
-        self._data[nam] = val
+        oldval = self.data(nam)
+        if val != oldval:
+            self._data[nam] = val
+            self.nset += 1
+            self.nset_db += 1
+            self.stale_vars.add(nam)
 
     def data(self, nam):
         """Retrieve a job property."""
@@ -279,6 +441,10 @@ class JobData:
         If create is True, the directory is created.
         """
         self._data = {}       # All persistent data is stored here.
+        self.nset = 0               # Number of variable sets
+        self.nset_db = 0            # Number variable sets since last DB synchronization
+        self.stale_vars = set()     # Names of variables not sychronized to DB
+        self.job_table_name = None  # Name of the table where this job resides
         self.set_data('id', a_idx)
         self.set_data('descname', a_descname)
         idx = self.index()
