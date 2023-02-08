@@ -37,7 +37,7 @@ class JobTable:
             errmsg = ''
             if len(job.errmsgs): errmsg = job.errmsgs[-1]
             self.errmsgs.append(errmsg)
-            self.stamsgs.append(job.get_status_message())
+            self.stamsgs.append(job.progress())
             sstim = sdate(job.start_time())
             self.starts.append(sstim)
             self.durations.append(job.duration())

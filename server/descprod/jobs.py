@@ -10,33 +10,39 @@ from mysql.connector import errorcode
 class JobData:
     """
     Holds the data describing a job.
-      # State data held in DB:
-        index() - Job integer ID, unique to the site.
-        jobtype() - Job type: parsltest, ...
-        config() - config string for the job
-        command() - Array holding the job command line for Popen.
-        pid() - process ID
-        start_time() - start timestamp
-        port() - parsl worker port
-        return_status() - Return status.
-        stop_time() - stop timestamp
+      # State data held in data and DB:
+                index - Job integer ID, unique to the site.
+              jobtype - Job type: parsltest, ...
+               config - config string for the job
+              command - Array holding the job command line for Popen.
+                  pid - process ID
+           start_time - start timestamp
+          update_time - heartbeat timestamp
+            stop_time - stop timestamp
+        return_status - Return status.
+                 port - parsl worker port
+             progress - One-line report of job progress.
       # Derived data
       usr - User data constructed from DESC user name
       errmsgs - Error messages
       _popen - Popen object. E.g. use poll to see if job has completed.
       port_errors - Error messages retrieving the port.
     """
+    data_names =   ['id', 'descname', 'jobtype', 'config',  'command', 'pid', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
+    data_dbtypes = ['int', 'varchar', 'varchar', 'varchar', 'varchar', 'int', 'int',        'int',         'int',       'int',           'int',  'varchar']
+    data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'command':256, 'progress':256}
+    data_dbcons = {'id':'NOT NULL', 'descname':'NOT NULL'}
     dbg = 1
-    jindent = 2
-    jsep = (',', ': ')
+    jindent = 2          # json indentation
+    jsep = (',', ': ')   # json separators
     jobs = {}  # All known jobs indexed by id
     ujobs = {} # Known user jobs indexed by descname and id.
     have_oldjobs = []  # List of users for which old jobs have been retrieved.
-    bindir = '/home/descprod/bin'
-    connections = {}   # Pool of mysql connectors
-    _default_table_name = None # Current table name
-    _db_name = None    # Current db name
-    class runopts:
+    bindir = '/home/descprod/bin'   # Where local commands are found
+    connections = {}   # Pool of named mysql connectors
+    _default_table_name = None # Current table name (set to descprod if None)
+    _db_name = None    # Current db name (set to jobdata if None)
+    class runopts:     # parameters for lcoal job submission
         use_shell = True                 # Submit jobs in a new shell
         use_sudo = True                  # Sudo to current user to launch jobs
         setup_conda = True               # Setup the local conda base
@@ -154,7 +160,7 @@ class JobData:
         return con
 
     @classmethod
-    def have_table(cls, table_name=None, create_table=False, drop_table=False, db_name=None, create_db=False):
+    def have_table(cls, table_name=None, *, create_table=False, drop_table=False, db_name=None, create_db=False, verbose=0):
         """Return if a table exists."""
         myname = 'JobData.have_table'
         tnam = cls.current_table_name(table_name)
@@ -175,20 +181,21 @@ class JobData:
             haveit = cls.have_table()
         if create_table and not haveit:
             print(f"{myname}: Creating table {tnam}")
-            com = (
-              f"CREATE TABLE {tnam} ( "
-              f"id int NOT NULL, "
-              f"descname varchar(64) NOT NULL, "
-              f"jobtype varchar(128), "
-              f"config varchar(512), "
-              f"command varchar(256), "
-              f"pid int, "
-              f"start_time int, "
-              f"port int, "
-              f"return_status int, "
-              f"stop_time int, "
-              f"PRIMARY KEY (id) )"
-            )
+            com = f"CREATE TABLE {tnam} ("
+            for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
+                nchar = cls.data_nchars.get(nam, 0)
+                if nchar:
+                    assert(typ == 'varchar')
+                    flen = f"({nchar})"
+                else:
+                    assert(typ != 'varchar')
+                    flen = ''
+                constraint = cls.data_dbcons.get(nam, '')
+                fcon = f" {constraint}" if len(constraint) else ''
+                com += f" {nam} {typ}{flen} {fcon},"
+            com += 'PRIMARY KEY (id) )'
+            if verbose:
+                print(f"{myname}: {com}")
             cur.execute(com)
             con.commit()
             haveit = cls.have_table()
@@ -197,7 +204,7 @@ class JobData:
     @classmethod
     def db_query(cls, query='*', table_name=None, fix=True, verbose=0):
         """
-        Query a job table table_name in DB db_name.
+        Query the job table table_name in DB db_name.
         If no query is provided, returns whether the table exists.
         If a query is provided, a cursor with the results is returned.
         If fix and "SELECT" does not appear in the query, "SELECT " is prepended.
@@ -395,12 +402,17 @@ class JobData:
 
     def set_data(self, nam, val):
         """Set a job property."""
+        myname = 'JobData.set_data'
+        if nam not in self.data_names:
+            print(f"{myname}: ERROR: Invalid data name: {nam}")
+            return 1
         oldval = self.data(nam)
         if val != oldval:
             self._data[nam] = val
             self.nset += 1
             self.nset_db += 1
             self.stale_vars.add(nam)
+        return 0
 
     def data(self, nam):
         """Retrieve a job property."""
@@ -413,25 +425,27 @@ class JobData:
     def config(self):        return self.data('config')
     def pid(self):           return self.data('pid')
     def start_time(self):    return self.data('start_time')
+    def update_time(self):   return self.data('update_time')
+    def stop_time(self):     return self.get_stop_time()
     def port(self):          return self.data('port')
     def command(self):       return self.data('command')
     def return_status(self): return self.get_return_status()
-    def stop_time(self):     return self.get_stop_time()
+    def progress(self):      return self.get_progress()
 
     def jmap_update(self, jmap):
         """Update the job dat using a json map."""
         myname = 'JobData.jmap_update'
         if 'id' not in jmap:
-            #return (1, f"Map does not containe the job ID.")
+            return (1, f"Map does not contain the job ID.")
             pass
         else:
             if jmap['id'] != self.index(): return (2, f"IDs do not match: {jmap['id']} != {self.index()}")
         if 'descname' not in jmap:
-            #return (3, f"Map does not containe the user name.")
+            return (2, f"Map does not contain the user name.")
             pass
         else:
             if jmap['descname'] != self.descname(): return (3, f"User names do not match: {jmap['descname']} != {self.descname()}")
-        for nam in ['jobtype', 'config', 'command', 'pid', 'start_time', 'port', 'return_status', 'stop_time']:
+        for nam in self.data_names:
             if nam in jmap: self.set_data(nam, jmap[nam])
         return (0, '')
 
@@ -447,6 +461,7 @@ class JobData:
         self.job_table_name = None  # Name of the table where this job resides
         self.set_data('id', a_idx)
         self.set_data('descname', a_descname)
+        self.set_data('progress', 'Created.')
         idx = self.index()
         descname = self.descname()
         self.usr = UserData(descname)
@@ -467,21 +482,27 @@ class JobData:
             if not havedir:
                 self.do_error(myname, f"Directory not found: {rundir}")
             else:
-                jnam = self.job_config_file()
-                if not os.path.exists(jnam):
-                    self.do_error(myname, f"Config file not found: {jnam}")
-                else:
-                    try:
-                        with open(jnam, 'r') as jfil:
-                            jmap = json.load(jfil)
-                            rs, rmsg = self.jmap_update(jmap)
-                            if rs:
-                                print(f"{myname}: Update from file {jnam} failed.")
-                                print(f"{myname}: {rmsg}")
-                                print(f"{myname}: Map contents:")
-                                for key, val in jmap.items(): print(f"{myname}:   {key}: {val}")
-                    except json.decoder.JSONDecodeError:
-                        self.do_error(myname, f"Unable to parse config file: {jnam}")
+                fnams = [self.wrapper_config_file(), self.job_config_file()]
+                ok = False
+                for fnam in fnams:
+                    if os.path.exists(fnam):
+                        try:
+                            with open(fnam, 'r') as jfil:
+                                jmap = json.load(jfil)
+                                rs, rmsg = self.jmap_update(jmap)
+                                if rs:
+                                    print(f"{myname}: Update from file {fnam} failed.")
+                                    print(f"{myname}: {rmsg}")
+                                    print(f"{myname}: Map contents:")
+                                    for key, val in jmap.items(): print(f"{myname}:   {key}: {val}")
+                                else:
+                                    ok = TRUE
+                                    break
+                        except json.decoder.JSONDecodeError:
+                            self.do_error(myname, f"Unable to parse config file: {fnam}")
+                if not ok:
+                    print(f"{myname}: Unable to read any of the config files:")
+                    for fnam in fnams: print(f"{myname}:   {fnam}")
         JobData.jobs[idx] = self
         if descname not in JobData.ujobs:
             JobData.ujobs[descname] = {}
@@ -544,10 +565,10 @@ class JobData:
                 shwcom += 'source /home/descprod/local/etc/setup_parsl.sh; '
             if len(runopts.env_file):
                 shwcom += f"set >{runopts.env_file}; "
-            shwcom += f"descprod-wrap '{self.command()}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()}"
+            shwcom += f"descprod-wrap '{self.command()}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
             com += ['bash', '-login', '-c', shwcom]
         else:
-            com += ['descprod-wrap', self.command(), self.run_dir(), self.log_file(), self.wrapper_config_file()]
+            com += ['descprod-wrap', self.command(), self.run_dir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
         logfil = open(self.wrapper_log_file(), 'w')
         print(shwcom, logfil)
         self._popen = subprocess.Popen(com, cwd=self.run_dir(), stdout=logfil, stderr=logfil)
@@ -564,13 +585,18 @@ class JobData:
           "start_time":    1672871201,
           "pid":           1362,
           "stop_time":     1672871253,
-          "return_code":   0
+          "return_status": 0
+          "progress": "This job is done."
         """
         myname = 'JobData.get_wrapper_info'
         jnam = self.wrapper_config_file()
         if not os.path.exists(jnam): return None
         with open(jnam, 'r') as jfil:
-            jmap = json.load(jfil)
+            try:
+                jmap = json.load(jfil)
+            except:
+                print(f"{myname}: Unable to read {jnam}")
+        self.jmap_update(jmap)
         # If we have the pid for the first time, record it and the start time
         # in the job data and config file.
         if self.pid() is None and 'pid' in jmap:
@@ -611,34 +637,21 @@ class JobData:
             port = self.data('port')
         return self.port()
 
+
     def get_return_status(self):
         myname = 'JobData.get_return_status'
         rs = self.data('return_status')
-        if rs is not None: return rs
-        wmap = self.get_wrapper_info()
-        # If we have the return status for the first time, record it and
-        # the stop time in the the job data and config file.
-        if wmap is not None and 'return_code' in wmap:
-           self.set_data('return_status', wmap['return_code'])
-           self.set_data('stop_time', wmap['stop_time'])
-           print(f"Job {self.idname()} ended at {self.stop_time()} with status {self.return_status()}.")
-           jnam = self.job_config_file()
-           with open(jnam, 'r') as jfil:
-               try:
-                   jmap = json.load(jfil)
-               except json.JSONDecodeError:
-                   print(f"{myname}: Unable to decode json file {jnam}.")
-                   jmap = {}
-           jmap.update({'return_status':self.return_status()})
-           jmap.update({'stop_time':self.stop_time()})
-           with open(jnam, 'w') as jfil:
-               json.dump(jmap, jfil, indent=JobData.jindent)
-           return self.return_status()
-        return None
+        if rs is None:
+            self.get_wrapper_info()
+        return self.data('return_status')
 
     def get_stop_time(self):
         self.get_return_status()
         return self.data('stop_time')
+
+    def get_progress(self):
+        self.get_return_status()
+        return self.data('progress')
 
     def duration(self):
         ts1 = self.start_time()
@@ -728,12 +741,4 @@ class JobData:
         del JobData.jobs[job.index()]
         del JobData.ujobsjob[self.usr.descname][job.index()]
         return None
-
-    def get_status_message(self):
-        snam = self.status_file()
-        line = ''
-        if os.path.isfile(snam):
-            with open(snam) as sfil:
-                for line in sfil: pass
-        return line
 

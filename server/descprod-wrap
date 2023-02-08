@@ -6,17 +6,28 @@
 # January 2023
 #
 
+wver = 14
+
 import sys
 import os
 import time
 import json
 import subprocess
 
+def get_progress_from_file():
+    snam = f"current-status.txt"
+    line = ''
+    if os.path.isfile(snam):
+        with open(snam) as sfil:
+            for line in sfil: pass
+    return line.strip()
+
 jindent = 2
 jsep = (',', ': ')
 
 dohelp = len(sys.argv) > 1 and sys.argv[1] == '-h'
-doerr = len(sys.argv) != 5
+nargexp = 7
+doerr = len(sys.argv) != nargexp
 this = os.path.basename(sys.argv[0])
 
 if dohelp:
@@ -34,11 +45,11 @@ if dohelp:
     print(f"  pid - Process ID")
     print(f"After execution, it has the above plus:")
     print(f"  stop_time - Stop time")
-    print(f"  return_code - Command return code")
+    print(f"  return_status - Command return code")
     exit(0)
 
 if doerr:
-    print(f"Invalid arguments:")
+    print(f"Invalid arguments ({len(sys.argv)} != {nargexp}):")
     for arg in sys.argv:
         print(f"  {arg}")
     exit(1)
@@ -47,12 +58,19 @@ command = sys.argv[1]
 rundir = sys.argv[2]
 logname = sys.argv[3]
 jnam = sys.argv[4]
+jobid = int(sys.argv[5])
+user = sys.argv[6]
 
 if logname[0] != '/': logname = f"{rundir}/{logname}"
 if jnam[0] != '/':    jnam    = f"{rundir}/{jnam}"
 
+print(f"Running job {jobid} for user {user} in {rundir} with wrapper version {wver}")
+
 logfil = open(logname, 'w')
 info = {}
+info['wrapper_version'] = wver
+info['id'] = jobid
+info['descname'] = user
 info['command'] = command
 info['run_directory'] = rundir
 info['log_file'] = logname
@@ -64,11 +82,29 @@ with open(jnam, 'w') as jfil:
     json.dump(info, jfil, separators=jsep, indent=jindent)
     jfil.write('\n')
 print(f"Config is in {jnam}")
-rc = pop.wait()
-info['stop_time'] = int(time.time())
-info['return_code'] = rc
-with open(jnam, 'w') as jfil:
-    json.dump(info, jfil, separators=jsep, indent=jindent)
-    jfil.write('\n')
-print(f"Updated config is in {jnam}")
-exit(rc)
+wait_time = 10
+rc = None
+while True:
+    rc = pop.poll()
+    nowtime = int(time.time())
+    prefix = 'Running'
+    sep = '. '
+    if rc is not None:
+        info['stop_time'] = nowtime
+        info['return_status'] = rc
+        if rc < 0:
+            prefix = f"Process received signal {-rc}"
+        elif rc > 0:
+            prefix = f"Failed"
+        else:
+            prefix = f"Done"
+    info['update_time'] = nowtime
+    progress = f"{prefix}{sep}{get_progress_from_file()}"
+    if len(progress):
+        info['progress'] = progress
+    with open(jnam, 'w') as jfil:
+        json.dump(info, jfil, separators=jsep, indent=jindent)
+        jfil.write('\n')
+    print(f"Updated config is in {jnam}")
+    if rc is not None: exit(rc)
+    time.sleep(wait_time)
