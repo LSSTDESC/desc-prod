@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>DESCprod help</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body style="max-width:700px;color #444;">
+<h2>Welcome to DESCprod</h2>
+David Adams
+<br>
+February 2023
+
+<h3>Introduction</h3>
+DESCprod is a web service and supporting code to help users to run DESC jobs at NERSC.
+<br><br>
+For an overview and current status, please see the
+<a href =https://drive.google.com/file/d/1uAMfWpQLenxF_50mjmBWqISEEDxOkdrc/view?usp=share_link>talk by David Adams</a>
+at the January 25, 2023 DESC CO meeting.
+
+<h3>Web interface</h3>
+To use the DESC web server, point your browser to <a href=https://www.descprod.org>https://www.descprod.org</a>.
+<br><br>
+To do more than view this document, you will need to tell us who you are.
+At present, only google authentication is supported.
+Click the login button and you will be taken to their page to sign in if
+do not already have credentials in your browser.
+If it is the first time you connect, you will have to send some info so we can link your google
+and DESC IDs.
+Once the link is established, login will take you to the DESCprod home page where you can submit
+job and see the status of jobs submitted earlier.
+<br><br>
+Jobs are specified by a job type and a configuration string.
+Right now, it is only possible to run parsltest jobs on the local system.
+Resources are limited there and so please do not run more than a few tasks at a time
+for more than a few minutes.
+An example configuration string is:
+<pre>
+    wq-sleep-ttsk10-ntsk20-nwrk4
+</pre>
+This is a request to use the WorkQueue scheduler to run 20 10-second sleep jobs using
+four workers.
+Enter this or a variation in the parsltest box and click submit to create and start a job.
+The job will then appear in your job list and you can get status updates
+by refreshing the page.
+Once the job is done, hover over the job ID to obtain links to archive or delete the job.
+
+<H3>Coming soon</H3>
+Our next deliverable is a command you can run on any of the NERSC computers (e.g. perlmutter
+login or batch nodes) to run a job configured on the server.
+After that, a job type will be added to allow users to run LSST pipeline jobs.
+Stay tuned.
+<br><br>
+Comments and contributions are welcome.
+
+</body>
+</html>

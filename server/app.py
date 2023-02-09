@@ -12,13 +12,6 @@ import subprocess
 from sfapi import Sfapi
 
 import json
-from flask_login import (
-    LoginManager,
-    current_user,
-    login_required,
-    login_user,
-    logout_user
-)
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 import secrets
@@ -212,8 +205,6 @@ if __name__ == '__main__':
     app.run(ssl_context=('/home/descprod/cert.pem', 'key.pem'))
 app.secret_key = os.urandom(24)
 app.permanent_session_lifetime = timedelta(minutes=5)
-login_manager = LoginManager()
-login_manager.init_app(app)
 if 'SERVER_OPTS' in os.environ:
     opts=os.environ['SERVER_OPTS'].split()
     for opt in opts:
@@ -327,7 +318,6 @@ def home():
         msg += sep
         msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>'
-        #msg += '<form action="/help" method="get"><input type="submit" value="Help"></form>'
         msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
         #msg += '<form action="/session" method="get"><input type="submit" value="Show session"></form>'
         msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>'
@@ -335,6 +325,7 @@ def home():
     else:
         msg += sep
         msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
+    msg += '<br><form action="/help" method="get"><input type="submit" value="Help"></form>'
     return sdat.make_response(msg)
 
 @app.route("/login")
@@ -371,16 +362,7 @@ def logout():
 
 @app.route("/help")
 def help():
-    msg = '<H1>Hello help</H1>'
-    msg +=      '          help - This message.'
-    msg += '<br>            bye - Restarts the server.'
-    msg += '<br>     hello?John - Says hello to John'
-    msg += '<br> hello?John&Doe - Says hello to John Doe'
-    msg += '<br>        request - Parses a request'
-    msg += '<br>       versions - Show software versions'
-    msg += '<br>       pmstatus - Show perlmutter status'
-    msg += '<br>      parsltest - Parses a request'
-    return msg
+    return render_template('help.html')
 
 @app.route("/bye")
 def bye():
