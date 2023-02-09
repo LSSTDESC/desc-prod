@@ -152,7 +152,7 @@ def html_head():
     msg = '<!DOCTYPE html>\n'
     msg += '<html lang="en">\n'
     msg += '<head>\n'
-    #msg += '  <link rel="stylesheet" href="/home/descprod/static/main.css?version=2" />\n'
+    #msg += f"""  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">"""
     msg += '<style>\n'
     msg += '.dataframe table, th, td {font-size:12pt; border: none; padding-left: 20px; text-align:right;}\n'
     msg += '.dropbtn {\n'
@@ -313,15 +313,14 @@ def home():
         #    msg += sep
         #    msg += f"Run dir: {SessionData.rundir}"
         msg += sep
-        msg += sep
         msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
         msg += sep
-        msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>'
-        msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>'
-        msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>'
+        msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>\n'
+        msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>\n'
+        msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>\n'
         #msg += '<form action="/session" method="get"><input type="submit" value="Show session"></form>'
-        msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>'
-        if udat.is_admin(): msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>'
+        msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>\n'
+        if udat.is_admin(): msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>\n'
     else:
         msg += sep
         msg += '<form action="/login" method="get"><input type="submit" value="Log in with google"></form>'
