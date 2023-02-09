@@ -7,6 +7,16 @@ from descprod import UserData
 import mysql.connector
 from mysql.connector import errorcode
 
+def wait_for_path(path, exists, ntry=10, dtry=0.2):
+    """Wait for a path to exists or not exist and return if it exists."""
+    for i in range(ntry):
+        path_exists = os.path.exists(path)
+        if exists:
+            if path_exists: break
+        else:
+            if not path_exists: break
+    return path_exists
+    
 class JobData:
     """
     Holds the data describing a job.
@@ -496,7 +506,7 @@ class JobData:
                                     print(f"{myname}: Map contents:")
                                     for key, val in jmap.items(): print(f"{myname}:   {key}: {val}")
                                 else:
-                                    ok = TRUE
+                                    ok = True
                                     break
                         except json.decoder.JSONDecodeError:
                             self.do_error(myname, f"Unable to parse config file: {fnam}")
@@ -712,15 +722,21 @@ class JobData:
             return None
         com = f"cd {usrdir} && tar zcf {arcfil} {jnam}"
         (rstat, sout) = subprocess.getstatusoutput(com)
-        if rstat or not os.path.exists(arcfil):
-            msg = f"Archive command failed: {com}"
+        if rstat:
+            msg = f"Archive command failed with error {rstat}: {com}"
             if os.path.exists(arcfil):
                 os.remove(arcfil)
             self.do_error(myname, msg)
             return None
-        print(f"XXX {os.path.exists(arcfil)} {os.path.exists(rundir)} {rundir}")
-        if os.path.exists(arcfil) and os.path.exists(rundir):
+        arc_exists = wait_for_path(arcfil, True)
+        if not arc_exists:
+            self.do_error(myname, msg)
+            return None
+        if arc_exists and os.path.exists(rundir):
             shutil.rmtree(rundir)
+            if wait_for_path(rundir, False):
+                msg = f"WARNING: Run dir removal failed: {rundir}"
+                self.do_error(myname, msg)
             self.deactivate()
         return arcfil
 
