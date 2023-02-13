@@ -85,6 +85,7 @@ class JobData:
 
     @classmethod
     def get_jobs_from_disk(cls, descname=None):
+        """"Retrieve a user's jobs from the local disk."""
         myname = 'JobData.get_jobs_from_disk'
         if descname is None: return cls.jobs
         usr = UserData(descname)
@@ -107,6 +108,12 @@ class JobData:
                     jdat = JobData(jobid, descname, "disk")
             cls.have_oldjobs.append(descname)
         return cls.ujobs[descname]
+
+    @classmethod
+    def get_jobs_from_db(cls, descname=None):
+        """"Retrieve a user's jobs from the local disk."""
+        myname = 'JobData.get_jobs_from_db'
+        abort()
 
     @classmethod
     def db_name(cls, new_name=None):
