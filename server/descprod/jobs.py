@@ -84,8 +84,8 @@ class JobData:
         return cls.ujobs[descname][idx]
 
     @classmethod
-    def get_jobs(cls, descname=None):
-        myname = 'JobData.get_jobs'
+    def get_jobs_from_disk(cls, descname=None):
+        myname = 'JobData.get_jobs_from_disk'
         if descname is None: return cls.jobs
         usr = UserData(descname)
         if cls.dbg: print(f"{myname}: Fetching jobs for user {descname}.")
@@ -103,7 +103,8 @@ class JobData:
                     if jobid in cls.jobs:
                         if dbg: print(f"{myname}:   Skipping bad name {jobnam}.")
                         continue
-                    jdat = JobData(jobid, descname, False)
+                    print(f"{myname}:   Fetching job {jobnam}.")
+                    jdat = JobData(jobid, descname, "disk")
             cls.have_oldjobs.append(descname)
         return cls.ujobs[descname]
 
@@ -170,9 +171,18 @@ class JobData:
         return con
 
     @classmethod
-    def have_table(cls, table_name=None, *, create_table=False, drop_table=False, db_name=None, create_db=False, verbose=0):
-        """Return if a table exists."""
-        myname = 'JobData.have_table'
+    def db_table(cls, table_name=None, *, create_table=False, drop_table=False, db_name=None, create_db=False, verbose=0):
+        """
+        Manipulate a job table in the DB.
+          db_name - Database name [descprod]
+            table_name - Job table name [descprod]
+             create_db - if True, creates the database
+            drop_table - if True, deletes the table
+          create_table - if True, creates the table
+             create_db - if True, creates the database
+        Returns if the table exists.
+        """
+        myname = 'JobData.db_table'
         tnam = cls.current_table_name(table_name)
         dbnam = cls.db_name(db_name)
         con = cls.connect_db(create_db=create_db)
@@ -188,7 +198,7 @@ class JobData:
             com = f"DROP TABLE {tnam}"
             cur.execute(com)
             con.commit()
-            haveit = cls.have_table()
+            haveit = cls.db_table()
         if create_table and not haveit:
             print(f"{myname}: Creating table {tnam}")
             com = f"CREATE TABLE {tnam} ("
@@ -208,11 +218,11 @@ class JobData:
                 print(f"{myname}: {com}")
             cur.execute(com)
             con.commit()
-            haveit = cls.have_table()
+            haveit = cls.db_table()
         return haveit
 
     @classmethod
-    def db_query(cls, query='*', table_name=None, fix=True, verbose=0):
+    def db_query(cls, query='*', *, table_name=None, fix=True, verbose=0, display=False):
         """
         Query the job table table_name in DB db_name.
         If no query is provided, returns whether the table exists.
@@ -223,22 +233,31 @@ class JobData:
         """
         myname = 'JobData.db_query'
         tnam = cls.current_table_name(table_name)
-        haveit = cls.have_table(tnam)
+        haveit = cls.db_table(tnam)
         if haveit is None or not haveit:
-            print(f"{myname}: Job table not found: {table_name}")
+            print(f"{myname}: Job table not found: {tnam}")
             return None
         com = query
         if fix:
-            if com.find('SELECT') == -1: com = 'SELECT ' + com
-            if com.find('FROM') == -1: com = f"{com} FROM {table_name}"
+            if com.find('SELECT') == -1: com = f"SELECT * FROM {tnam} WHERE " + com
         if verbose > 1: print(f"{myname}: {com}")
         con = cls.connect_db(cname ='query')
         cur = con.cursor()
-        cur.execute(query)
+        try:
+            cur.execute(com)
+        except mysql.connector.errors.ProgrammingError:
+            print(f"{myname}: SQL syntax error in: {com}")
+            display = False
+        if display:
+            count = 0
+            for row in [cur.fetchall()]:
+                print(row)
+                count += 1
+            if count == 0: print('***** No matches found *****')
         return cur
 
     @classmethod
-    def get_table_schema(cls, *, table_name=None, field='Field', verbose=0):
+    def get_db_table_schema(cls, *, table_name=None, field='Field', verbose=0):
         """
         Return info about the table schema with a value or None for each column.
         Value to return is specified by field:
@@ -249,9 +268,9 @@ class JobData:
           Default - Default value?
           Extra - User defined?
         """
-        myname = 'JobData.get_table_schema'
+        myname = 'JobData.get_db_table_schema'
         tnam = cls.current_table_name(table_name)
-        if not cls.have_table():
+        if not cls.db_table():
             print(f"{myname}: Table not found: {tnam}")
             return []
         con = cls.connect_db()
@@ -268,21 +287,22 @@ class JobData:
             vals.append(val)
         return vals
 
-    def db_row(self, key, table_name=None):
-        """Fetcha job description from a DB table."""
+    @classmethod
+    def db_row(cls, job_id, table_name=None):
+        """Fetcha a job description from a DB table."""
         myname = 'JobData.db_row'
-        tnam = self.current_table_name(table_name)
-        if not self.have_table():
+        tnam = cls.current_table_name(table_name)
+        if not cls.db_table():
             print(f"{myname}: Table not found: {tnam}")
             return []
-        cur = self.db_query(f"SELECT * FROM {tnam} WHERE id = {self.index()}")
+        cur = cls.db_query(f"SELECT * FROM {tnam} WHERE id = {job_id}")
         return cur.fetchone()
 
     def db_insert(self, *, table_name=None, verbose=0):
         """Insert this job into a DB table."""
         myname = 'JobData.db_insert'
         tnam = self.current_table_name(table_name)
-        if not self.have_table():
+        if not self.db_table():
             print(f"{myname}: Table not found: {tnam}")
             return 1
         idx = self.index()
@@ -291,8 +311,8 @@ class JobData:
             print(f"{myname}: Job {idx} is already in table {tnam}:")
             print(f"{myname}: {oldrow}")
             return 2
-        cnams = self.get_table_schema()
-        ctyps = self.get_table_schema(field='Type')
+        cnams = self.get_db_table_schema()
+        ctyps = self.get_db_table_schema(field='Type')
         if len(cnams) < 5:
             print(f"{myname}: Unable to find schema for table {tnam}")
             return 3
@@ -331,12 +351,12 @@ class JobData:
         """Update this job in its DB table."""
         myname = 'JobData.db_update'
         tnam = self.job_table_name
-        if not self.have_table(table_name=tnam):
+        if not self.db_table(table_name=tnam):
             print(f"{myname}: Table not found: {tnam}")
             return 1
         idx = self.index()
-        cnams = self.get_table_schema()
-        ctyps = self.get_table_schema(field='Type')
+        cnams = self.get_db_table_schema()
+        ctyps = self.get_db_table_schema(field='Type')
         if len(cnams) < 5:
             print(f"{myname}: Unable to find schema for table {tnam}")
             return 3
@@ -459,10 +479,13 @@ class JobData:
             if nam in jmap: self.set_data(nam, jmap[nam])
         return (0, '')
 
-    def __init__(self, a_idx, a_descname, create):
+    def __init__(self, a_idx, a_descname, source=None):
         """
         Create or locate job idx for user descname.
-        If create is True, the directory is created.
+          source:
+            None - A new job is created
+              db - from the current DB table
+            disk - From the user's rlocal rundir
         """
         self._data = {}       # All persistent data is stored here.
         self.nset = 0               # Number of variable sets
@@ -483,40 +506,57 @@ class JobData:
         sidx = JobData.name_from_id(idx)
         rundir = self.run_dir()
         havedir = os.path.isdir(rundir)
-        if create:
+        dbinsert = False
+        if source is None or source == 'None' or source == 'none':
             if havedir:
                 self.do_error(myname, f"Directory already exists: {rundir}'")
+            elif len(list(self.db_query(f"id = {idx}").fetchall())):
+                self.do_error(myname, f"DB entry already exists for id {idx}")
             else:
                 self.usr.mkdir(rundir)
-        else:
+                dbinsert = True
+        elif source == 'disk':
             if not havedir:
                 self.do_error(myname, f"Directory not found: {rundir}")
             else:
-                fnams = [self.wrapper_config_file(), self.job_config_file()]
+                fnams = [self.job_config_file(), self.wrapper_config_file()]
                 ok = False
                 for fnam in fnams:
+                    error_prefix = ''     # Error prefix for the file
+                    emsgs = []            # Supplementary error messages
                     if os.path.exists(fnam):
                         try:
                             with open(fnam, 'r') as jfil:
                                 jmap = json.load(jfil)
                                 rs, rmsg = self.jmap_update(jmap)
                                 if rs:
-                                    print(f"{myname}: Update from file {fnam} failed.")
-                                    print(f"{myname}: {rmsg}")
-                                    print(f"{myname}: Map contents:")
-                                    for key, val in jmap.items(): print(f"{myname}:   {key}: {val}")
+                                    error_prefix = "Unable to parse file"
+                                    emsgs.append(f"{rmsg}")
+                                    emsgs.append(f"Map contents:")
+                                    for key, val in jmap.items(): emsgs.append(f":   {key}: {val}")
                                 else:
+                                    print(f"{myname}: Loaded job data from {fnam}")
                                     ok = True
-                                    break
                         except json.decoder.JSONDecodeError:
-                            self.do_error(myname, f"Unable to parse config file: {fnam}")
+                            error_prefix = "JSON file decode error"
+                    else:
+                        error_prefix = "File not found"
+                    if len(error_prefix):
+                        self.do_error(myname, f"{error_prefix}: {fnam}")
+                        for msg in emsgs:
+                            print(f"{myname}: {msg}")
                 if not ok:
-                    print(f"{myname}: Unable to read any of the config files:")
-                    for fnam in fnams: print(f"{myname}:   {fnam}")
+                    self.do_error(myname, f"Unable to read any of the json config files:")
+                    for fnam in fnams: print(f"{myname}:  {fnam}")
+                
+        else:
+             self.do_error(myname, f"Invalid source option: {source}")
+
         JobData.jobs[idx] = self
         if descname not in JobData.ujobs:
             JobData.ujobs[descname] = {}
         JobData.ujobs[descname][idx] = self
+        if dbinsert: self.db_insert()
 
     def configure(self, jobtype, config, a_command=None):
         """
@@ -545,12 +585,16 @@ class JobData:
                return self.do_error(myname, f"Command not found for job type {jobtype}", 16)
         self.set_data('command', command)
         jmap = {}
+        jmap['id'] = self.index()
+        jmap['descname'] = self.descname()
         jmap['jobtype'] = self.jobtype()
         jmap['config']  = self.config()
         jmap['command'] = self.command()
         jnam = self.job_config_file()
         with open(jnam, 'w') as jfil:
             json.dump(jmap, jfil, separators=JobData.jsep, indent=JobData.jindent)
+        self.set_data('progress', 'Configured.')
+        self.db_update()
         return 0
 
     def run(self):
@@ -582,6 +626,8 @@ class JobData:
         logfil = open(self.wrapper_log_file(), 'w')
         print(shwcom, logfil)
         self._popen = subprocess.Popen(com, cwd=self.run_dir(), stdout=logfil, stderr=logfil)
+        self.set_data('progress', 'Running.')
+        self.db_update()
         wmap = self.get_wrapper_info()
         return 0
  
@@ -624,6 +670,7 @@ class JobData:
             with open(jnam, 'w') as jfil:
                 json.dump(jmap, jfil, separators=JobData.jsep, indent=JobData.jindent)
                 jfil.write('\n')
+            self.db_update()
         return jmap
 
     def get_port(self, badval=None):
@@ -643,6 +690,7 @@ class JobData:
                 port = badval
                 return badval
             self.set_data('port', badval)
+            self.db_update()
         else:
             port = self.data('port')
         return self.port()

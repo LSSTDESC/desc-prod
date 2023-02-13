@@ -13,7 +13,7 @@ class JobTable:
         self.refresh()
 
     def refresh(self):
-        self.jobs = JobData.get_jobs(self.descname)
+        self.jobs = JobData.get_jobs_from_disk(self.descname)
         self.jobids = []
         self.jobtypes = []
         self.configs = []

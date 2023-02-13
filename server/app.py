@@ -524,7 +524,7 @@ def do_parsltest(cfg):
         sdat.msg.append('Log in to run parsltest')
         return redirect(url_for('home'))
     jobid = get_jobid()
-    jdat = JobData(jobid, udat.descname, True)
+    jdat = JobData(jobid, udat.descname)
     if len(jdat.errmsgs):
         sdat.msg.append(jdat.errmsgs)
         return redirect(url_for('home'))
@@ -626,4 +626,30 @@ def req(path):
     msg += f"<br><br>"
     msg += f" get data: {request.get_data().decode('UTF-8')}<br><br>"
     return msg
+
+@app.route('/get_job', methods=['POST'])
+def get_job():
+    """Handle request to return a job."""
+    rst = 0
+    msg = 'Success.'
+    rec = request.json
+    missingkeys = []
+    for key in ['descname', 'id']:
+        if key not in rec: missingkeys += [key]
+    if len(missingkeys):
+        return {'status':1, 'message':f"Missing keys in request: {missingkeys}"}
+    jid = int(rec['id'])
+    descname = rec['descname']
+    job = JobData.get_user_job(descname, jid)
+    if job is None:
+        return {'status':2, 'message':f"Job {jid} not found for user {descname}."}
+    jmap = {'descname':descname, 'id':jid, 'whatever':'else'}
+    return {'status':0, 'message':'Success', 'job':jmap}
+
+@app.route('/update_job', methods=['POST', 'GET'])
+def update_job():
+    """Handle request to update a job."""
+    if request.method == 'GET':
+        return 'Got GET instead of POST!!'
+    return {'status':'not implemented'}
 

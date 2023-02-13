@@ -51,7 +51,9 @@ DATDIR=$HOME/desc/dpvol01
 LOCDIR=$HOME/desc/dpvol02
 MSQDIR=$HOME/desc/dpvol03
 MOUNT_DATA="-v $DATDIR:/mnt/dpvol01"
-MOUNT_MYSQL="-v $MSQDIR:/mnt/dpvol03"
+#MOUNT_MYSQL="-v $MSQDIR:/mnt/dpvol03"
+#MOUNT_MYSQL="-v $MSQDIR/mysql:/var/lib/mysql"
+MOUNT_MYSQL="-v mysql:/var/lib/mysql"
 MOUNT_LOCAL=
 for ARG in $COPTS; do
   if [ $ARG = server ]; then
