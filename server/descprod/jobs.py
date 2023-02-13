@@ -357,6 +357,7 @@ class JobData:
             print(f"{myname}: Table not found: {tnam}")
             return []
         cur = cls.db_query(f"SELECT * FROM {tnam} WHERE id = {job_id}")
+        if cur is None: return None
         return cur.fetchone()
 
     def db_insert(self, *, table_name=None, verbose=0):
