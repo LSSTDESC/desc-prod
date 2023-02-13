@@ -492,7 +492,7 @@ class JobData:
         """Return the archive file after deletion for this job."""
         return f"{self.usr.delete_dir}/{self.idname()}.tz"
 
-    def set_data(self, nam, val):
+    def set_data(self, nam, val, *, set_stale=True):
         """Set a job property."""
         myname = 'JobData.set_data'
         if nam not in self.data_names:
@@ -503,7 +503,7 @@ class JobData:
             self._data[nam] = val
             self.nset += 1
             self.nset_db += 1
-            self.stale_vars.add(nam)
+            if set_stale: self.stale_vars.add(nam)
         return 0
 
     def data(self, nam):
@@ -524,6 +524,16 @@ class JobData:
     def return_status(self): return self.get_return_status()
     def progress(self):      return self.get_progress()
 
+    def jmap(self):
+        """Write the data to a json map."""
+        myname = 'JobData.jmap'
+        jmap = {}
+        for nam in self.data_names:
+            val = self.data(nam)
+            if val is not None:
+                jmap[nam] = val
+        return jmap
+
     def jmap_update(self, jmap):
         """Update the job dat using a json map."""
         myname = 'JobData.jmap_update'
@@ -539,6 +549,7 @@ class JobData:
             if jmap['descname'] != self.descname(): return (3, f"User names do not match: {jmap['descname']} != {self.descname()}")
         for nam in self.data_names:
             if nam in jmap: self.set_data(nam, jmap[nam])
+        self.db_update()
         return (0, '')
 
     def __init__(self, a_idx, a_descname, source=None):
@@ -589,10 +600,12 @@ class JobData:
                 elif nrow > 1:
                     self.do_error(myname, f"DB query for ID {idx} user {descname}' has too many ({nrow}) matches.")
                 else:
+                    self.stale_vars = set()
                     dbnams = self.get_db_table_schema()
                     row = rows[0]
                     for (nam,val) in zip(dbnams[2:], row[2:]):
-                        self.set_data(nam, val)
+                        self.set_data(nam, val, set_stale=False)
+                    self.job_table_name = self.current_table_name()
         elif source == 'disk':
             if not havedir:
                 self.do_error(myname, f"Directory not found: {rundir}")
@@ -736,6 +749,7 @@ class JobData:
         if self.pid() is None and 'pid' in jmap:
             self.set_data('pid', jmap['pid'])
             self.set_data('start_time', jmap['start_time'])
+            self.db_update()
             jnam = self.job_config_file()
             with open(jnam, 'r') as jfil:
                 try:
