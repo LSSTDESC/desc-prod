@@ -116,6 +116,9 @@ class JobData:
         if descname not in cls.ujobs:
             cls.ujobs[descname] = {}
         cur = cls.db_query_where(f"descname='{descname}'", cols='id')
+        if cur is None:
+            print(f"{myname}: DB query failed.")
+            return []
         jdats = []
         for row in cur.fetchall():
             idx = row[0]
