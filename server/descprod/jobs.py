@@ -113,7 +113,16 @@ class JobData:
     def get_jobs_from_db(cls, descname=None):
         """"Retrieve a user's jobs from the local disk."""
         myname = 'JobData.get_jobs_from_db'
-        abort()
+        if descname not in cls.ujobs:
+            cls.ujobs[descname] = {}
+        cur = cls.db_query_where(f"descname='{descname}'", cols='id')
+        jdats = []
+        for row in cur.fetchall():
+            idx = row[0]
+            jdat = JobData(idx, descname, 'db')
+            jdats.append(jdat)
+        print(f"{myname}: Fetched {len(jdats)} jobs for user {descname} from DB")
+        return cls.ujobs[descname]
 
     @classmethod
     def db_name(cls, new_name=None):
@@ -229,24 +238,17 @@ class JobData:
         return haveit
 
     @classmethod
-    def db_query(cls, query='*', *, table_name=None, fix=True, verbose=0, display=False):
+    def db_query(cls, query, *, verbose=0, display=False):
         """
         Query the job table table_name in DB db_name.
-        If no query is provided, returns whether the table exists.
-        If a query is provided, a cursor with the results is returned.
-        If fix and "SELECT" does not appear in the query, "SELECT " is prepended.
-        If fix and "FROM" does not appear in the query, " FROM <table_name>" is appended.
+        Return a cursor with the results of query.
         Connection is cached until the next call so caller can use the cursor.
+          query - query to perform, e.g. SELECT * FROM mytable WHERE descname='someone'
+          verbose - display the query
+          display - Display the rows and return the count
         """
         myname = 'JobData.db_query'
-        tnam = cls.current_table_name(table_name)
-        haveit = cls.db_table(tnam)
-        if haveit is None or not haveit:
-            print(f"{myname}: Job table not found: {tnam}")
-            return None
         com = query
-        if fix:
-            if com.find('SELECT') == -1: com = f"SELECT * FROM {tnam} WHERE " + com
         if verbose > 1: print(f"{myname}: {com}")
         con = cls.connect_db(cname ='query')
         cur = con.cursor()
@@ -255,13 +257,62 @@ class JobData:
         except mysql.connector.errors.ProgrammingError:
             print(f"{myname}: SQL syntax error in: {com}")
             display = False
+            return None
         if display:
             count = 0
             for row in [cur.fetchall()]:
                 print(row)
                 count += 1
             if count == 0: print('***** No matches found *****')
+            return None
         return cur
+
+    @classmethod
+    def db_query_where(cls, where='*', *, table_name=None, cols='*', verbose=0, display=False):
+        """
+        Query the job table table_name in DB db_name.
+        Returns the result of the query SELECT * from {table_name} where {where}
+        If a query is provided, a cursor with the results is returned.
+        Connection is cached until the next call so caller can use the cursor.
+          where - where of query to perform. Blank returns all
+          table_name - Table name if query is fixed
+          cols - comm-separated list of column names to return
+          verbose - display the query
+          display - Display the rows and return the count
+        """
+        myname = 'JobData.db_query_where'
+        tnam = cls.current_table_name(table_name)
+        haveit = cls.db_table(tnam)
+        if haveit is None or not haveit:
+            print(f"{myname}: Job table not found: {tnam}")
+            return None
+        com = f"SELECT {cols} FROM {tnam}"
+        if len(where): com += f" WHERE {where}"
+        cur = JobData.db_query(com, verbose=verbose, display=display)
+        return cur
+
+    @classmethod
+    def db_count_where(cls, where='*', *, table_name=None, verbose=0):
+        """
+        Query the job table table_name in DB db_name.
+        Returns the count of the query SELECT * from {table_name} where {where}
+        If a query is provided, a cursor with the results is returned.
+        Connection is cached until the next call so caller can use the cursor.
+          where - where of query to perform. Blank returns all
+          table_name - Table name if query is fixed
+          verbose - display the query
+          display - Display the rows and return the count
+        """
+        myname = 'JobData.db_count_where'
+        tnam = cls.current_table_name(table_name)
+        haveit = cls.db_table(tnam)
+        if haveit is None or not haveit:
+            return 0
+        com = f"SELECT COUNT(*) FROM {tnam}"
+        if len(where): com += f" WHERE {where}"
+        cur = JobData.db_query(com, verbose=verbose)
+        if cur is None: return None
+        return cur.fetchone()[0]
 
     @classmethod
     def get_db_table_schema(cls, *, table_name=None, field='Field', verbose=0):
@@ -517,11 +568,27 @@ class JobData:
         if source is None or source == 'None' or source == 'none':
             if havedir:
                 self.do_error(myname, f"Directory already exists: {rundir}'")
-            elif len(list(self.db_query(f"id = {idx}").fetchall())):
+            elif self.db_count_where(f"id = {idx}"):
                 self.do_error(myname, f"DB entry already exists for id {idx}")
             else:
                 self.usr.mkdir(rundir)
                 dbinsert = True
+        elif source == 'db':
+            cur = self.db_query_where(f"id={idx} AND descname='{descname}'")
+            if cur is None:
+                self.do_error(myname, f"DB query for ID {idx} user {descname}' failed.")
+            else:
+                rows = cur.fetchall()
+                nrow = len(rows)
+                if nrow == 0:
+                    self.do_error(myname, f"DB query for ID {idx} user {descname}' has no matches.")
+                elif nrow > 1:
+                    self.do_error(myname, f"DB query for ID {idx} user {descname}' has too many ({nrow}) matches.")
+                else:
+                    dbnams = self.get_db_table_schema()
+                    row = rows[0]
+                    for (nam,val) in zip(dbnams[2:], row[2:]):
+                        self.set_data(nam, val)
         elif source == 'disk':
             if not havedir:
                 self.do_error(myname, f"Directory not found: {rundir}")
