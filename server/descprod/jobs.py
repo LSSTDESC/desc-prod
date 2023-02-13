@@ -118,7 +118,7 @@ class JobData:
         cur = cls.db_query_where(f"descname='{descname}'", cols='id')
         if cur is None:
             print(f"{myname}: DB query failed.")
-            return []
+            return {}
         jdats = []
         for row in cur.fetchall():
             idx = row[0]
