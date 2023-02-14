@@ -8,7 +8,12 @@ import mysql.connector
 from mysql.connector import errorcode
 
 def wait_for_path(path, exists, ntry=10, dtry=0.2):
-    """Wait for a path to exists or not exist and return if it exists."""
+    """
+    Wait for a file path to exist or not exist and return if it exists.
+      exists - If true (false), wait for the path to exist (not exist).
+      ntry - Maximum number of cycles to wait.
+      dtry - Time to wait each cycle.
+    """
     for i in range(ntry):
         path_exists = os.path.exists(path)
         if exists:
