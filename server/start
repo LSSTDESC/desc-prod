@@ -185,7 +185,7 @@ if [ $OPT = server ]; then
   fi
   # Start server. Run as the current user.
   echo start: Starting server as $UNAM.
-  /home/descprod/dev/desc-prod/server/bin/run-server
+  /home/descprod/dev/desc-prod/server/run-server
   echo start: Server exited.
   exit 0
 fi
