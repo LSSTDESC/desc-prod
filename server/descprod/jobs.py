@@ -738,6 +738,7 @@ class JobData:
         myname = 'JobData.get_wrapper_info'
         jnam = self.wrapper_config_file()
         if not os.path.exists(jnam): return None
+        jmap = {}
         with open(jnam, 'r') as jfil:
             try:
                 jmap = json.load(jfil)
