@@ -41,7 +41,7 @@ copyit() {
 
 THIS=$(readlink -f $0)
 THISDIR=$(dirname $THIS)
-THISVER=$(cat $THISDIR/../version.txt)
+THISVER=$(descprod-version)
 echo start: Called with args: $*
 echo start: desc-prod version $THISVER
 OPT=${1:-update}
