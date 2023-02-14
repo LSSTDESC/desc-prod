@@ -569,9 +569,7 @@ def delete_job():
         sdat.msg.append(f"Job {jobid} not found for user {udat.descname}")
     else:
         delfil = job.delete()
-        if delfil is None:
-            sdat.msg.append(f"Unable to delete Job {jobid} for user {udat.descname}")
-        else:
+        if delfil is not None:
             sdat.msg.append(f"Job {jobid} scheduled for deletion at {delfil}")
     return redirect(url_for('home'))
 

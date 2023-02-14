@@ -309,7 +309,6 @@ class JobData:
           where - where of query to perform. Blank returns all
           table_name - Table name if query is fixed
           verbose - display the query
-          display - Display the rows and return the count
         """
         myname = 'JobData.db_count_where'
         tnam = cls.current_table_name(table_name)
@@ -321,6 +320,30 @@ class JobData:
         cur = JobData.db_query(com, verbose=verbose)
         if cur is None: return None
         return cur.fetchone()[0]
+
+    @classmethod
+    def db_delete_where(cls, where, *, table_name=None, verbose=0):
+        """
+        Delete rows from the job table table_name in DB db_name.
+        Connection is cached until the next call so caller can use the cursor.
+          where - where of query to perform. Blank returns all
+          table_name - Table name if query is fixed
+          verbose - display the query
+        Returns the number of rows deleted.
+        """
+        myname = 'JobData.db_count_delete'
+        tnam = cls.current_table_name(table_name)
+        haveit = cls.db_table(tnam)
+        if haveit is None or not haveit:
+            return 0
+        com = f"DELETE FROM {tnam}"
+        if len(where): com += f" WHERE {where}"
+        cur = JobData.db_query(com, verbose=verbose)
+        if cur is None: return None
+        ndel = cur.rowcount
+        con = JobData.connections['query']
+        con.commit()
+        return ndel
 
     @classmethod
     def get_db_table_schema(cls, *, table_name=None, field='Field', verbose=0):
@@ -890,17 +913,26 @@ class JobData:
         """Delete this job."""
         myname = 'JobData.delete'
         rundir = self.run_dir()
-        arcfil = self.archive()
-        delfil = self.delete_file()
+        idx = self.index()
         if os.path.exists(rundir):
-            shutil.rmtree(rundir)
-            self.deactivate()
-        if os.path.exists(arcfil) and not os.path.exists(delfil):
-            os.rename(arcfil, delfil)
-        else:
-            os.remove(arcfil)
-        if os.path.exists(delfil): return delfil
-        del JobData.jobs[job.index()]
-        del JobData.ujobsjob[self.usr.descname][job.index()]
-        return None
+            print(f"{myname}: Deleting run directory for job {idx}")
+            arcfil = self.archive()
+            delfil = self.delete_file()
+            if os.path.exists(rundir):
+                shutil.rmtree(rundir)
+                self.deactivate()
+            if arcfil is not None:
+                if os.path.exists(arcfil) and not os.path.exists(delfil):
+                    os.rename(arcfil, delfil)
+                else:
+                    os.remove(arcfil)
+            if os.path.exists(delfil): return delfil
+        if self.db_count_where(f"id={idx}"):
+            print(f"{myname}: Deleting DB entry for job {idx}")
+            ndel = self.db_delete_where(f"id={idx}")
+            if ndel != 1:
+                print(f"{myname}: ERROR: Deleted row count {ndel} != one")
+        del JobData.jobs[idx]
+        del JobData.ujobs[self.usr.descname][idx]
+        return 0
 
