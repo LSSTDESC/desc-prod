@@ -68,9 +68,10 @@ if [ $# -gt 0 ]; then
   elif [ $OPT = update-desc-prod ]; then
     echo start: Updating desc-prod.
     cd /home/descprod/dev/desc-prod
-    echo "Version before: $(cat version.txt)"
+    echo "Version before: $(descprod-version)
     $ASDESC git pull
-    echo "Version after: $(cat version.txt)"
+    $ASDESC pip install .
+    echo "Version after: $(descprod-version)
   # Enable SSL with cert and key on local disk.
   elif [ $OPT = ssl ]; then
     echo start: Enabling SSL.
