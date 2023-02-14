@@ -467,7 +467,7 @@ def versions():
         prod = line.split()[0]
         vers = line[len(prod):]
         tbl[prod.strip()] = vers.strip()
-    tbl['desc-prod'] = subprocess.getoutput('cat /home/descprod/dev/desc-prod/version.txt')
+    tbl['desc-prod'] = subprocess.getoutput('descprod-version')
     wprod = 0
     for prod in tbl:
         wprod = max(wprod, len(prod))

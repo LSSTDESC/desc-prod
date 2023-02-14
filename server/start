@@ -129,13 +129,8 @@ if [ ! -r $BINDIR ]; then
 fi
 PKGDIR=$DESCHOME/dev/desc-prod
 SRCDIR=$PKGDIR/server
-linkit $SRCDIR/run-server $BINDIR
-linkit $SRCDIR/sfapi $BINDIR
+PATH="$PATH:$SRCDIR/bin"
 copyit $SRCDIR/setup.sh $DESCHOME
-for FIL in l nersc-proxy show-open-ports nersc-proxy descprod-next-jobid descprod-next-sessionid \
-           descprod-current-jobid setup-jupyter-job descprod-wrap descprod-adduser descprod-get-parsl-port; do
-  copyit $SRCDIR/$FIL $BINDIR
-done
 for FIL in descprod-wrap; do
   $ASROOT cp $SRCDIR/$FIL /bin
 done

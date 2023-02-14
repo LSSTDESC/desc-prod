@@ -51,3 +51,4 @@ On perlmutter or cori, install with shifter:
 04 - Move to descprod 0.2.45 to allow update of self.
      Move to desc-wfmon 0.26.11 to allow simultaneous parsl jobs.
 05 - Add mysql server.
+06 - Add pip install of desc-prod
