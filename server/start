@@ -164,7 +164,7 @@ if [ $OPT = server ]; then
       echo start: WARNING: Creating missing job ID file: $JIDFIL
     fi
     echo start: Current/last job ID is $(cat $JIDFIL)
-    # Trsansfer the new user files. Thes are copied in when a user is added.
+    # Transfer the new user files. Thes are copied in when a user is added.
     $ASROOT cp $SRCDIR/skel/.bash* /etc/skel
   fi
   # Setup authentications.
@@ -185,7 +185,7 @@ if [ $OPT = server ]; then
   fi
   # Start server. Run as the current user.
   echo start: Starting server as $UNAM.
-  /home/descprod/dev/desc-prod/server/run-server
+  /home/descprod/dev/desc-prod/server/bin/run-server
   echo start: Server exited.
   exit 0
 fi
