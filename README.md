@@ -2,7 +2,7 @@
 DESC production service
 
 ## Contents
-[descprod](descprod) - Installed code used by clients and servers.
+[descprod](descprod) - Installed code used by clients and servers.  
 [docker](docker) - Configuration files and supporting scripts for building docker images.  
 [service](service) - Scripts useful for building the production service.  
 [ptenv](ptenv) - Scripts to build and use parsltest conda envs at NERC.  
