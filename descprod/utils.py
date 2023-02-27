@@ -12,7 +12,7 @@ def sdate(tstamp=None, fmt='%Y-%m-%d %H:%M:%S'):
         dt = datetime.fromtimestamp(tstamp)
     return dt.strftime(fmt)
 
-# Returna formatted time durations: HH:MM:SS
+# Return a formatted time durations: HH:MM:SS
 def sduration(dur, near=False):
     if dur <= 0.0: return '0:00'
     rem = dur

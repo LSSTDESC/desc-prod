@@ -641,7 +641,7 @@ def get_job():
     job = JobData.get_user_job(descname, jid)
     if job is None:
         return {'status':2, 'message':f"Job {jid} not found for user {descname}."}
-    jmap = {'descname':descname, 'id':jid, 'whatever':'else'}
+    jmap = job.jmap()
     return {'status':0, 'message':'Success', 'job':jmap}
 
 @app.route('/update_job', methods=['POST', 'GET'])

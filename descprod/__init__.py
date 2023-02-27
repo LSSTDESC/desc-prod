@@ -11,3 +11,5 @@ from .utils      import sduration
 from .users      import UserData
 from .jobs       import JobData
 from .job_table  import JobTable
+from .get_job    import get_job
+from .get_job    import get_job_main
