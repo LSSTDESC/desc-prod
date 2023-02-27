@@ -9,7 +9,7 @@ def sdate(tstamp=None, fmt='%Y-%m-%d %H:%M:%S'):
     if tstamp is None:
         dt = datetime.now()
     else:
-        dt = datetime.fromtimestamp(tstamp)
+        dt = datetime.utcfromtimestamp(tstamp)
     return dt.strftime(fmt)
 
 # Return a formatted time durations: HH:MM:SS

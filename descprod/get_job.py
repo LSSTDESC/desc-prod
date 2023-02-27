@@ -2,6 +2,7 @@
 
 import sys
 import os
+import descprod
 
 def get_job(idx):
      import requests
@@ -27,5 +28,15 @@ def get_job_main():
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1
-    print(resp)
+    rs = resp['status']
+    if rs:
+        print(f"{myname}: ERROR: {resp['message']}")
+        return 2
+    jdat = resp['job']
+    for key in descprod.JobData.data_names:
+        if key in jdat:
+            val = jdat[key]
+            if key[-5:] == '_time':
+                val = f"{descprod.sdate(val)} UTC"
+            print(f"{key:>16}: {val}")
     return 0
