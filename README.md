@@ -4,7 +4,32 @@ The goal of the project is to make it easy for DESC members to run jobs at NERSC
 The system provides (or will provide soon) direct support to run LSST pipeline jobs
 and can run working group and user analysis jobs that provide a specified application interface.
 For a recent status report see the
-(talk at the January 25, 2023 DESC CO meeting)(https://drive.google.com/file/d/1uAMfWpQLenxF_50mjmBWqISEEDxOkdrc/view?usp=share_link)
+[talk at the January 25, 2023 DESC CO meeting](https://drive.google.com/file/d/1uAMfWpQLenxF_50mjmBWqISEEDxOkdrc/view?usp=share_link).
+
+## Service
+A web service is provided at [https://www.descprod.org].
+Follow that link and log in with google credentials to view a page where you can submit jobs and track theior progress.
+if you afre not already registered with descprod, follow the instructions to register.
+
+## Installation
+To use the descprod clients, you must first install this package.
+Check it out from git and build with pip:
+<pre>
+mkdir &lt;install-dir>
+cd &lt;install-dir>
+git clone https://github.com/LSSTDESC/desc-prod.git
+cd desc-prod
+pip install .
+</pre>
+Not the installation requires a recent version of python.
+One option at NERSC is use the default python module:
+<pre>
+module load python
+</pre>
+
+## Clients
+The following clients are provided:
+descprod-version - Showss the installed version of this package.
 
 ## Contents
 [descprod](descprod) - Installed code used by clients and servers.  
