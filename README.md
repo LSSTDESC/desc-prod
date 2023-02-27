@@ -21,15 +21,15 @@ git clone https://github.com/LSSTDESC/desc-prod.git
 cd desc-prod
 pip install .
 </pre>
-Not the installation requires a recent version of python.
-One option at NERSC is use the default python module:
+Note the installation requires a recent version of python.
+One option at NERSC is to use the default python module:
 <pre>
 module load python
 </pre>
 
 ## Clients
 The following clients are provided:
-descprod-version - Showss the installed version of this package.
+descprod-version - Shows the installed version of this package.
 
 ## Contents
 [descprod](descprod) - Installed code used by clients and servers.  
