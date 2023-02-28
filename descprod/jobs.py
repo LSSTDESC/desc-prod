@@ -43,9 +43,11 @@ class JobData:
       _popen - Popen object. E.g. use poll to see if job has completed.
       port_errors - Error messages retrieving the port.
     """
-    data_names =   ['id', 'descname', 'jobtype', 'config',  'command', 'pid', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
-    data_dbtypes = ['int', 'varchar', 'varchar', 'varchar', 'varchar', 'int', 'int',        'int',         'int',       'int',           'int',  'varchar']
-    data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'command':256, 'progress':256}
+    data_names =   ['id', 'descname', 'jobtype', 'config',  'command']
+    data_dbtypes = ['int', 'varchar', 'varchar', 'varchar', 'varchar']
+    data_names +=   [   'host',  'rundir', 'pid', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
+    data_dbtypes += ['varchar', 'varchar', 'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
+    data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'command':256, 'host':128, 'rundir':256, 'progress':256}
     data_dbcons = {'id':'NOT NULL', 'descname':'NOT NULL'}
     dbg = 1
     jindent = 2          # json indentation
@@ -212,6 +214,7 @@ class JobData:
         con = cls.connect_db(create_db=create_db)
         if con is None:
             print(f"{myname}: Unable to connect to DB {dbnam}")
+            raise Exception(f"{myname}: Unable to connect to DB {dbnam}")
             return None
         cur = con.cursor()
         check_query = f"SHOW TABLES LIKE '{tnam}'"
@@ -391,6 +394,7 @@ class JobData:
     def db_insert(self, *, table_name=None, verbose=0):
         """Insert this job into a DB table."""
         myname = 'JobData.db_insert'
+        if not self.usedb: return 0
         tnam = self.current_table_name(table_name)
         if not self.db_table():
             print(f"{myname}: Table not found: {tnam}")
@@ -440,6 +444,7 @@ class JobData:
     def db_update(self, *, verbose=0):
         """Update this job in its DB table."""
         myname = 'JobData.db_update'
+        if not self.usedb: return 0
         tnam = self.job_table_name
         if not self.db_table(table_name=tnam):
             print(f"{myname}: Table not found: {tnam}")
@@ -485,29 +490,29 @@ class JobData:
         """Return the name of the job: jobXXXXXX."""
         return self.name_from_id(self.index())
 
-    def run_dir(self):
-        """Return the run directory for this job."""
+    def server_run_dir(self):
+        """Return the run directory if this job is run on the server."""
         return f"{self.usr.run_dir}/{self.idname()}"
 
     def log_file(self):
         """Return the log file name for this job."""
-        return f"{self.run_dir()}/{self.idname()}.log"
+        return f"{self.rundir}/{self.idname()}.log"
 
     def wrapper_log_file(self):
         """Return the log file name for this job's wrapper."""
-        return f"{self.run_dir()}/wrapper.log"
+        return f"{self.rundir}/wrapper.log"
 
     def status_file(self):
         """Return the status file name for this job."""
-        return f"{self.run_dir()}/current-status.txt"
+        return f"{self.rundir}/current-status.txt"
 
     def job_config_file(self):
         """Return the job config file for this job."""
-        return f"{self.run_dir()}/config.json"
+        return f"{self.rundir}/config.json"
 
     def wrapper_config_file(self):
         """Return the wrapper config file for this job."""
-        return f"{self.run_dir()}/wrapper-status.json"
+        return f"{self.rundir}/wrapper-status.json"
 
     def archive_file(self):
         """Return the archive file for this job."""
@@ -563,10 +568,13 @@ class JobData:
         return jmap
 
     def jmap_update(self, jmap):
-        """Update the job dat using a json map."""
+        """
+        Update the job dat using a json map.
+        Returns a string error message which is empty for success.
+        """
         myname = 'JobData.jmap_update'
         if 'id' not in jmap:
-            return (1, f"Map does not contain the job ID.")
+            return f"Map does not contain the job ID."
             pass
         else:
             if jmap['id'] != self.index(): return (2, f"IDs do not match: {jmap['id']} != {self.index()}")
@@ -580,15 +588,19 @@ class JobData:
         self.db_update()
         return (0, '')
 
-    def __init__(self, a_idx, a_descname, source=None):
+    def __init__(self, a_idx, a_descname, source=None, usedb=True):
         """
         Create or locate job idx for user descname.
           source:
             None - A new job is created
               db - from the current DB table
-            disk - From the user's rlocal rundir
+            disk - From the user's local rundir
+        If usedb, the job's data are recorded and updated the job DB.
+        If not None, rundir is used as the run directory.
         """
         self._data = {}       # All persistent data is stored here.
+        self.usedb = usedb
+        self.rundir = None
         self.nset = 0               # Number of variable sets
         self.nset_db = 0            # Number variable sets since last DB synchronization
         self.stale_vars = set()     # Names of variables not sychronized to DB
@@ -605,17 +617,13 @@ class JobData:
         myname = 'JobData.ctor'
         dbg = JobData.dbg
         sidx = JobData.name_from_id(idx)
-        rundir = self.run_dir()
         havedir = os.path.isdir(rundir)
         dbinsert = False
         if source is None or source == 'None' or source == 'none':
             if havedir:
                 self.do_error(myname, f"Directory already exists: {rundir}'")
-            elif self.db_count_where(f"id = {idx}"):
+            elif self.usedb and self.db_count_where(f"id = {idx}"):
                 self.do_error(myname, f"DB entry already exists for id {idx}")
-            else:
-                self.usr.mkdir(rundir)
-                dbinsert = True
         elif source == 'db':
             cur = self.db_query_where(f"id={idx} AND descname='{descname}'")
             if cur is None:
@@ -647,8 +655,8 @@ class JobData:
                         try:
                             with open(fnam, 'r') as jfil:
                                 jmap = json.load(jfil)
-                                rs, rmsg = self.jmap_update(jmap)
-                                if rs:
+                                rmsg = self.jmap_update(jmap)
+                                if len(rmsg):
                                     error_prefix = "Unable to parse file"
                                     emsgs.append(f"{rmsg}")
                                     emsgs.append(f"Map contents:")
@@ -703,6 +711,23 @@ class JobData:
             else:
                return self.do_error(myname, f"Command not found for job type {jobtype}", 16)
         self.set_data('command', command)
+        self.set_data('progress', 'Configured.')
+        self.db_update()
+        return 0
+
+    def run(self, rundir=None):
+        """
+        Run the job, i.e. start it with Popen and a wrapper.
+        """
+        myname = 'JobData.run'
+        rstat = 0
+        if self.command() is None:
+            rstat += self.do_error(myname, f"Command is not specified.", 1)
+        self.rundir = self.server_run_dir() if rundir is None else rundir
+        self.usr.mkdir(self.rundir)
+        if not os.path.exists(self.run_dir()):
+            rstat += self.do_error(myname, f"Run directory is not present.", 2)
+        if rstat: return rstat
         jmap = {}
         jmap['id'] = self.index()
         jmap['descname'] = self.descname()
@@ -712,21 +737,6 @@ class JobData:
         jnam = self.job_config_file()
         with open(jnam, 'w') as jfil:
             json.dump(jmap, jfil, separators=JobData.jsep, indent=JobData.jindent)
-        self.set_data('progress', 'Configured.')
-        self.db_update()
-        return 0
-
-    def run(self):
-        """
-        Run the job, i.e. start it with Popen and a wrapper.
-        """
-        myname = 'JobData.run'
-        rstat = 0
-        if self.command() is None:
-            rstat += self.do_error(myname, f"Command is not specified.", 1)
-        if not os.path.exists(self.run_dir()):
-            rstat += self.do_error(myname, f"Run directory is not present.", 2)
-        if rstat: return rstat
         runopts = JobData.runopts
         com = ['sudo', '-u', self.usr.descname] if runopts.use_sudo else []
         shell = runopts.use_shell

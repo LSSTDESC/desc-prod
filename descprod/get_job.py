@@ -5,14 +5,14 @@ import os
 import descprod
 
 def get_job(jid, dnam=None):
-     import requests
-     url = 'https://www.descprod.org/get_job'
-     descname = os.getlogin() if dnam is None else dnam
-     r = requests.post(url, json={'id':jid, 'descname':descname})
-     sc = r.status_code
-     if sc == 200:
-         return r.json()
-     return f"Web service returned status {sc}"
+    import requests
+    url = 'https://www.descprod.org/get_job'
+    descname = os.getlogin() if dnam is None else dnam
+    r = requests.post(url, json={'id':jid, 'descname':descname})
+    sc = r.status_code
+    if sc == 200:
+        return r.json()
+    return f"Web service returned status {sc}"
 
 def get_job_main():
     sjid = sys.argv[1] if len(sys.argv) > 1 else '-h'
