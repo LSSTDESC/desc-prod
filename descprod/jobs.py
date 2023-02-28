@@ -929,7 +929,7 @@ class JobData:
         myname = 'JobData.delete'
         rundir = self.rundir()
         idx = self.index()
-        if os.path.exists(rundir):
+        if rundir is not None and os.path.exists(rundir):
             print(f"{myname}: Deleting run directory for job {idx}")
             arcfil = self.archive()
             delfil = self.delete_file()
