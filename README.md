@@ -28,8 +28,9 @@ module load python
 </pre>
 
 ## Clients
-The following clients are provided:
-descprod-version - Shows the installed version of this package.
+The following clients are provided:  
+descprod-version - Shows the installed version of this package.  
+descprod-show-job - Shows the data for a given job ID.
 
 ## Contents
 [descprod](descprod) - Installed code used by clients and servers.  
