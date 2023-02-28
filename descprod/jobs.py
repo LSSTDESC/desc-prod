@@ -1,4 +1,5 @@
 import os
+import socket
 import shutil
 import json
 import subprocess
@@ -496,23 +497,23 @@ class JobData:
 
     def log_file(self):
         """Return the log file name for this job."""
-        return f"{self.rundir}/{self.idname()}.log"
+        return f"{self.rundir()}/{self.idname()}.log"
 
     def wrapper_log_file(self):
         """Return the log file name for this job's wrapper."""
-        return f"{self.rundir}/wrapper.log"
+        return f"{self.rundir()}/wrapper.log"
 
     def status_file(self):
         """Return the status file name for this job."""
-        return f"{self.rundir}/current-status.txt"
+        return f"{self.rundir()}/current-status.txt"
 
     def job_config_file(self):
         """Return the job config file for this job."""
-        return f"{self.rundir}/config.json"
+        return f"{self.rundir()}/config.json"
 
     def wrapper_config_file(self):
         """Return the wrapper config file for this job."""
-        return f"{self.rundir}/wrapper-status.json"
+        return f"{self.rundir()}/wrapper-status.json"
 
     def archive_file(self):
         """Return the archive file for this job."""
@@ -539,6 +540,10 @@ class JobData:
             if set_stale: self.stale_vars.add(nam)
         return 0
 
+    def set_rundir(rundir):
+        self.set_data('host', socket.gefqdn())
+        self.set_data('rundir', rundir)
+
     def data(self, nam):
         """Retrieve a job property."""
         if nam in self._data: return self._data[nam]
@@ -547,6 +552,8 @@ class JobData:
     def index(self):         return self.data('id')      # python uses object.id()
     def descname(self):      return self.data('descname')
     def jobtype(self):       return self.data('jobtype')
+    def host(self):          return self.data('host')
+    def rundir(self):        return self.data('rundir')
     def config(self):        return self.data('config')
     def pid(self):           return self.data('pid')
     def start_time(self):    return self.data('start_time')
@@ -588,7 +595,7 @@ class JobData:
         self.db_update()
         return (0, '')
 
-    def __init__(self, a_idx, a_descname, source=None, usedb=True):
+    def __init__(self, a_idx, a_descname, source=None, usedb=True, rundir=None):
         """
         Create or locate job idx for user descname.
           source:
@@ -600,7 +607,6 @@ class JobData:
         """
         self._data = {}       # All persistent data is stored here.
         self.usedb = usedb
-        self.rundir = None
         self.nset = 0               # Number of variable sets
         self.nset_db = 0            # Number variable sets since last DB synchronization
         self.stale_vars = set()     # Names of variables not sychronized to DB
@@ -608,6 +614,7 @@ class JobData:
         self.set_data('id', a_idx)
         self.set_data('descname', a_descname)
         self.set_data('progress', 'Created.')
+        if rundir is not None: self.set_rundir(rundir)
         idx = self.index()
         descname = self.descname()
         self.usr = UserData(descname)
@@ -617,11 +624,8 @@ class JobData:
         myname = 'JobData.ctor'
         dbg = JobData.dbg
         sidx = JobData.name_from_id(idx)
-        havedir = os.path.isdir(rundir)
         if source is None or source == 'None' or source == 'none':
-            if havedir:
-                self.do_error(myname, f"Directory already exists: {rundir}'")
-            elif self.usedb and self.db_count_where(f"id = {idx}"):
+            if self.usedb and self.db_count_where(f"id = {idx}"):
                 self.do_error(myname, f"DB entry already exists for id {idx}")
         elif source == 'db':
             cur = self.db_query_where(f"id={idx} AND descname='{descname}'")
@@ -714,7 +718,7 @@ class JobData:
         self.db_update()
         return 0
 
-    def run(self, rundir=None):
+    def run(self, a_rundir=None):
         """
         Run the job, i.e. start it with Popen and a wrapper.
         """
@@ -722,11 +726,13 @@ class JobData:
         rstat = 0
         if self.command() is None:
             rstat += self.do_error(myname, f"Command is not specified.", 1)
-        self.rundir = self.server_run_dir() if rundir is None else rundir
+        rundir = self.server_run_dir() if a_rundir is None else a_rundir
         self.usr.mkdir(self.rundir)
-        if not os.path.exists(self.run_dir()):
-            rstat += self.do_error(myname, f"Run directory is not present.", 2)
+        if not os.path.exists(self.rundir()):
+            rstat += self.do_error(myname, f"Could not create run directory: {rundir}.", 2)
         if rstat: return rstat
+        self.set_rundir(rundir)
+        self.db_update()
         jmap = {}
         jmap['id'] = self.index()
         jmap['descname'] = self.descname()
@@ -747,13 +753,13 @@ class JobData:
                 shwcom += 'source /home/descprod/local/etc/setup_parsl.sh; '
             if len(runopts.env_file):
                 shwcom += f"set >{runopts.env_file}; "
-            shwcom += f"descprod-wrap '{self.command()}' {self.run_dir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
+            shwcom += f"descprod-wrap '{self.command()}' {self.rundir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
             com += ['bash', '-login', '-c', shwcom]
         else:
-            com += ['descprod-wrap', self.command(), self.run_dir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
+            com += ['descprod-wrap', self.command(), self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
         logfil = open(self.wrapper_log_file(), 'w')
         print(shwcom, logfil)
-        self._popen = subprocess.Popen(com, cwd=self.run_dir(), stdout=logfil, stderr=logfil)
+        self._popen = subprocess.Popen(com, cwd=self.rundir(), stdout=logfil, stderr=logfil)
         self.set_data('progress', 'Running.')
         self.db_update()
         wmap = self.get_wrapper_info()
@@ -806,7 +812,7 @@ class JobData:
     def get_port(self, badval=None):
         myname = 'JobData.get_port'
         if 'port' not in self._data:
-            rundir = self.run_dir()
+            rundir = self.rundir()
             com = f"{JobData.bindir}/descprod-get-parsl-port {rundir}"
             (rstat, sout) = subprocess.getstatusoutput(com)
             if rstat:
@@ -858,13 +864,13 @@ class JobData:
         return txt
 
     def is_active(self):
-        return os.path.exists(self.run_dir())
+        return self.rundir() is not None
 
     def is_archived(self):
         return os.path.exists(self.archive_file())
 
-    def is_deletedd(self):
-        if os.path.exists(self.run_dir()): return False
+    def is_deleted(self):
+        if os.path.exists(self.rundir()): return False
         if os.path.exists(self.archive_file()): return False
         return True
 
@@ -886,7 +892,7 @@ class JobData:
           if_present - No error if rundir is missing
         """
         myname = 'JobData.archive'
-        rundir = self.run_dir()
+        rundir = self.rundir()
         usrdir = self.usr.run_dir
         arcfil = self.archive_file()
         jnam = self.idname()
@@ -921,7 +927,7 @@ class JobData:
     def delete(self):
         """Delete this job."""
         myname = 'JobData.delete'
-        rundir = self.run_dir()
+        rundir = self.rundir()
         idx = self.index()
         if os.path.exists(rundir):
             print(f"{myname}: Deleting run directory for job {idx}")
