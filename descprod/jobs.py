@@ -540,7 +540,7 @@ class JobData:
             if set_stale: self.stale_vars.add(nam)
         return 0
 
-    def set_rundir(rundir):
+    def set_rundir(self, rundir):
         self.set_data('host', socket.gefqdn())
         self.set_data('rundir', rundir)
 
