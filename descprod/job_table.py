@@ -18,6 +18,8 @@ class JobTable:
         self.jobtypes = []
         self.configs = []
         self.pids = []
+        self.hosts = []
+        self.rundirs = []
         self.starts = []
         self.durations = []
         self.rstats = []
@@ -31,6 +33,12 @@ class JobTable:
             pid = job.pid()
             #if pid is None: pid = -1
             self.pids.append(pid)
+            host = job.host()
+            if host is None: host = ''
+            self.hosts.append(host)
+            rundir = job.rundir()
+            if rundir is None: rundir = ''
+            self.rundirs.append(rundir)
             rstat = job.return_status()
             #if rstat is None: rstat = -1
             self.rstats.append(rstat)
@@ -70,6 +78,8 @@ class JobTable:
         txt += '    <th>Port</th>\n'
         txt += '    <th>Start time</th>\n'
         txt += '    <th>Duration</th>\n'
+        txt += '    <th>Host</th>\n'
+        txt += '    <th>Run directory</th>\n'
         txt += '    <th>PID</th>\n'
         txt += '    <th>Rstat</th>\n'
         txt += '    <th style="text-align:left"></th>\n'
@@ -92,6 +102,8 @@ class JobTable:
                 sid += '</div>'
             rstat = self.rstats[row]
             srstat = '' if rstat is None else str(rstat)
+            host = self.hosts[row]
+            rundir = self.rundirs[row]
             pid = self.pids[row]
             spid = '' if pid is None else str(pid)
             port = self.ports[row]
@@ -105,6 +117,8 @@ class JobTable:
             txt += f"    <td>{sport}</td>{eol}"
             txt += f"    <td>{self.starts[row]}</td>{eol}"
             txt += f"    <td>{str(sduration(self.durations[row]))}</td>{eol}"
+            txt += f"    <td>{host}</td>{eol}"
+            txt += f"    <td>{rundir}</td>{eol}"
             txt += f"    <td>{spid}</td>{eol}"
             txt += f"    <td>{srstat}</td>{eol}"
             txt += f"""    <td style="text-align:left">{msg}</td>{eol}"""

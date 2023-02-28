@@ -728,7 +728,7 @@ class JobData:
             rstat += self.do_error(myname, f"Command is not specified.", 1)
         rundir = self.server_run_dir() if a_rundir is None else a_rundir
         self.usr.mkdir(rundir)
-        if not os.path.exists(self.rundir()):
+        if not os.path.exists(rundir):
             rstat += self.do_error(myname, f"Could not create run directory: {rundir}.", 2)
         if rstat: return rstat
         self.set_rundir(rundir)
