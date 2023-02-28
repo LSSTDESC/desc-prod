@@ -618,7 +618,6 @@ class JobData:
         dbg = JobData.dbg
         sidx = JobData.name_from_id(idx)
         havedir = os.path.isdir(rundir)
-        dbinsert = False
         if source is None or source == 'None' or source == 'none':
             if havedir:
                 self.do_error(myname, f"Directory already exists: {rundir}'")
@@ -683,7 +682,7 @@ class JobData:
         if descname not in JobData.ujobs:
             JobData.ujobs[descname] = {}
         JobData.ujobs[descname][idx] = self
-        if dbinsert: self.db_insert()
+        if self.usedb: self.db_insert()
 
     def configure(self, jobtype, config, a_command=None):
         """
