@@ -4,27 +4,30 @@ import sys
 import os
 import descprod
 
-def get_job(idx):
+def get_job(jid, dnam=None):
      import requests
      url = 'https://www.descprod.org/get_job'
-     r = requests.post(url, json={'id':idx, 'descname':'dladams'})
+     descname = os.getlogin() if dnam is None else dnam
+     r = requests.post(url, json={'id':jid, 'descname':descname})
      sc = r.status_code
      if sc == 200:
          return r.json()
      return f"Web service returned status {sc}"
 
 def get_job_main():
-    sarg = sys.argv[1] if len(sys.argv) > 1 else '-h'
+    sjid = sys.argv[1] if len(sys.argv) > 1 else '-h'
+    dnam = sys.argv[2] if len(sys.argv) > 2 else None
     myname = os.path.basename(sys.argv[0])
-    if sarg == '-h':
-        print(f"Usage: {myname} JOBID")
+    if sjid == '-h':
+        print(f"Usage: {myname} JOBID [USERNAME]")
+        print(f"Returns the job data for ID JID and user USERNAME")
         return 0
     try:
-        jid = int(sarg)
+        jid = int(sjid)
     except:
-        print(f"{myname}: Invalid job ID: {sarg}")
+        print(f"{myname}: Invalid job ID: {sjid}")
         return 1
-    resp = get_job(jid)
+    resp = get_job(jid, dnam)
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1
