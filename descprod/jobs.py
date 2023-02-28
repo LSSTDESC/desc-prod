@@ -541,7 +541,7 @@ class JobData:
         return 0
 
     def set_rundir(self, rundir):
-        self.set_data('host', socket.gefqdn())
+        self.set_data('host', socket.getfqdn())
         self.set_data('rundir', rundir)
 
     def data(self, nam):
