@@ -519,6 +519,7 @@ def do_parsltest(cfg):
     if len(cfg) == 0: return redirect(url_for('home'))
     jobtype = 'parsltest'
     sdat = SessionData.get()
+    sid = sdat.session_id
     udat = sdat.user()
     if udat.descname == 'nologin':
         sdat.msg.append('Log in to run parsltest')
@@ -528,7 +529,7 @@ def do_parsltest(cfg):
     if len(jdat.errmsgs):
         sdat.msg.append(jdat.errmsgs)
         return redirect(url_for('home'))
-    if jdat.configure(jobtype, cfg):
+    if jdat.configure(jobtype, cfg, sid):
         sdat.msg += jdat.errmsgs
         return redirect(url_for('home'))
     sdat.msg.append(f"Configured {jobtype} {cfg} in {jdat.rundir()}")

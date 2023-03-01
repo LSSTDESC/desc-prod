@@ -30,6 +30,7 @@ class JobData:
                 index - Job integer ID, unique to the site.
               jobtype - Job type: parsltest, ...
                config - config string for the job
+              session - sessiin where job was created
                   pid - process ID
            start_time - start timestamp
           update_time - heartbeat timestamp
@@ -43,8 +44,8 @@ class JobData:
       _popen - Popen object. E.g. use poll to see if job has completed.
       port_errors - Error messages retrieving the port.
     """
-    data_names =   [ 'id', 'descname', 'jobtype',  'config']
-    data_dbtypes = ['int',  'varchar', 'varchar', 'varchar']
+    data_names =   [ 'id', 'descname', 'jobtype',  'config', 'session']
+    data_dbtypes = ['int',  'varchar', 'varchar', 'varchar',     'int']
     data_names +=   [   'host',  'rundir', 'pid', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
     data_dbtypes += ['varchar', 'varchar', 'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
     data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'host':128, 'rundir':256, 'progress':256}
@@ -559,9 +560,10 @@ class JobData:
     def index(self):         return self.data('id')      # python uses object.id()
     def descname(self):      return self.data('descname')
     def jobtype(self):       return self.data('jobtype')
+    def config(self):        return self.data('config')
+    def session(self):       return self.data('session')
     def host(self):          return self.data('host')
     def rundir(self):        return self.data('rundir')
-    def config(self):        return self.data('config')
     def pid(self):           return self.data('pid')
     def start_time(self):    return self.data('start_time')
     def update_time(self):   return self.data('update_time')
@@ -694,7 +696,7 @@ class JobData:
         JobData.ujobs[descname][idx] = self
         if dbinsert: self.db_insert()
 
-    def configure(self, jobtype, config):
+    def configure(self, jobtype, config, sid):
         """
         Configure a job: assign a job type and a configuration string.
         """
@@ -710,7 +712,8 @@ class JobData:
             rstat += self.do_error(myname, f"Job has already completed. Return status: {self.get_return_status()}", 8)
         if rstat: return rstat
         self.set_data('jobtype', jobtype)
-        self.set_data('config', config)
+        self.set_data('config', configs
+        self.set_data('session', sid)
         self.set_data('progress', 'Ready.')
         self.db_update()
         return 0
