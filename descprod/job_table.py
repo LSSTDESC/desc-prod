@@ -79,7 +79,7 @@ class JobTable:
         txt += '    <th>ID</th>\n'
         txt += '    <th>Type</th>\n'
         txt += '    <th>Configuration</th>\n'
-        txt += '    <th>Session ID</th>\n'
+        txt += '    <th>Session</th>\n'
         txt += '    <th>Start time</th>\n'
         txt += '    <th>Duration</th>\n'
         txt += '    <th>Host</th>\n'
