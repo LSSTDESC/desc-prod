@@ -491,7 +491,7 @@ class JobData:
         """Return the name of the job: jobXXXXXX."""
         return self.name_from_id(self.index())
 
-    def server_run_dir(self):
+    def server_rundir(self):
         """Return the run directory if this job is run on the server."""
         return f"{self.usr.run_dir}/{self.idname()}"
 
@@ -624,10 +624,12 @@ class JobData:
         myname = 'JobData.ctor'
         dbg = JobData.dbg
         sidx = JobData.name_from_id(idx)
+        dbinsert = usedb
         if source is None or source == 'None' or source == 'none':
             if self.usedb and self.db_count_where(f"id = {idx}"):
                 self.do_error(myname, f"DB entry already exists for id {idx}")
         elif source == 'db':
+            dbinsert = False
             cur = self.db_query_where(f"id={idx} AND descname='{descname}'")
             if cur is None:
                 self.do_error(myname, f"DB query for ID {idx} user {descname}' failed.")
@@ -678,15 +680,13 @@ class JobData:
                 if not ok:
                     self.do_error(myname, f"Unable to read any of the json config files:")
                     for fnam in fnams: print(f"{myname}:  {fnam}")
-                
         else:
              self.do_error(myname, f"Invalid source option: {source}")
-
         JobData.jobs[idx] = self
         if descname not in JobData.ujobs:
             JobData.ujobs[descname] = {}
         JobData.ujobs[descname][idx] = self
-        if self.usedb: self.db_insert()
+        if dbinsert: self.db_insert()
 
     def configure(self, jobtype, config, a_command=None):
         """
@@ -726,22 +726,18 @@ class JobData:
         rstat = 0
         if self.command() is None:
             rstat += self.do_error(myname, f"Command is not specified.", 1)
-        rundir = self.server_run_dir() if a_rundir is None else a_rundir
+        rundir = self.server_rundir() if a_rundir is None else a_rundir
         self.usr.mkdir(rundir)
         if not os.path.exists(rundir):
             rstat += self.do_error(myname, f"Could not create run directory: {rundir}.", 2)
         if rstat: return rstat
         self.set_rundir(rundir)
         self.db_update()
-        jmap = {}
-        jmap['id'] = self.index()
-        jmap['descname'] = self.descname()
-        jmap['jobtype'] = self.jobtype()
-        jmap['config']  = self.config()
-        jmap['command'] = self.command()
+        print(f"XXXXX: {rundir}")
+        print(self.jmap())
         jnam = self.job_config_file()
         with open(jnam, 'w') as jfil:
-            json.dump(jmap, jfil, separators=JobData.jsep, indent=JobData.jindent)
+            json.dump(self.jmap(), jfil, separators=JobData.jsep, indent=JobData.jindent)
         runopts = JobData.runopts
         com = ['sudo', '-u', self.usr.descname] if runopts.use_sudo else []
         shell = runopts.use_shell
