@@ -107,6 +107,7 @@ class JobTable:
             pid = self.pids[row]
             spid = '' if pid is None else str(pid)
             port = self.ports[row]
+            sport = '' if port is None else str(port)
             sport = '' if port is None or port <= 0 else str(port)
             stamsg = self.stamsgs[row]
             errmsg = self.errmsgs[row]

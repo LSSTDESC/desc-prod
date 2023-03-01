@@ -4,14 +4,14 @@ import sys
 import os
 import descprod
 
-def start_job(jid, dnam):
+def start_job(jid, dnam, url):
     '''
     Attempts to start descprod job with ID jid.
     If successful, returns the jsam map for th job.
     Otherwise returns a string with an error message.
     '''
     descname = os.getlogin() if dnam is None else dnam
-    resp = descprod.get_job(jid, descname)
+    resp = descprod.get_job(jid, descname, url)
     if isinstance(resp, str):
         return resp
     job = descprod.JobData(jid, descname, usedb=False)
@@ -22,12 +22,14 @@ def start_job(jid, dnam):
     cmsg = job.ready_to_run()
     if len(cmsg):
         return f"Job cannot be started. {cmsg}"
+    return f"Job should be started here."
     return job.jmap()
 
 def start_job_main():
     sjid = sys.argv[1] if len(sys.argv) > 1 else '-h'
     myname = os.path.basename(sys.argv[0])
     dnam = sys.argv[2] if len(sys.argv) > 2 else None
+    url = sys.argv[3] if len(sys.argv) > 3 else None
     if sjid == '-h':
         print(f"Usage: {myname} JOBID")
         return 0
@@ -36,7 +38,7 @@ def start_job_main():
     except:
         print(f"{myname}: Invalid job ID: {sjid}")
         return 1
-    resp = start_job(jid, dnam)
+    resp = start_job(jid, dnam, url)
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1

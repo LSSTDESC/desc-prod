@@ -4,11 +4,18 @@ import sys
 import os
 import descprod
 
-def get_job(jid, dnam=None):
+def server_url():
+    return 'https://www.descprod.org'
+
+def get_job(jid, dnam=None, a_url=None):
     import requests
-    url = 'https://www.descprod.org/get_job'
     descname = os.getlogin() if dnam is None else dnam
-    r = requests.post(url, json={'id':jid, 'descname':descname})
+    surl = server_url() if a_url is None else a_url
+    url = f"{surl}/get_job"
+    try:
+        r = requests.post(url, json={'id':jid, 'descname':descname})
+    except Exception as e:
+        return f"Unable to reach server at {surl}: {str(e)}"
     sc = r.status_code
     if sc == 200:
         return r.json()
@@ -17,17 +24,21 @@ def get_job(jid, dnam=None):
 def get_job_main():
     sjid = sys.argv[1] if len(sys.argv) > 1 else '-h'
     dnam = sys.argv[2] if len(sys.argv) > 2 else None
+    surl = sys.argv[3] if len(sys.argv) > 3 else None
     myname = os.path.basename(sys.argv[0])
     if sjid == '-h':
-        print(f"Usage: {myname} JOBID [USERNAME]")
-        print(f"Returns the job data for ID JID and user USERNAME")
+        print(f"Usage: {myname} JOBID [USERNAME] [URL]")
+        print(f"Displays the data for a job")
+        print(f"  JOBID - Job ID.")
+        print(f"  USERNAME - DESC user name. Default is the local username.")
+        print(f"       URL - Sever URL. Default is {server_url()}.")
         return 0
     try:
         jid = int(sjid)
     except:
         print(f"{myname}: Invalid job ID: {sjid}")
         return 1
-    resp = get_job(jid, dnam)
+    resp = get_job(jid, dnam, surl)
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1

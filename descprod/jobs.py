@@ -732,8 +732,8 @@ class JobData:
         If so, return blank. Otherwise return a message explaining
         why the job is not ready to run.
         '''
-        needs = ['id', 'descname', 'command']
-        nots = ['pid', 'start_time', 'update_time', 'stop_time', 'return_status', 'progress']
+        needs = ['id', 'descname', 'command', 'progress']
+        nots = ['pid', 'start_time', 'update_time', 'stop_time', 'return_status']
         for nam in needs:
             if not self.has_data(nam):
                 return f"Job does not have {nam}."
