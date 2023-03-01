@@ -94,17 +94,17 @@ class JobTable:
         for row in range(len(self.jobs)):
             jid = self.jobids[row]
             job = self.jobs[jid]
-            sid = str(jid)
+            sjid = str(jid)
             clsarg = ''
             if usemenu:
                 clsarg = ' class="dropdown"'
-                sid = ''
-                sid += '<div>'
-                sid += f"""<button class="dropbtn">{jid}</button>"""
-                sid += '<div class="dropdown-content">'
-                sid += f"{job.dropdown_content(baseurl)}"
-                sid += '</div>'
-                sid += '</div>'
+                sjid = ''
+                sjid += '<div>'
+                sjid += f"""<button class="dropbtn">{jid}</button>"""
+                sjid += '<div class="dropdown-content">'
+                sjid += f"{job.dropdown_content(baseurl)}"
+                sjid += '</div>'
+                sjid += '</div>'
             rstat = self.rstats[row]
             srstat = '' if rstat is None else str(rstat)
             host = self.hosts[row]
@@ -119,10 +119,10 @@ class JobTable:
             stamsg = self.stamsgs[row]
             errmsg = self.errmsgs[row]
             msg = stamsg if len(stamsg) else errmsg if len(errmsg) else ''
-            txt += f"""    <td{clsarg}>{sid}</td>{eol}"""
+            txt += f"""    <td{clsarg}>{sjid}</td>{eol}"""
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"
             txt += f"    <td>{self.configs[row]}</td>{eol}"
-            txt += f"    <td>{spid}</td>{eol}"
+            txt += f"    <td>{ssid}</td>{eol}"
             txt += f"    <td>{self.starts[row]}</td>{eol}"
             txt += f"    <td>{str(sduration(self.durations[row]))}</td>{eol}"
             txt += f"    <td>{host}</td>{eol}"
