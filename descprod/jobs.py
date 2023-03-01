@@ -877,10 +877,11 @@ class JobData:
     def dropdown_content(self, baseurl):
         q = '"'
         isready = len(self.ready_to_run()) == 0
+        txt = ''
         if isready:
-            txt = f"<a href={q}{baseurl}/startjob?id={self.index()}{q}>Start job {self.index()}</a>"
+            txt += f"<a href={q}{baseurl}/startjob?id={self.index()}{q}>Start job {self.index()}</a>"
             txt += '<br>'
-        txt = f"<a href={q}{baseurl}/archivejob?id={self.index()}{q}>Archive job {self.index()}</a>"
+        txt += f"<a href={q}{baseurl}/archivejob?id={self.index()}{q}>Archive job {self.index()}</a>"
         txt += '<br>'
         txt += f"<a href={q}{baseurl}/deletejob?id={self.index()}{q}>Delete job {self.index()}</a>"
         return txt
