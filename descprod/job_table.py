@@ -17,6 +17,7 @@ class JobTable:
         self.jobids = []
         self.jobtypes = []
         self.configs = []
+        self.sids = []
         self.pids = []
         self.hosts = []
         self.rundirs = []
@@ -33,6 +34,8 @@ class JobTable:
             pid = job.pid()
             #if pid is None: pid = -1
             self.pids.append(pid)
+            sid = job.session()
+            self.sids.append(sid)
             host = job.host()
             if host is None or host == 'NULL': host = ''
             self.hosts.append(host)
@@ -55,6 +58,7 @@ class JobTable:
         self.map['jobtype'] = self.jobtypes
         self.map['config'] = self.configs
         self.map['pid'] = self.pids
+        self.map['sid'] = self.sids
         self.map['start'] = self.starts
         self.map['duration'] = self.durations
         self.map['rstat'] = self.rstats
@@ -75,6 +79,7 @@ class JobTable:
         txt += '    <th>ID</th>\n'
         txt += '    <th>Type</th>\n'
         txt += '    <th>Configuration</th>\n'
+        txt += '    <th>Session ID</th>\n'
         txt += '    <th>Start time</th>\n'
         txt += '    <th>Duration</th>\n'
         txt += '    <th>Host</th>\n'
@@ -106,6 +111,8 @@ class JobTable:
             rundir = self.rundirs[row]
             pid = self.pids[row]
             spid = '' if pid is None else str(pid)
+            sid = self.sids[row]
+            ssid = '' if sid is None else str(sid)
             port = self.ports[row]
             sport = '' if port is None else str(port)
             sport = '' if port is None or port <= 0 else str(port)
@@ -115,6 +122,7 @@ class JobTable:
             txt += f"""    <td{clsarg}>{sid}</td>{eol}"""
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"
             txt += f"    <td>{self.configs[row]}</td>{eol}"
+            txt += f"    <td>{spid}</td>{eol}"
             txt += f"    <td>{self.starts[row]}</td>{eol}"
             txt += f"    <td>{str(sduration(self.durations[row]))}</td>{eol}"
             txt += f"    <td>{host}</td>{eol}"
