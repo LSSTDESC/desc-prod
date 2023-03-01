@@ -7,9 +7,10 @@ For a recent status report see the
 [talk at the January 25, 2023 DESC CO meeting](https://drive.google.com/file/d/1uAMfWpQLenxF_50mjmBWqISEEDxOkdrc/view?usp=share_link).
 
 ## Service
-A web service is provided at [https://www.descprod.org].
+A web service is provided at https://www.descprod.org.
 Follow that link and log in with google credentials to view a page where you can submit jobs and track theior progress.
 if you afre not already registered with descprod, follow the instructions to register.
+The clients below contact this service by default.
 
 ## Installation
 To use the descprod clients, you must first install this package.
