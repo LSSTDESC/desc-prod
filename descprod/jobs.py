@@ -30,7 +30,6 @@ class JobData:
                 index - Job integer ID, unique to the site.
               jobtype - Job type: parsltest, ...
                config - config string for the job
-              command - Array holding the job command line for Popen.
                   pid - process ID
            start_time - start timestamp
           update_time - heartbeat timestamp
@@ -44,11 +43,11 @@ class JobData:
       _popen - Popen object. E.g. use poll to see if job has completed.
       port_errors - Error messages retrieving the port.
     """
-    data_names =   ['id', 'descname', 'jobtype', 'config',  'command']
-    data_dbtypes = ['int', 'varchar', 'varchar', 'varchar', 'varchar']
+    data_names =   [ 'id', 'descname', 'jobtype',  'config']
+    data_dbtypes = ['int',  'varchar', 'varchar', 'varchar']
     data_names +=   [   'host',  'rundir', 'pid', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
     data_dbtypes += ['varchar', 'varchar', 'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
-    data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'command':256, 'host':128, 'rundir':256, 'progress':256}
+    data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'host':128, 'rundir':256, 'progress':256}
     data_dbcons = {'id':'NOT NULL', 'descname':'NOT NULL'}
     dbg = 1
     jindent = 2          # json indentation
@@ -568,7 +567,6 @@ class JobData:
     def update_time(self):   return self.data('update_time')
     def stop_time(self):     return self.get_stop_time()
     def port(self):          return self.data('port')
-    def command(self):       return self.data('command')
     def return_status(self): return self.get_return_status()
     def progress(self):      return self.get_progress()
 
@@ -696,11 +694,9 @@ class JobData:
         JobData.ujobs[descname][idx] = self
         if dbinsert: self.db_insert()
 
-    def configure(self, jobtype, config, a_command=None):
+    def configure(self, jobtype, config):
         """
         Configure a job: assign a job type and a configuration string.
-        Optionally a command to be passed to Popen may be provided.
-        If not the command is constructed from the job type and config.
         """
         myname = 'JobData.configure'
         rstat = 0
@@ -715,13 +711,6 @@ class JobData:
         if rstat: return rstat
         self.set_data('jobtype', jobtype)
         self.set_data('config', config)
-        command = a_command
-        if command is None:
-            if jobtype == 'parsltest':
-               command = f"desc-wfmon-parsltest {config}"
-            else:
-               return self.do_error(myname, f"Command not found for job type {jobtype}", 16)
-        self.set_data('command', command)
         self.set_data('progress', 'Ready.')
         self.db_update()
         return 0
@@ -732,7 +721,7 @@ class JobData:
         If so, return blank. Otherwise return a message explaining
         why the job is not ready to run.
         '''
-        needs = ['id', 'descname', 'command', 'progress']
+        needs = ['id', 'descname', 'jobtype', 'config', 'progress']
         nots = ['pid', 'start_time', 'update_time', 'stop_time', 'return_status']
         for nam in needs:
             if not self.has_data(nam):
@@ -744,13 +733,22 @@ class JobData:
             return f"""Job is not ready to run (progress is "{self.progress()}"."""
         return ''
 
+    def command(self):
+        '''Construct the shell command from the jobtype and config.'''
+        jobtype = self.jobtype()
+        config = self.config()
+        if jobtype == 'parsltest':
+           return f"desc-wfmon-parsltest {config}"
+        return self.do_error(myname, f"Command not found for job type {jobtype}", None)
+
     def run(self, a_rundir=None):
         """
         Run the job, i.e. start it with Popen and a wrapper.
         """
         myname = 'JobData.run'
         rstat = 0
-        if self.command() is None:
+        scom = self.command()
+        if scom is None:
             rstat += self.do_error(myname, f"Command is not specified.", 1)
         rundir = self.server_rundir() if a_rundir is None else a_rundir
         self.usr.mkdir(rundir)
@@ -774,10 +772,10 @@ class JobData:
                 shwcom += 'source /home/descprod/local/etc/setup_parsl.sh; '
             if len(runopts.env_file):
                 shwcom += f"set >{runopts.env_file}; "
-            shwcom += f"descprod-wrap '{self.command()}' {self.rundir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
+            shwcom += f"descprod-wrap '{scom}' {self.rundir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
             com += ['bash', '-login', '-c', shwcom]
         else:
-            com += ['descprod-wrap', self.command(), self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
+            com += ['descprod-wrap', scom, self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
         logfil = open(self.wrapper_log_file(), 'w')
         print(shwcom, logfil)
         self._popen = subprocess.Popen(com, cwd=self.rundir(), stdout=logfil, stderr=logfil)
@@ -851,7 +849,6 @@ class JobData:
         else:
             port = self.data('port')
         return self.port()
-
 
     def get_return_status(self):
         myname = 'JobData.get_return_status'
