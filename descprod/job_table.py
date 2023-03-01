@@ -35,6 +35,7 @@ class JobTable:
             self.pids.append(pid)
             host = job.host()
             if host is None: host = ''
+            print(f"Host: {host} {type(host)}")
             self.hosts.append(host)
             rundir = job.rundir()
             if rundir is None: rundir = ''
