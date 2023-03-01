@@ -551,9 +551,9 @@ def start_job():
         sdat.msg.append(f"Job {jobid} is not ready to run. {cmsg}")
         return redirect(url_for('home'))
     if job.run():
-        sdat.msg = jdat.errmsgs
+        sdat.msg = job.errmsgs
         return redirect(url_for('home'))
-    sdat.msg.append(f"Started job {jobid} for user {jdat.descname()} in {jdat.rundir()}")
+    sdat.msg.append(f"Started job {jobid} for user {job.descname()} in {job.rundir()}")
     return redirect(url_for('home'))
 
 @app.route('/archivejob')
