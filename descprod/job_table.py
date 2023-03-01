@@ -75,12 +75,12 @@ class JobTable:
         txt += '    <th>ID</th>\n'
         txt += '    <th>Type</th>\n'
         txt += '    <th>Configuration</th>\n'
-        txt += '    <th>Port</th>\n'
         txt += '    <th>Start time</th>\n'
         txt += '    <th>Duration</th>\n'
         txt += '    <th>Host</th>\n'
         txt += '    <th>Run directory</th>\n'
         txt += '    <th>PID</th>\n'
+        txt += '    <th>Port</th>\n'
         txt += '    <th>Rstat</th>\n'
         txt += '    <th style="text-align:left"></th>\n'
         txt += '  </tr>\n'
@@ -114,12 +114,12 @@ class JobTable:
             txt += f"""    <td{clsarg}>{sid}</td>{eol}"""
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"
             txt += f"    <td>{self.configs[row]}</td>{eol}"
-            txt += f"    <td>{sport}</td>{eol}"
             txt += f"    <td>{self.starts[row]}</td>{eol}"
             txt += f"    <td>{str(sduration(self.durations[row]))}</td>{eol}"
             txt += f"    <td>{host}</td>{eol}"
             txt += f"    <td>{rundir}</td>{eol}"
             txt += f"    <td>{spid}</td>{eol}"
+            txt += f"    <td>{sport}</td>{eol}"
             txt += f"    <td>{srstat}</td>{eol}"
             txt += f"""    <td style="text-align:left">{msg}</td>{eol}"""
             txt +=  '  </tr>\n'

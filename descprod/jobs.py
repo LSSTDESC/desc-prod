@@ -223,12 +223,15 @@ class JobData:
         haveit = bool(len(cur.fetchall()))
         if drop_table and haveit:
             print(f"{myname}: Dropping table {tnam}")
+            cls.connections.clear()
             com = f"DROP TABLE {tnam}"
             cur.execute(com)
             con.commit()
             haveit = cls.db_table()
+            print(f"{myname}: Drop was successful.")
         if create_table and not haveit:
             print(f"{myname}: Creating table {tnam}")
+            cls.connections.clear()
             com = f"CREATE TABLE {tnam} ("
             for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
                 nchar = cls.data_nchars.get(nam, 0)
@@ -247,6 +250,7 @@ class JobData:
             cur.execute(com)
             con.commit()
             haveit = cls.db_table()
+            print(f"{myname}: Create was successful.")
         return haveit
 
     @classmethod
