@@ -550,7 +550,7 @@ def start_job():
     if len(cmsg):
         sdat.msg.append(f"Job {jobid} is not ready to run. {cmsg}")
         return redirect(url_for('home'))
-    if jdat.run():
+    if job.run():
         sdat.msg = jdat.errmsgs
         return redirect(url_for('home'))
     sdat.msg.append(f"Started job {jobid} for user {jdat.descname()} in {jdat.rundir()}")
