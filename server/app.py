@@ -531,10 +531,29 @@ def do_parsltest(cfg):
     if jdat.configure(jobtype, cfg):
         sdat.msg += jdat.errmsgs
         return redirect(url_for('home'))
+    sdat.msg.append(f"Configured {jobtype} {cfg} in {jdat.rundir()}")
+    return redirect(url_for('home'))
+
+@app.route('/startjob')
+def start_job():
+    sdat = SessionData.get()
+    udat = sdat.user()
+    if udat.descname == 'nologin':
+        sdat.msg.append('Log in to start a job')
+        return redirect(url_for('home'))
+    jobid = int(request.args['id'])
+    job = JobData.get_user_job(udat.descname, jobid)
+    if job is None:
+        sdat.msg.append(f"Job {jobid} not found for user {udat.descname}")
+        return redirect(url_for('home'))
+    cmsg = job.ready_to_run()
+    if len(cmsg):
+        sdat.msg.append(f"Job {jobid} is not ready to run. {cmsg}")
+        return redirect(url_for('home'))
     if jdat.run():
         sdat.msg = jdat.errmsgs
         return redirect(url_for('home'))
-    sdat.msg.append(f"Started {jobtype} {cfg} in {jdat.rundir()}")
+    sdat.msg.append(f"Started job {jobid} for user {jdat.descname()} in {jdat.rundir()}")
     return redirect(url_for('home'))
 
 @app.route('/archivejob')
@@ -542,7 +561,7 @@ def archive_job():
     sdat = SessionData.get()
     udat = sdat.user()
     if udat.descname == 'nologin':
-        sdat.msg.append('Log in to run parsltest')
+        sdat.msg.append('Log in to archive a job')
         return redirect(url_for('home'))
     jobid = int(request.args['id'])
     job = JobData.get_user_job(udat.descname, jobid)

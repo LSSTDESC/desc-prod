@@ -1,4 +1,4 @@
-# get_job.py
+# start_job.py
 
 import sys
 import os
@@ -11,13 +11,17 @@ def start_job(jid, dnam):
     Otherwise returns a string with an error message.
     '''
     descname = os.getlogin() if dnam is None else dnam
-    jmap = descprod.get_job(jid, descname)
-    if isinstance(jmap, str):
-        return jmap
+    resp = descprod.get_job(jid, descname)
+    if isinstance(resp, str):
+        return resp
     job = descprod.JobData(jid, descname, usedb=False)
+    jmap = resp["job"]
     emsg = job.jmap_update(jmap)
     if len(emsg):
         return emsg
+    cmsg = job.ready_to_run()
+    if len(cmsg):
+        return f"Job cannot be started. {cmsg}"
     return job.jmap()
 
 def start_job_main():
@@ -36,7 +40,7 @@ def start_job_main():
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1
-    rs = resp['status']
+    rs = resp['return_status']
     if rs:
         print(f"{myname}: ERROR: {resp['message']}")
         return 2

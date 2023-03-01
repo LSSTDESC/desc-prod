@@ -548,9 +548,13 @@ class JobData:
         self.set_data('host', socket.getfqdn())
         self.set_data('rundir', rundir)
 
+    def has_data(self, nam):
+        """Return if data exists."""
+        return nam in self._data
+
     def data(self, nam):
         """Retrieve a job property."""
-        if nam in self._data: return self._data[nam]
+        if self.has_data(nam): return self._data[nam]
         return None
 
     def index(self):         return self.data('id')      # python uses object.id()
@@ -588,16 +592,16 @@ class JobData:
             return f"Map does not contain the job ID."
             pass
         else:
-            if jmap['id'] != self.index(): return (2, f"IDs do not match: {jmap['id']} != {self.index()}")
+            if jmap['id'] != self.index(): return f"IDs do not match: {jmap['id']} != {self.index()}"
         if 'descname' not in jmap:
-            return (2, f"Map does not contain the user name.")
+            return f"Map does not contain the user name."
             pass
         else:
-            if jmap['descname'] != self.descname(): return (3, f"User names do not match: {jmap['descname']} != {self.descname()}")
+            if jmap['descname'] != self.descname(): return f"User names do not match: {jmap['descname']} != {self.descname()}"
         for nam in self.data_names:
             if nam in jmap: self.set_data(nam, jmap[nam])
         self.db_update()
-        return (0, '')
+        return ''
 
     def __init__(self, a_idx, a_descname, source=None, usedb=True, rundir=None):
         """
@@ -718,9 +722,27 @@ class JobData:
             else:
                return self.do_error(myname, f"Command not found for job type {jobtype}", 16)
         self.set_data('command', command)
-        self.set_data('progress', 'Configured.')
+        self.set_data('progress', 'Ready.')
         self.db_update()
         return 0
+
+    def ready_to_run(self):
+        '''
+        Check if a job is ready to run.
+        If so, return blank. Otherwise return a message explaining
+        why the job is not ready to run.
+        '''
+        needs = ['id', 'descname', 'command']
+        nots = ['pid', 'start_time', 'update_time', 'stop_time', 'return_status', 'progress']
+        for nam in needs:
+            if not self.has_data(nam):
+                return f"Job does not have {nam}."
+        for nam in nots:
+            if self.has_data(nam):
+                return f"Job already has {nam}."
+        if self.progress() != 'Ready.':
+            return f"""Job is not ready to run (progress is "{self.progress()}"."""
+        return ''
 
     def run(self, a_rundir=None):
         """
@@ -737,7 +759,6 @@ class JobData:
         if rstat: return rstat
         self.set_rundir(rundir)
         self.db_update()
-        print(f"XXXXX: {rundir}")
         print(self.jmap())
         jnam = self.job_config_file()
         with open(jnam, 'w') as jfil:
@@ -858,6 +879,10 @@ class JobData:
 
     def dropdown_content(self, baseurl):
         q = '"'
+        isready = len(self.ready_to_run()) == 0
+        if isready:
+            txt = f"<a href={q}{baseurl}/startjob?id={self.index()}{q}>Start job {self.index()}</a>"
+            txt += '<br>'
         txt = f"<a href={q}{baseurl}/archivejob?id={self.index()}{q}>Archive job {self.index()}</a>"
         txt += '<br>'
         txt += f"<a href={q}{baseurl}/deletejob?id={self.index()}{q}>Delete job {self.index()}</a>"
