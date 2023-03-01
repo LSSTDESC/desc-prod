@@ -712,7 +712,7 @@ class JobData:
             rstat += self.do_error(myname, f"Job has already completed. Return status: {self.get_return_status()}", 8)
         if rstat: return rstat
         self.set_data('jobtype', jobtype)
-        self.set_data('config', configs
+        self.set_data('config', config)
         self.set_data('session', sid)
         self.set_data('progress', 'Ready.')
         self.db_update()
