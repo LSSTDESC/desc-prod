@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 echo $(python --version)
 work_queue_worker -v | head -1

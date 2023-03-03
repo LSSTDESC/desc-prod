@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Create conda environment for CESC parsl testing.
 #
@@ -9,7 +9,7 @@
 #   python/desc/gen3_workflow/README.md
 
 # Give help,
-if [ -z "$1" -o "$1" == "-h" ]; then
+if [ -z "$1" -o "$1" = "-h" ]; then
   echo Usage: $0 LOC VER
   echo "  Creates ptenv environment LOCptenvVER."
   echo "  LOC hom is installed on home directory"
