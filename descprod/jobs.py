@@ -744,28 +744,39 @@ class JobData:
            return f"desc-wfmon-parsltest {config}"
         return self.do_error(myname, f"Command not found for job type {jobtype}", None)
 
-    def run(self, a_rundir=None):
+    def run(self, rundir=None):
         """
         Run the job, i.e. start it with Popen and a wrapper.
+        If rundir is not supplied, then job is run on the server.
         """
         myname = 'JobData.run'
         rstat = 0
         scom = self.command()
         if scom is None:
             rstat += self.do_error(myname, f"Command is not specified.", 1)
-        rundir = self.server_rundir() if a_rundir is None else a_rundir
-        self.usr.mkdir(rundir)
-        if not os.path.exists(rundir):
-            rstat += self.do_error(myname, f"Could not create run directory: {rundir}.", 2)
+        if rundir is None:
+            rundir = self.server_rundir()
+            self.usr.mkdir(rundir)
+            remote = False
+        else:
+            if os.path.exists(rundir):
+                rstat += self.do_error(myname, f"Run directory already exists: {rundir}", 2)
+            else:
+                try:
+                    os.mkdir(rundir)
+                except Exception as e:
+                    rstat += self.do_error(myname, f"Could not create run directory: {rundir}: {e}.", 3)
+            remote = True
         if rstat: return rstat
         self.set_rundir(rundir)
-        self.db_update()
         print(self.jmap())
         jnam = self.job_config_file()
         with open(jnam, 'w') as jfil:
             json.dump(self.jmap(), jfil, separators=JobData.jsep, indent=JobData.jindent)
         runopts = JobData.runopts
-        com = ['sudo', '-u', self.usr.descname] if runopts.use_sudo else []
+        com = []
+        if not remote and runopts.use_sudo:
+            com = ['sudo', '-u', self.usr.descname]
         shell = runopts.use_shell
         if shell:
             shwcom = ""
