@@ -23,7 +23,7 @@ elif [ $PTENV_VERSION == 00 ]; then
   PTENV_PYTHON=3.9.12
   PTENV_NDCCTOOLS=7.4.15
   PTENV_PARSL=desc
-  PTENV_DESCWFMON=/global/u2/d/dladams/desc/dev/desc-wfmon
+  PTENV_DESCWFMON="git+https://github.com/LSSTDESC/desc-wfmon"
 elif [ $PTENV_VERSION == 01 ]; then
   PTENV_PYTHON=3.9.12
   PTENV_NDCCTOOLS=7.4.14

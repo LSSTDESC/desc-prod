@@ -52,3 +52,4 @@ On perlmutter or cori, install with shifter:
      Move to desc-wfmon 0.26.11 to allow simultaneous parsl jobs.
 05 - Add mysql server.
 06 - Add pip install of desc-prod
+07 - Add pip install of homeptenv00
