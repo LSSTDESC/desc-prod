@@ -127,13 +127,14 @@ if PTDIR=$(ptenv-find home 00 2>/dev/null); then
 else
   echo start: Installing ptenv.
   ptenv-create home 00
-  if PTDIR=$(ptenv-find home 00 2>/dev/null); then
+  if ! PTDIR=$(ptenv-find home 00 2>/dev/null); then
+    echo start: Installing ptenv again.
     ptenv-create home 00
-    if PTDIR=$(ptenv-find home 00 2>/dev/null); then
-      echo start: Installed ptenv at $PTDIR
-    else
-      echo start: ERROR: Installation of ptenv failed.
-    fi
+  fi
+  if PTDIR=$(ptenv-find home 00 2>/dev/null); then
+    echo start: Installed ptenv at $PTDIR
+  else
+    echo start: ERROR: Installation of ptenv failed.
   fi
 fi
   
