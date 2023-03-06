@@ -11,7 +11,7 @@ def start_job(jid, dnam, url):
     If successful, returns the jsam map for th job.
     Otherwise returns a string with an error message.
     '''
-    descname = desc.get_login() if dnam is None else dnam
+    descname = descprod.get_login() if dnam is None else dnam
     resp = descprod.get_job(jid, descname, url)
     if isinstance(resp, str):
         return resp
