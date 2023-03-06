@@ -40,3 +40,10 @@ The following scripts are provided:
 * [ptenv-versions](ptenv/ptenv-versions) - Displays the versions of the installed SW in the current env.
 
 The scripts may be run from this directory (*./ptenvXXX ...*) or by adding the directory to your PATH.
+
+## MacOS
+
+I had problems with miniconda on my Mac because md5sum was absent. I fixed this with
+<pre>
+> brew install coreutils
+</pre>
