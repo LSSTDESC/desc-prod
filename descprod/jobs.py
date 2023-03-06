@@ -62,7 +62,7 @@ class JobData:
     _db_name = None    # Current db name (set to jobdata if None)
     class runopts:     # parameters for lcoal job submission
         use_shell = True                 # Submit jobs in a new shell
-        use_sudo = True                  # Sudo to current user to launch jobs
+        use_sudo = False                 # Sudo to current user to launch jobs
         setup_conda = True               # Setup the local conda base
         setup_parsl = True               # Use the local parsl setup: ~deschome/local/etc/setup_parsl.sh
         env_file = 'descprod-env.log'    # env is dumped to this file
