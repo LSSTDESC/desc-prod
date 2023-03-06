@@ -35,5 +35,5 @@ def sduration(dur, near=False):
 
 def get_login():
     '''Get the user login name (os.getlogin() only works from a terminal).'''
-    return pwd.getpwduid(os.getuid())[0]
+    return pwd.getpwuid(os.getuid())[0]
 
