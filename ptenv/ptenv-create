@@ -71,7 +71,9 @@ else
   tar -czf $TARFIL -C $INSDIR miniconda3
   date
   echo Installation complete.
-  echo Please rerun to build environment $ENVNAME.
+  #echo Please rerun to build environment $ENVNAME.
+  echo Reruning to build environment $ENVNAME.
+  $0 $LOC $VER
   exit 0
 fi
 
