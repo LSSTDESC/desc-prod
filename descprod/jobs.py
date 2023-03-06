@@ -740,9 +740,7 @@ class JobData:
         '''Construct the shell command from the jobtype and config.'''
         jobtype = self.jobtype()
         config = self.config()
-        if jobtype == 'parsltest':
-           return f"desc-wfmon-parsltest {config}"
-        return self.do_error(myname, f"Command not found for job type {jobtype}", None)
+        return f"runapp-{jobtype} {config}"
 
     def run(self, rundir=None):
         """

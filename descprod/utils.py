@@ -31,3 +31,8 @@ def sduration(dur, near=False):
     if ns < 10: sd += '0'
     sd += f"{ns}"
     return sd
+
+def get_login():
+    '''Get the user login name (os.getlogin() only works from a terminal).'''
+    return pwd.getpwduid(os.getuid())[0]
+

@@ -8,6 +8,7 @@ def version():
 from .utils      import timestamp
 from .utils      import sdate
 from .utils      import sduration
+from .utils      import get_login
 from .users      import UserData
 from .jobs       import JobData
 from .job_table  import JobTable

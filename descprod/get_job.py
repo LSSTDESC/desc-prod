@@ -2,6 +2,7 @@
 
 import sys
 import os
+import pwd
 import descprod
 
 def server_url():
@@ -9,7 +10,7 @@ def server_url():
 
 def get_job(jid, dnam=None, a_url=None):
     import requests
-    descname = os.getlogin() if dnam is None else dnam
+    descname = descprod.get_login() if dnam is None else dnam
     surl = server_url() if a_url is None else a_url
     url = f"{surl}/get_job"
     try:
