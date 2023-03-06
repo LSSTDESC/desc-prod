@@ -12,7 +12,12 @@ MYLOC=${2:-home}
 MYVER=${3:-00}
 
 if ! ptenv-find $MYLOC $MYVER; then
-  exit 1
+  echo $MYNAME: Creating env.
+  ptenv-create $MYLOC $MYVER
+  if ! ptenv-find $MYLOC $MYVER; then
+    echo $MYNAME: ERROR: Creating env failed.
+    exit 1
+  fi
 fi
 
 source ptenv-setup $MYLOC $MYVER
