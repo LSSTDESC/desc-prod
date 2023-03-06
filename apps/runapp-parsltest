@@ -11,7 +11,7 @@ MYCFG=$1
 MYLOC=${2:home}
 MYVER=${3:00}
 
-if ! find ptenv $MYLOC $MYVER; then
+if ! ptenv-find $MYLOC $MYVER; then
   exit 1
 fi
 
