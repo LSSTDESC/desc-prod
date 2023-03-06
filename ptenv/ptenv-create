@@ -53,7 +53,11 @@ else
   echo
   echo Fetching miniconda3
   #wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $CONDIR/miniconda3.sh
-  curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o $CONDIR/miniconda3.sh
+  if [ $(uname) = Darwin ]; then
+    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-$(uname -m).sh -o $CONDIR/miniconda3.sh
+  else
+    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o $CONDIR/miniconda3.sh
+  fi
   echo
   echo Installing miniconda3
   bash $CONDIR/miniconda3.sh -b -u -p $CONDIR | tee $CONDIR/install.log
