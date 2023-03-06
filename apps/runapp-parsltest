@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# runapp-parsltest
+#
+# David Adams
+# March 2023
+#
+# This is the desccprod application interface for parsltest.
+
+MYCFG=$1
+MYLOC=${2:home}
+MYVER=${3:00}
+
+if ! find ptenv $MYLOC $MYVER; then
+  exit 1
+fi
+
+source ptenv-setup $MYLOC $MYVER
+
+desc-wfmon-paersltest $MYCFG
+exit $?
