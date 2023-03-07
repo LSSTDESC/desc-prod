@@ -63,8 +63,8 @@ class JobData:
     class runopts:     # parameters for lcoal job submission
         use_shell = True                 # Submit jobs in a new shell
         use_sudo = False                 # Sudo to current user to launch jobs
-        setup_conda = True               # Setup the local conda base
-        setup_parsl = True               # Use the local parsl setup: ~deschome/local/etc/setup_parsl.sh
+        setup_conda = False              # Setup the local conda base
+        setup_parsl = False              # Use the local parsl setup: ~deschome/local/etc/setup_parsl.sh
         env_file = 'descprod-env.log'    # env is dumped to this file
 
     @classmethod
@@ -785,7 +785,8 @@ class JobData:
             if len(runopts.env_file):
                 shwcom += f"set >{runopts.env_file}; "
             shwcom += f"descprod-wrap '{scom}' {self.rundir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
-            com += ['bash', '-login', '-c', shwcom]
+            #com += ['bash', '-login', '-c', shwcom]  # March 27, 2023: No--login does not have desc-prod commands.
+            com += ['bash', '-c', shwcom]
         else:
             com += ['descprod-wrap', scom, self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
         logfil = open(self.wrapper_log_file(), 'w')

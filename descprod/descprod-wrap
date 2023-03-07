@@ -6,13 +6,14 @@
 # January 2023
 #
 
-wver = 14
+wver = 15
 
 import sys
 import os
 import time
 import json
 import subprocess
+import requests
 
 def get_progress_from_file():
     snam = f"current-status.txt"
@@ -65,6 +66,7 @@ if logname[0] != '/': logname = f"{rundir}/{logname}"
 if jnam[0] != '/':    jnam    = f"{rundir}/{jnam}"
 
 print(f"Running job {jobid} for user {user} in {rundir} with wrapper version {wver}")
+sys.stdout.flush()
 
 logfil = open(logname, 'w')
 info = {}
@@ -82,29 +84,49 @@ with open(jnam, 'w') as jfil:
     json.dump(info, jfil, separators=jsep, indent=jindent)
     jfil.write('\n')
 print(f"Config is in {jnam}")
+sys.stdout.flush()
 wait_time = 10
 rc = None
-while True:
-    rc = pop.poll()
-    nowtime = int(time.time())
-    prefix = 'Running'
-    sep = '. '
-    if rc is not None:
-        info['stop_time'] = nowtime
-        info['return_status'] = rc
-        if rc < 0:
-            prefix = f"Process received signal {-rc}"
-        elif rc > 0:
-            prefix = f"Failed"
+sc = 0
+surl = 'https://www.descprod.org'
+url = f"{surl}/update_job"
+while rc is None or sc != 200:
+    if rc is None:
+        rc = pop.poll()
+        nowtime = int(time.time())
+        prefix = 'Running'
+        sep = '. '
+        if rc is not None:
+            info['stop_time'] = nowtime
+            info['return_status'] = rc
+            if rc < 0:
+                prefix = f"Process received signal {-rc}"
+            elif rc > 0:
+                prefix = f"Failed"
+            else:
+                prefix = f"Done"
+        info['update_time'] = nowtime
+        progress = f"{prefix}{sep}{get_progress_from_file()}"
+        if len(progress):
+            info['progress'] = progress
+        with open(jnam, 'w') as jfil:
+            json.dump(info, jfil, separators=jsep, indent=jindent)
+            jfil.write('\n')
+        print(f"Updated config is in {jnam}")
+        sys.stdout.flush()
+    try:
+        r = requests.post(url, timeout=10, json={'id':jobid, 'descname':user, 'job':info})
+        sc = r.status_code
+        if sc == 200:
+            print(f"Updated job {jobid} at {surl}")
+            sys.stdout.flush()
         else:
-            prefix = f"Done"
-    info['update_time'] = nowtime
-    progress = f"{prefix}{sep}{get_progress_from_file()}"
-    if len(progress):
-        info['progress'] = progress
-    with open(jnam, 'w') as jfil:
-        json.dump(info, jfil, separators=jsep, indent=jindent)
-        jfil.write('\n')
-    print(f"Updated config is in {jnam}")
-    if rc is not None: exit(rc)
+            print(f"Update of job {jobid} at {surl} failed: server returned {sc}")
+            sys.stdout.flush()
+    except Exception as e:
+        print(f"Unable to reach server at {surl}: {str(e)}")
+        sys.stdout.flush()
+        sc = 999
     time.sleep(wait_time)
+print(f"Done.")
+exit(rc)
