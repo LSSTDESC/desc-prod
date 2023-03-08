@@ -19,7 +19,7 @@ def start_job(jid, dnam, url):
     try:
         jmap = resp["job"]
     except:
-        return "Unable to find job in {resp} (type {type(resp)})"
+        return f"Unable to find job in {resp} (type {type(resp)})"
     emsg = job.jmap_update(jmap)
     if len(emsg):
         return emsg
