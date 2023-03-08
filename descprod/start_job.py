@@ -16,7 +16,10 @@ def start_job(jid, dnam, url):
     if isinstance(resp, str):
         return resp
     job = descprod.JobData(jid, descname, usedb=False)
-    jmap = resp["job"]
+    try:
+        jmap = resp["job"]
+    except:
+        return "Unable to find job in {resp} (type {type(resp)})"
     emsg = job.jmap_update(jmap)
     if len(emsg):
         return emsg
@@ -25,7 +28,7 @@ def start_job(jid, dnam, url):
         return f"Job cannot be started. {cmsg}"
     rundir = f"{os.getcwd()}/{job.idname()}"
     print(f"Starting job {jid} for {descname} in {rundir}")
-    rs = job.run(rundir)
+    rs = job.run(rundir=rundir, server=url)
     if rs:
         return f"Job start failed with error {rs}: {job.errmsgs[-1]}"
     return job.jmap()

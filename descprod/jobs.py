@@ -745,7 +745,7 @@ class JobData:
     def run(self, rundir=None, server=None):
         """
         Run the job, i.e. start it with Popen and a wrapper.
-        If rundir is not supplied, then job is run on the server.
+        If rundir is not supplied, then job is run on the server rundir.
         """
         myname = 'JobData.run'
         rstat = 0
