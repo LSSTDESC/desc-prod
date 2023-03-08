@@ -678,6 +678,6 @@ def update_job():
     dtim = utim - job.update_time()
     if dtim <= 0: return {'status':4, 'message':f"Job {descname}/{jid}: Update is {dtim} seconds behind current job."}
     errmsg = job.jmap_update(jmap)
-    len(errmsg): return {'status':5, 'message':f"Job {descname}/{jid}: {errmsg}"}
+    if len(errmsg): return {'status':5, 'message':f"Job {descname}/{jid}: {errmsg}"}
     return {'status':0}
 
