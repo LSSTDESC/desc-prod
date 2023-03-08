@@ -18,9 +18,13 @@ def get_job(jid, dnam=None, a_url=None):
     except Exception as e:
         return f"Unable to reach server at {surl}: {str(e)}"
     sc = r.status_code
-    if sc:
-        return r.message
-    return r.json()
+    if sc != 200:
+        return f"Server returned HTML error {sc}"
+    rmap = r.json()
+    rc = rmap['status']
+    if rc:
+        return rmap['message']
+    return rmap
 
 def get_job_main():
     sjid = sys.argv[1] if len(sys.argv) > 1 else '-h'
