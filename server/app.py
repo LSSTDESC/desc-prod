@@ -672,11 +672,13 @@ def update_job():
         if nam not in jmap: return {'status':2, 'message':f"Request job does not have field {nam}"}
     jid = jmap['id']
     descname = jmap['descname']
+    otim = job.update_time()
+    if otim is None: otim = job.start_time()
     utim = jmap['update_time']
+    dtim = utim - otim
     job = JobData.get_user_job(descname, jid)
     if job is None: return {'status':3, 'message':f"Job {jid} not found for user {descname}"}
-    dtim = utim - job.update_time()
-    if dtim <= 0: return {'status':4, 'message':f"Job {descname}/{jid}: Update is {dtim} seconds behind current job."}
+    if dtim <= 0: return {'status':4, 'message':f"Job {descname}/{jid}: Update is {-dtim} seconds behind current job."}
     errmsg = job.jmap_update(jmap)
     if len(errmsg): return {'status':5, 'message':f"Job {descname}/{jid}: {errmsg}"}
     return {'status':0}
