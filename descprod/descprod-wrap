@@ -27,8 +27,8 @@ jindent = 2
 jsep = (',', ': ')
 
 dohelp = len(sys.argv) > 1 and sys.argv[1] == '-h'
-nargexp = 7
-doerr = len(sys.argv) != nargexp
+nargexp = [7,8]
+doerr = len(sys.argv) not in nargexp
 this = os.path.basename(sys.argv[0])
 
 if dohelp:
