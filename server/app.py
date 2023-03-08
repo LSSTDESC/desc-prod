@@ -674,10 +674,10 @@ def update_job():
     descname = jmap['descname']
     utim = jmap['update_time']
     job = JobData.get_user_job(descname, jid)
-    if job is None: return {'status':3, 'message':f"Job {jid} not found for user {descname}")
+    if job is None: return {'status':3, 'message':f"Job {jid} not found for user {descname}"}
     dtim = utim - job.update_time()
-    if dtim <= 0: return {'status':4, 'message':f"Job {descname}/{jid}: Update is {dtim} seconds behind current job.")
+    if dtim <= 0: return {'status':4, 'message':f"Job {descname}/{jid}: Update is {dtim} seconds behind current job."}
     errmsg = job.jmap_update(jmap)
-    len(errmsg): return {'status':5, 'message':f"Job {descname}/{jid}: {errmsg}")
+    len(errmsg): return {'status':5, 'message':f"Job {descname}/{jid}: {errmsg}"}
     return {'status':0}
 
