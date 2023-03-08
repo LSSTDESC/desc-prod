@@ -462,11 +462,7 @@ def versions():
     #return f"{os.getcwd()}<br>{__file__}"
     sep = '<br>\n'
     tbl = {}
-    msg = subprocess.getoutput('/home/descprod/dev/desc-prod/ptenv/ptenv-versions')
-    for line in msg.split('\n'):
-        prod = line.split()[0]
-        vers = line[len(prod):]
-        tbl[prod.strip()] = vers.strip()
+    tbl['Python'] = subprocess.getoutput('echo $(python --version)')
     tbl['desc-prod'] = subprocess.getoutput('descprod-version')
     wprod = 0
     for prod in tbl:
