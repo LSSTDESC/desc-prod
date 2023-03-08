@@ -28,7 +28,7 @@ linkit() {
   FROM=$1
   TO=$2/$(basename $FROM)
   if [ ! -r $TO ]; then
-    $ASDESC ln -s $FROM $TO
+    ln -s $FROM $TO
   fi
 }
 
@@ -36,7 +36,7 @@ copyit() {
   FROM=$1
   TO=$2/$(basename $FROM)
   if [ ! -r $TO ]; then
-    $ASDESC cp $FROM $TO
+    cp $FROM $TO
   fi
 }
 
@@ -58,20 +58,20 @@ if [ $# -gt 0 ]; then
   fi
   if [ $OPT = update-parsl ]; then
     echo start: Updating parsl
-    $ASDESC pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
+    pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
   # Update desc-wfmon
   elif [ $OPT = update-desc-wfmon ]; then
     echo start: Updating desc-wfmon
     cd /home/descprod/dev/desc-wfmon
-    $ASDESC git pull
-    $ASDESC pip install .
+    git pull
+    pip install .
   # Update desc-prod
   elif [ $OPT = update-desc-prod ]; then
     echo start: Updating desc-prod.
     cd /home/descprod/dev/desc-prod
     echo "Version before: $(descprod-version)"
-    $ASDESC git pull
-    $ASDESC pip install .
+    git pull
+    pip install .
     echo "Version after: $(descprod-version)"
   # Enable SSL with cert and key on local disk.
   elif [ $OPT = ssl ]; then
@@ -118,7 +118,7 @@ fi
 # Startup config.
 if [ ! -r $LOGDIR ]; then
   echo start: Creating log directory: $LOGDIR
-  $ASDESC mkdir $LOGDIR
+  mkdir $LOGDIR
 fi
 echo $(date): $HOSTNAME >> $LOGDIR/host.log
 
@@ -144,7 +144,7 @@ DESCHOME=/home/descprod
 PKGDIR=$DESCHOME/dev/desc-prod
 BINDIR=$DESCHOME/bin
 if [ ! -r $BINDIR ]; then
-  $ASDESC mkdir $BINDIR
+  mkdir $BINDIR
 fi
 PKGDIR=$DESCHOME/dev/desc-prod
 SRCDIR=$PKGDIR/server
@@ -156,9 +156,9 @@ done
 cp -r $SRCDIR/static $DESCHOME
 JUPCFGDIR=$DESCHOME/.jupyter
 if [ ! -r $JUPCFGDIR ]; then
-  $ASDESC mkdir $JUPCFGDIR
+  mkdir $JUPCFGDIR
 fi
-$ASDESC copyit $SRCDIR/jupyter_notebook_config.py $JUPCFGDIR
+copyit $SRCDIR/jupyter_notebook_config.py $JUPCFGDIR
 
 # start the parsltest server
 if [ $OPT = server ]; then
@@ -169,7 +169,7 @@ if [ $OPT = server ]; then
   if [ ! -r $LOCDIR ]; then
     if [ -r $EXTMNT02 ]; then
       echo start: Creating $LOCDIR 
-      $ASDESC ln -s $EXTMNT02 $LOCDIR
+      ln -s $EXTMNT02 $LOCDIR
     fi
     SITFIL=$LOCDIR/etc/site.txt
     if [ -r $SITFIL ]; then
@@ -221,7 +221,7 @@ fi
 if [ $OPT = rptest ]; then
   echo starting rp test...
   cd data/dev/materials-flask-google-login
-  $ASDESC pip install -r requirements.txt
+  pip install -r requirements.txt
   while true; do
     echo Running app
     python app.py
