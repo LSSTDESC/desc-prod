@@ -669,5 +669,19 @@ def update_job():
     """Handle request to update a job."""
     if request.method == 'GET':
         return 'Got GET instead of POST!!'
-    return {'status':'not implemented'}
+    rec = request.json
+    if 'job' not in rec: return {'status':1, 'message':'Request does not include job'}
+    jmap = rec['job']
+    for nam in ['id', 'descname', 'update_time']:
+        if nam not in jmap: return {'status':2, 'message':f"Request job does not have field {nam}"}
+    jid = jmap['id']
+    descname = jmap['descname']
+    utim = jmap['update_time']
+    job = JobData.get_user_job(descname, jid)
+    if job is None: return {'status':3, 'message':f"Job {jid} not found for user {descname}")
+    dtim = utim - job.update_time()
+    if dtim <= 0: return {'status':4, 'message':f"Job {descname}/{jid}: Update is {dtim} seconds behind current job.")
+    errmsg = job.jmap_update(jmap)
+    len(errmsg): return {'status':5, 'message':f"Job {descname}/{jid}: {errmsg}")
+    return {'status':0}
 

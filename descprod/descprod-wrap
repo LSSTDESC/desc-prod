@@ -36,7 +36,10 @@ if dohelp:
     print(f"  COM is a shell command line.")
     print(f"  RUNDIR is the directory where the command is run.")
     print(f"  LOGFIL has the stdout and stderr.")
-    print(f"  STAFIL has the config info in json fomat.")
+    print(f"  STAFIL has the regularly-updated job config in json fomat.")
+    print(f"  JOBID s the job ID.")
+    print(f"  DESCNAME is the user name.")
+    print(f"  SURL is the server URL. If prsent, updates are sent there.")
     print(f"The wrapper runs until the command completes.")
     print(f"During execution the config holds:")
     print(f"  command - COM")
@@ -61,6 +64,7 @@ logname = sys.argv[3]
 jnam = sys.argv[4]
 jobid = int(sys.argv[5])
 user = sys.argv[6]
+surl = sys.argv[7] if len(sys.argv) > 7 : ''
 
 if logname[0] != '/': logname = f"{rundir}/{logname}"
 if jnam[0] != '/':    jnam    = f"{rundir}/{jnam}"
@@ -88,8 +92,10 @@ sys.stdout.flush()
 wait_time = 10
 rc = None
 sc = 0
-surl = 'https://www.descprod.org'
-url = f"{surl}/update_job"
+if len(surl):
+    url = f"{surl}/update_job"
+else:
+    sc = 200
 while rc is None or sc != 200:
     if rc is None:
         rc = pop.poll()
@@ -114,19 +120,20 @@ while rc is None or sc != 200:
             jfil.write('\n')
         print(f"Updated config is in {jnam}")
         sys.stdout.flush()
-    try:
-        r = requests.post(url, timeout=10, json={'id':jobid, 'descname':user, 'job':info})
-        sc = r.status_code
-        if sc == 200:
-            print(f"Updated job {jobid} at {surl}")
+    if len(url):
+        try:
+            r = requests.post(url, timeout=10, json={'id':jobid, 'descname':user, 'job':info})
+            sc = r.status_code
+            if sc == 200:
+                print(f"Updated job {jobid} at {surl}")
+                sys.stdout.flush()
+            else:
+                print(f"Update of job {jobid} at {surl} failed: server returned {sc}")
+                sys.stdout.flush()
+        except Exception as e:
+            print(f"Unable to reach server at {surl}: {str(e)}")
             sys.stdout.flush()
-        else:
-            print(f"Update of job {jobid} at {surl} failed: server returned {sc}")
-            sys.stdout.flush()
-    except Exception as e:
-        print(f"Unable to reach server at {surl}: {str(e)}")
-        sys.stdout.flush()
-        sc = 999
+            sc = 999
     time.sleep(wait_time)
 print(f"Done.")
 exit(rc)

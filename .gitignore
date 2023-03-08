@@ -1,0 +1,7 @@
+cert
+tmp
+*/tmp
+build
+desc_prod.egg-info
+descprod/__pycache__
+docker/*/build.log

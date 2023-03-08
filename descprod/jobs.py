@@ -742,7 +742,7 @@ class JobData:
         config = self.config()
         return f"runapp-{jobtype} {config}"
 
-    def run(self, rundir=None):
+    def run(self, rundir=None, server=None):
         """
         Run the job, i.e. start it with Popen and a wrapper.
         If rundir is not supplied, then job is run on the server.
@@ -785,10 +785,12 @@ class JobData:
             if len(runopts.env_file):
                 shwcom += f"set >{runopts.env_file}; "
             shwcom += f"descprod-wrap '{scom}' {self.rundir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
+            if len(server): shwcom += f" {server}"
             #com += ['bash', '-login', '-c', shwcom]  # March 27, 2023: No--login does not have desc-prod commands.
             com += ['bash', '-c', shwcom]
         else:
             com += ['descprod-wrap', scom, self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
+            if len(server): com += ["{server}"]
         logfil = open(self.wrapper_log_file(), 'w')
         print(shwcom, logfil)
         self._popen = subprocess.Popen(com, cwd=self.rundir(), stdout=logfil, stderr=logfil)
