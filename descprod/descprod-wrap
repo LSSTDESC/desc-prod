@@ -124,16 +124,19 @@ while rc is None or sc != 200:
         try:
             r = requests.post(url, timeout=10, json={'id':jobid, 'descname':user, 'job':info})
             sc = r.status_code
-            if sc == 200:
-                print(f"Updated job {jobid} at {surl}")
-                sys.stdout.flush()
+            if sc != 200:
+                print(f"Update of job {descname}/{jobid} at {surl} failed with HTML code {sc}")
             else:
-                print(f"Update of job {jobid} at {surl} failed: server returned {sc}")
-                sys.stdout.flush()
+                rmap = r.json()
+                rc = rmap['status']
+                if rc:
+                    print(f"Update of job {descname}/{jobid} at {surl} failed: {rmap['message']}")
+                else:
+                    print(f"Updated job {jobid} at {surl}")
         except Exception as e:
             print(f"Unable to reach server at {surl}: {str(e)}")
-            sys.stdout.flush()
             sc = 999
+        sys.stdout.flush()
     time.sleep(wait_time)
 print(f"Done.")
 exit(rc)
