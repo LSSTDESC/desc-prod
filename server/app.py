@@ -680,7 +680,7 @@ def update_job():
     try:
         dtim = utim - otim
     except:
-        return status:4, message:f"Invalid time interval: {utim} - {otim}")
+        return {status:4, message:f"Invalid time interval: {utim} - {otim}"}
     if job is None: return {'status':5, 'message':f"Job {jid} not found for user {descname}"}
     if dtim <= 0: return {'status':6, 'message':f"Job {descname}/{jid}: Update is {-dtim} seconds behind current job."}
     errmsg = job.jmap_update(jmap)
