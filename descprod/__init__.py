@@ -3,7 +3,8 @@ import importlib.metadata
 __version__ = importlib.metadata.version('desc-prod')
 
 def version():
-  return __version__
+  print(__version__)
+  return 0
 
 from .utils      import timestamp
 from .utils      import sdate

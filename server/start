@@ -15,6 +15,7 @@
 # This script may be called as either descrpod or root.
 # Define command prefixes to execute commnds as one or the other.
 UNAM=$(whoami)
+echo start: Running as user $UNAM
 if [ $UNAM = descprod ]; then
   ASROOT="sudo"
   ASDESC=""
