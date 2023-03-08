@@ -19,7 +19,7 @@ def get_job(jid, dnam=None, a_url=None):
         return f"Unable to reach server at {surl}: {str(e)}"
     sc = r.status_code
     if sc:
-        return r['message']
+        return r.message
     return r.json()
 
 def get_job_main():
