@@ -654,7 +654,7 @@ def get_job():
         return {'status':1, 'message':f"Missing keys in request: {missingkeys}"}
     jid = int(rec['id'])
     descname = rec['descname']
-    job = JobData.get_user_job(descname, jid)
+    job = JobData.get_user_job(descname, jid, usedb=True)
     if job is None:
         return {'status':2, 'message':f"Job {jid} not found for user {descname}."}
     jmap = job.jmap()
@@ -673,7 +673,7 @@ def update_job():
         if jmap[nam] is None: return {'status':3, 'message':f"Request job does not have a value for field {nam}"}
     jid = jmap['id']
     descname = jmap['descname']
-    job = JobData.get_user_job(descname, jid)
+    job = JobData.get_user_job(descname, jid, usedb=True)
     otim = job.update_time()
     if otim is None: otim = job.start_time()
     utim = jmap['update_time']

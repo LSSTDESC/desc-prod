@@ -85,11 +85,24 @@ class JobData:
         return int(rem)
 
     @classmethod
-    def get_user_job(cls, descname, idx):
+    def get_user_job(cls, descname, idx, usedb=False):
+        '''
+        Fetch a user job from the current cache.
+        '''
         myname = 'JobData.get_user_job'
-        if descname not in cls.ujobs: return None
-        if idx not in cls.ujobs[descname]: return None
-        return cls.ujobs[descname][idx]
+        if descname in cls.ujobs:
+            if idx in cls.ujobs[descname]:
+                return cls.ujobs[descname][idx]
+        if usedb:
+            cur = cls.db_query_where(f"id={idx} AND descname='{descname}'")
+            if cur is None: return None
+            rows = cur.fetchall()
+            nrow = len(rows)
+            if nrow == 0: return None
+            if nrow > 1:
+                raise Exception(f"DB query for ID {idx} user {descname}' has too many ({nrow}) matches.")
+            return JobData(idx, descname, usedb=True)
+        return None
 
     @classmethod
     def get_jobs_from_disk(cls, descname=None):
