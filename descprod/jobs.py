@@ -88,6 +88,7 @@ class JobData:
     def get_user_job(cls, descname, idx, usedb=False):
         '''
         Fetch a user job from the current cache.
+        If the job is not found and usedb is true, then construct it from the DB data.
         '''
         myname = 'JobData.get_user_job'
         if descname in cls.ujobs:
@@ -101,7 +102,7 @@ class JobData:
             if nrow == 0: return None
             if nrow > 1:
                 raise Exception(f"DB query for ID {idx} user {descname}' has too many ({nrow}) matches.")
-            return JobData(idx, descname, usedb=True)
+            return JobData(idx, descname, source='db')
         return None
 
     @classmethod
