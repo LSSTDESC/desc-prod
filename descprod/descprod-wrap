@@ -44,7 +44,7 @@ if dohelp:
     print(f"The wrapper runs until the command completes.")
     print(f"During execution the config holds:")
     print(f"  command - COM")
-    print(f"  run_directory - RUNDIR")
+    print(f"  rundir - RUNDIR")
     print(f"  log_file - LOGFIL")
     print(f"  start_time - Start time")
     print(f"  pid - Process ID")
@@ -80,7 +80,7 @@ info['wrapper_version'] = wver
 info['id'] = jobid
 info['descname'] = user
 info['command'] = command
-info['run_directory'] = rundir
+info['rundir'] = rundir
 info['log_file'] = logname
 info['start_time'] = nowtime
 info['update_time'] = nowtime
@@ -132,8 +132,8 @@ while rc is None or sc != 200:
                 print(f"Update of job {user}/{jobid} at {surl} failed with HTML code {sc}")
             else:
                 rmap = r.json()
-                rc = rmap['status']
-                if rc:
+                urc = rmap['status']
+                if urc:
                     print(f"Update of job {user}/{jobid} at {surl} failed: {rmap['message']}")
                 else:
                     print(f"Updated job {jobid} at {surl}")
