@@ -636,6 +636,7 @@ class JobData:
         self.set_data('id', a_idx)
         self.set_data('descname', a_descname)
         self.set_data('progress', 'Created.')
+        self.set_data('update_time', int(time.time()))
         if rundir is not None: self.set_rundir(rundir)
         idx = self.index()
         descname = self.descname()

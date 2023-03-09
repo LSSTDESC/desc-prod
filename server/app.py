@@ -675,7 +675,8 @@ def update_job():
     descname = jmap['descname']
     job = JobData.get_user_job(descname, jid, usedb=True)
     otim = job.update_time()
-    if otim is None: otim = job.start_time()
+    if otim is None: otim = 0
+    print(f"update_job: WARNING: Handling job {descname}/{jid} with missing update time.")
     utim = jmap['update_time']
     try:
         dtim = utim - otim
