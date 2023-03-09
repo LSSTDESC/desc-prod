@@ -12,6 +12,7 @@ import sys
 import os
 import time
 import json
+import socket
 import subprocess
 import requests
 
@@ -72,6 +73,7 @@ if jnam[0] != '/':    jnam    = f"{rundir}/{jnam}"
 print(f"Running job {jobid} for user {user} in {rundir} with wrapper version {wver}")
 sys.stdout.flush()
 
+nowtime = int(time.time())
 logfil = open(logname, 'w')
 info = {}
 info['wrapper_version'] = wver
@@ -80,7 +82,9 @@ info['descname'] = user
 info['command'] = command
 info['run_directory'] = rundir
 info['log_file'] = logname
-info['start_time'] = int(time.time())
+info['start_time'] = nowtime
+info['update_time'] = nowtime
+info['host'] = socket.getfqdn()
 pop = subprocess.Popen(command, shell=True, cwd=rundir, stdout=logfil, stderr=logfil)
 pid = pop.pid
 info['pid'] = pid
