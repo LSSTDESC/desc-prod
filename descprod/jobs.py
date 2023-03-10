@@ -783,7 +783,7 @@ class JobData:
             remote = True
         if rstat: return rstat
         self.set_rundir(rundir)
-        print(self.jmap())
+        #print(self.jmap())
         jnam = self.job_config_file()
         with open(jnam, 'w') as jfil:
             json.dump(self.jmap(), jfil, separators=JobData.jsep, indent=JobData.jindent)
