@@ -801,12 +801,12 @@ class JobData:
             if len(runopts.env_file):
                 shwcom += f"set >{runopts.env_file}; "
             shwcom += f"descprod-wrap '{scom}' {self.rundir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
-            if len(server): shwcom += f" {server}"
+            if server is not None: shwcom += f" {server}"
             #com += ['bash', '-login', '-c', shwcom]  # March 27, 2023: No--login does not have desc-prod commands.
             com += ['bash', '-c', shwcom]
         else:
             com += ['descprod-wrap', scom, self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
-            if len(server): com += ["{server}"]
+            if server is not None: com += ["{server}"]
         logfil = open(self.wrapper_log_file(), 'w')
         print(shwcom, logfil)
         self._popen = subprocess.Popen(com, cwd=self.rundir(), stdout=logfil, stderr=logfil)
