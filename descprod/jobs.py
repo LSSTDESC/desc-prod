@@ -808,7 +808,7 @@ class JobData:
             com += ['descprod-wrap', scom, self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
             if server is not None: com += ["{server}"]
         logfil = open(self.wrapper_log_file(), 'w')
-        print(shwcom, logfil)
+        #print(shwcom, logfil)
         self._popen = subprocess.Popen(com, cwd=self.rundir(), stdout=logfil, stderr=logfil)
         self.set_data('progress', 'Running.')
         self.db_update()
