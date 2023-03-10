@@ -65,7 +65,7 @@ logname = sys.argv[3]
 jnam = sys.argv[4]
 jobid = int(sys.argv[5])
 user = sys.argv[6]
-surl = sys.argv[7] if len(sys.argv) > 7 else ''
+surl = sys.argv[7] if len(sys.argv) > 7 else 'https://www.descprod.org'
 
 if logname[0] != '/': logname = f"{rundir}/{logname}"
 if jnam[0] != '/':    jnam    = f"{rundir}/{jnam}"
