@@ -991,6 +991,7 @@ class JobData:
         uid = self.usr.descname
         jid = self.index()
         sid = f"{uid}/{jid}"
+        dbg = 1
         myname = 'JobData.delete'
         rundir = self.rundir()
         if rundir is not None and os.path.exists(rundir):
