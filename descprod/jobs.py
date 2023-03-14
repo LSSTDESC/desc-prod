@@ -994,8 +994,9 @@ class JobData:
         dbg = 1
         myname = 'JobData.delete'
         rundir = self.rundir()
+        ret = None
         if rundir is not None and os.path.exists(rundir):
-            print(f"{myname}: Deleting run directory for job {jid}")
+            print(f"{myname}: Deleting run directory for job {sid}")
             arcfil = self.archive()
             delfil = self.delete_file()
             if os.path.exists(rundir):
@@ -1005,15 +1006,16 @@ class JobData:
                 if os.path.exists(arcfil) and not os.path.exists(delfil):
                     if dbg: print(f"Renaming archive {arcfil}")
                     os.rename(arcfil, delfil)
+                    ret = delfil
                 else:
                     if dbg: print(f"Removing archive {arcfil}")
                     os.remove(arcfil)
-            if os.path.exists(delfil): return delfil
         if self.db_count_where(f"id={jid}"):
             print(f"{myname}: Deleting DB entry for job {sid}")
             ndel = self.db_delete_where(f"id={jid}")
             if ndel != 1:
                 print(f"{myname}: ERROR: Deleted row count {ndel} != one")
         self.deactivate()
+        return ret
         return 0
 
