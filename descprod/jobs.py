@@ -934,16 +934,16 @@ class JobData:
     def deactivate(self):
         """Deactivate this job: remove from jobs and ujobs."""
         myname = 'JobData.deactivate'
-        idx = self.index()
-        descname = self.usr.descname
-        sid = f"{descname}/{idx}"
+        jid = self.index()
+        uid = self.usr.descname
+        sid = f"{uid}/{jid}"
         if self.index() in JobData.jobs:
-            print(f"{myname}: Removing {sidx} from JobData.jobs")
-            del JobData.jobs[self.index()]
-        if self.usr.descname in JobData.ujobs:
-            if self.index() in JobData.ujobs[self.usr.descname]:
-                print(f"{myname}: Removing {sidx} from JobData.ujobs")
-                del JobData.ujobs[self.usr.descname][self.index()]
+            print(f"{myname}: Removing {sid} from JobData.jobs")
+            del JobData.jobs[jid]
+        if uid in JobData.ujobs:
+            if jid in JobData.ujobs[uid]:
+                print(f"{myname}: Removing {sid} from JobData.ujobs")
+                del JobData.ujobs[uid][jid]
 
     def archive(self, force=False, if_present=False):
         """
@@ -988,29 +988,31 @@ class JobData:
 
     def delete(self):
         """Delete this job."""
+        uid = self.usr.descname
+        jid = self.index()
+        sid = f"{uid}/{jid}"
         myname = 'JobData.delete'
         rundir = self.rundir()
-        idx = self.index()
         if rundir is not None and os.path.exists(rundir):
-            print(f"{myname}: Deleting run directory for job {idx}")
+            print(f"{myname}: Deleting run directory for job {jid}")
             arcfil = self.archive()
             delfil = self.delete_file()
             if os.path.exists(rundir):
                 if dbg: print(f"Removing dir {rundir}")
                 shutil.rmtree(rundir)
-                self.deactivate()
             if arcfil is not None:
                 if os.path.exists(arcfil) and not os.path.exists(delfil):
+                    if dbg: print(f"Renaming archive {arcfil}")
                     os.rename(arcfil, delfil)
                 else:
+                    if dbg: print(f"Removing archive {arcfil}")
                     os.remove(arcfil)
             if os.path.exists(delfil): return delfil
-        if self.db_count_where(f"id={idx}"):
-            print(f"{myname}: Deleting DB entry for job {idx}")
-            ndel = self.db_delete_where(f"id={idx}")
+        if self.db_count_where(f"id={jid}"):
+            print(f"{myname}: Deleting DB entry for job {sid}")
+            ndel = self.db_delete_where(f"id={jid}")
             if ndel != 1:
                 print(f"{myname}: ERROR: Deleted row count {ndel} != one")
-        del JobData.jobs[idx]
-        del JobData.ujobs[self.usr.descname][idx]
+        self.deactivate()
         return 0
 
