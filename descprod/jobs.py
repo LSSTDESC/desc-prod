@@ -934,10 +934,15 @@ class JobData:
     def deactivate(self):
         """Deactivate this job: remove from jobs and ujobs."""
         myname = 'JobData.deactivate'
+        idx = self.index()
+        descname = self.usr.descname
+        sid = f"{descname}/{idx}"
         if self.index() in JobData.jobs:
+            print(f"{myname}: Removing {sidx} from JobData.jobs")
             del JobData.jobs[self.index()]
         if self.usr.descname in JobData.ujobs:
             if self.index() in JobData.ujobs[self.usr.descname]:
+                print(f"{myname}: Removing {sidx} from JobData.ujobs")
                 del JobData.ujobs[self.usr.descname][self.index()]
 
     def archive(self, force=False, if_present=False):
@@ -991,6 +996,7 @@ class JobData:
             arcfil = self.archive()
             delfil = self.delete_file()
             if os.path.exists(rundir):
+                if dbg: print(f"Removing dir {rundir}")
                 shutil.rmtree(rundir)
                 self.deactivate()
             if arcfil is not None:
