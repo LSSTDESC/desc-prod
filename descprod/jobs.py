@@ -187,8 +187,8 @@ class JobData:
         conmy = None
         try:
             conmy = mysql.connector.connect(port=3306)
-        except:
-            print(f"{myname}: Unable to access mysql server.")
+        except Exception as e:
+            print(f"{myname}: Unable to access mysql server: {e}")
             return None
         curmy = conmy.cursor()
         con = None
@@ -282,6 +282,9 @@ class JobData:
         com = query
         if verbose > 1: print(f"{myname}: {com}")
         con = cls.connect_db(cname ='query')
+        if con is None:
+            print(f"{myname}: Unable to connect to DB.")
+            return None
         cur = con.cursor()
         try:
             cur.execute(com)
