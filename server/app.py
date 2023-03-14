@@ -175,7 +175,7 @@ def html_head():
     msg += '  background-color: #f9f9f9;\n'
     #msg += '  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);\n'
     msg += '  white-space: nowrap;\n'
-    msg += '  text-align: right;\n'
+    msg += '  text-align: left;\n'
     msg += '  line-height: 1.4;\n'
     msg += '  padding: 5px 5px;\n'
     msg += '  font-size: 18px;\n'
