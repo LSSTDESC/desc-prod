@@ -57,8 +57,18 @@ cd &lt;some-dir&gt;
 git clone https://github.com/LSSTDESC/desc-prod.git
 pip install ./desc-prod
 </pre>
-The first line is to run at NERSC and use the default python installation.
+The first line is the default python installation at NERSC.
 Any recent version such as that in DESC releases is also fine.
+A job may be started with <i>descprod-start-job</i> and its existence and status
+can checked with <i>descprod-get-job</i>. R.g. , to start and check job 1234:
+<pre>
+descprod-start-job 1234
+descprod-get-job 1234
+<pre>
+If your descprod username differs from that on the local system, the forme must be added
+to these commands.
+The server URL must also be provided if you are not using the default value.
+Use -h for help on either command.
 
 
 <H3>Coming soon</H3>
