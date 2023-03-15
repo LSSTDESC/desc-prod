@@ -46,7 +46,7 @@ class JobData:
       port_errors - Error messages retrieving the port.
     """
     data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config', 'session']
-    data_dbtypes = ['int',  'varchar', 'varchar', 'varchar',     'int']
+    data_dbtypes = ['int',    'int',  'varchar', 'varchar', 'varchar',     'int']
     data_names +=   [   'host',  'rundir', 'pid', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
     data_dbtypes += ['varchar', 'varchar', 'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
     data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'host':128, 'rundir':256, 'progress':256}
