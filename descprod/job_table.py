@@ -126,7 +126,7 @@ class JobTable:
             errmsg = self.errmsgs[row]
             msg = stamsg if len(stamsg) else errmsg if len(errmsg) else ''
             txt += f"    <td{clsarg}>{sjid}</td>{eol}"
-            txt += f"    <td>{self.parent()}</td>{eol}"
+            txt += f"    <td>{sparent}</td>{eol}"
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"
             txt += f"    <td>{self.configs[row]}</td>{eol}"
             txt += f"    <td>{ssid}</td>{eol}"
