@@ -109,7 +109,7 @@ class JobTable:
                 sjid += f"{job.dropdown_content(baseurl)}"
                 sjid += '</div>'
                 sjid += '</div>'
-            sparent = str(self.parents[row]
+            sparent = str(self.parents[row])
             rstat = self.rstats[row]
             srstat = '' if rstat is None else str(rstat)
             host = self.hosts[row]

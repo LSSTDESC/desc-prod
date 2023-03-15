@@ -38,7 +38,7 @@ if dohelp:
     print(f"  RUNDIR is the directory where the command is run.")
     print(f"  LOGFIL has the stdout and stderr.")
     print(f"  STAFIL has the regularly-updated job config in json fomat.")
-    print(f"  JOBID s the job ID.")
+    print(f"  JOBID is the job ID.")
     print(f"  DESCNAME is the user name.")
     print(f"  SURL is the server URL. If prsent, updates are sent there.")
     print(f"The wrapper runs until the command completes.")

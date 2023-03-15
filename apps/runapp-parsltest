@@ -5,7 +5,7 @@
 # David Adams
 # March 2023
 #
-# This is the desccprod application interface for parsltest.
+# This is the deccprod application interface for parsltest.
 
 MYCFG=$1
 MYLOC=${2:-home}

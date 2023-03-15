@@ -48,8 +48,8 @@ def start_job_main():
             return 1
     if len(args):
         sjid = args[0]
-        dnam = args[1] if len(args) > 1 else None
-        url  = args[2] if len(args) > 2 else None
+        uid = args[1] if len(args) > 1 else None
+        url = args[2] if len(args) > 2 else None
     else:
        do_help = True
     if do_help:
@@ -68,7 +68,7 @@ def start_job_main():
     if debug:
         print(f"{myname}: Running with debugger.")
         pdb.set_trace()
-    resp = start_job(jid, dnam, url)
+    resp = start_job(jid, uid, url)
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1
