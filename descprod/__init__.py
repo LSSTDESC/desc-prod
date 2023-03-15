@@ -18,3 +18,5 @@ from .get_job    import get_job
 from .get_job    import get_job_main
 from .start_job  import start_job
 from .start_job  import start_job_main
+from .add_job    import add_job
+from .add_job    import add_job_main
