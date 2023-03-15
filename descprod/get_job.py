@@ -5,13 +5,10 @@ import os
 import pwd
 import descprod
 
-def server_url():
-    return 'https://www.descprod.org'
-
 def get_job(jid, dnam=None, a_url=None):
     import requests
     descname = descprod.get_login() if dnam is None else dnam
-    surl = server_url() if a_url is None else a_url
+    surl = descprod.server_url() if a_url is None else a_url
     url = f"{surl}/get_job"
     try:
         r = requests.post(url, json={'id':jid, 'descname':descname})
@@ -36,7 +33,7 @@ def get_job_main():
         print(f"Displays the data for a job")
         print(f"  JOBID - Job ID.")
         print(f"  USERNAME - DESC user name. Default is the local username.")
-        print(f"       URL - Sever URL. Default is {server_url()}.")
+        print(f"       URL - Sever URL. Default is {descprod.server_url()}.")
         return 0
     try:
         jid = int(sjid)

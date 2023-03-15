@@ -34,6 +34,10 @@ def sduration(dur, near=False):
     sd += f"{ns}"
     return sd
 
+def server_url():
+    '''Return the default descprod server URL'''
+    return 'https://www.descprod.org'
+
 def get_login():
     '''Get the user login name (os.getlogin() only works from a terminal).'''
     return pwd.getpwuid(os.getuid())[0]

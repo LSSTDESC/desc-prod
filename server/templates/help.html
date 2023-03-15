@@ -30,19 +30,36 @@ Once the link is established, login will take you to the DESCprod home page wher
 job and see the status of jobs submitted earlier.
 <br><br>
 Jobs are specified by a job type and a configuration string.
-Right now, it is only possible to run parsltest jobs on the local system.
-Resources are limited there and so please do not run more than a few tasks at a time
-for more than a few minutes.
+Right now, it is only possible to run parslte/pre
+To configure a job, enter a configuration string in the parsltest box and click the submit button.
 An example configuration string is:
 <pre>
     wq-sleep-ttsk10-ntsk20-nwrk4
 </pre>
 This is a request to use the WorkQueue scheduler to run 20 10-second sleep jobs using
 four workers.
-Enter this or a variation in the parsltest box and click submit to create and start a job.
-The job will then appear in your job list and you can get status updates
-by refreshing the page.
+<br><br>
+The job may be started on the local system by hovering over the job ID and selecting "Start job".
+Resources are limited there and so please do not run more than a few tasks at a time
+for more than a few minutes.
+After starting, you can get status updates by refreshing the page.
 Once the job is done, hover over the job ID to obtain links to archive or delete the job.
+There is not much point to archive now as the jobs don't do anything too intersting and
+we do no yet have the facility to retrieve them from the archive.
+<br>
+More typical operation is to start the jobon a remote machine such as perlmutter.
+For security reasons, you cannot yet start the job ther from the server but have to log in
+to the run machine issue a command there.
+First install desc-prod on that machine, e.g. with
+<pre>
+module load python
+cd &lt;some-dir&gt;
+git clone https://github.com/LSSTDESC/desc-prod.git
+pip install ./desc-prod
+</pre>
+The first line is to run at NERSC and use the default python installation.
+Any recent version such as that in DESC releases is also fine.
+
 
 <H3>Coming soon</H3>
 Our next deliverable is a command you can run on any of the NERSC computers (e.g. perlmutter
