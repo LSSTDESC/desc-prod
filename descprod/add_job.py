@@ -83,6 +83,15 @@ def add_job_main():
         print(f"  JOBTYPE - Job type.")
         print(f"  CONFIG  - Job configuration..")
         return 0
+    if len(args):
+        jobtype = args[0]
+        args = args[1:]
+    else:
+        print(f"Job type must be provided.")
+        return 1
+    if len(args):
+        config = args[0]
+        args = args[1:]
     if debug:
         print(f"{myname}: Running with debugger.")
         pdb.set_trace()
