@@ -15,6 +15,7 @@ class JobTable:
     def refresh(self):
         self.jobs = JobData.get_jobs_from_db(self.descname)
         self.jobids = []
+        self.parents = []
         self.jobtypes = []
         self.configs = []
         self.sids = []
@@ -29,6 +30,7 @@ class JobTable:
         self.ports = []
         for job in self.jobs.values():
             self.jobids.append(job.index())
+            self.parents.append(job.parent())
             self.jobtypes.append(job.jobtype())
             self.configs.append(job.config())
             pid = job.pid()
@@ -55,6 +57,7 @@ class JobTable:
             self.ports.append(job.port())
         self.map = {}
         self.map['id'] = self.jobids
+        self.map['parent'] = self.parents
         self.map['jobtype'] = self.jobtypes
         self.map['config'] = self.configs
         self.map['pid'] = self.pids
@@ -77,6 +80,7 @@ class JobTable:
         txt += '<thead>\n'
         txt += '  <tr style="text-align:right;">\n'
         txt += '    <th>ID</th>\n'
+        txt += '    <th>Parent</th>\n'
         txt += '    <th>Type</th>\n'
         txt += '    <th>Configuration</th>\n'
         txt += '    <th>Session</th>\n'
@@ -105,6 +109,7 @@ class JobTable:
                 sjid += f"{job.dropdown_content(baseurl)}"
                 sjid += '</div>'
                 sjid += '</div>'
+            sparent = str(self.parents[row]
             rstat = self.rstats[row]
             srstat = '' if rstat is None else str(rstat)
             host = self.hosts[row]
@@ -119,7 +124,8 @@ class JobTable:
             stamsg = self.stamsgs[row]
             errmsg = self.errmsgs[row]
             msg = stamsg if len(stamsg) else errmsg if len(errmsg) else ''
-            txt += f"""    <td{clsarg}>{sjid}</td>{eol}"""
+            txt += f"    <td{clsarg}>{sjid}</td>{eol}"
+            txt += f"    <td>{self.parent()}</td>{eol}"
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"
             txt += f"    <td>{self.configs[row]}</td>{eol}"
             txt += f"    <td>{ssid}</td>{eol}"

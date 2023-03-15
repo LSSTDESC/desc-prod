@@ -45,7 +45,7 @@ class JobData:
       _popen - Popen object. E.g. use poll to see if job has completed.
       port_errors - Error messages retrieving the port.
     """
-    data_names =   [ 'id', 'descname', 'jobtype',  'config', 'session']
+    data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config', 'session']
     data_dbtypes = ['int',  'varchar', 'varchar', 'varchar',     'int']
     data_names +=   [   'host',  'rundir', 'pid', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
     data_dbtypes += ['varchar', 'varchar', 'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
@@ -576,6 +576,7 @@ class JobData:
         return None
 
     def index(self):         return self.data('id')      # python uses object.id()
+    def parent(self):        return self.data('parent')
     def descname(self):      return self.data('descname')
     def jobtype(self):       return self.data('jobtype')
     def config(self):        return self.data('config')
