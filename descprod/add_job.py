@@ -32,13 +32,13 @@ def add_job(jobtype, config, *, descname=None, parent=None, surl=None):
             r = requests.post(url, timeout=10, json=jmap)
             sc = r.status_code
             if sc != 200:
-                print(f"Update of job {user}/{jobid} at {surl} failed with HTML code {sc}")
+                print(f"Add of job {jobtype} {config} at {surl} failed with HTML code {sc}")
             else:
                 rmap = r.json()
                 urc = rmap['status']
                 if urc:
-                    print(f"Update of job {user}/{jobid} at {surl} failed: {rmap['message']}")
-                    sc = 1001
+                    print(f"Add of job {jobtype} {config} at {surl} failed with status {urc}")
+                    sc = 1000 + urc
                 else:
                     print(f"Updated job {jobid} at {surl}")
         except Exception as e:
