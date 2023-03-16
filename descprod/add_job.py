@@ -4,6 +4,7 @@ import sys
 import os
 import time
 import descprod
+import requests
 import pdb
 
 def add_job(jobtype, config, *, descname=None, parent=None, surl=None):
