@@ -42,10 +42,11 @@ def add_job(jobtype, config, *, descname=None, parent=None, surl=None):
                 else:
                     print(f"Updated job {jobid} at {surl}")
         except Exception as e:
-            print(f"Unable to reach server at {surl}: {str(e)}")
+            print(f"Unable to reach server at {url}: {str(e)}")
             sc = 999
         sys.stdout.flush()
         time.sleep(wait_time)
+        cout += 1
     rmap = r.json()
     rc = rmap['status']
     if rc:
