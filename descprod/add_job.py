@@ -13,8 +13,9 @@ def add_job(jobtype, config, *, descname=None, parent=None, surl=None):
     '''
     uid = descprod.get_login() if descname is None else descnam
     jnam = {'jobtype':jobtype, 'config':config}
+    jmap = {}
     if parent is not None:
-        jmam['parent'] = parent
+        jmap['parent'] = parent
     if uid is not None:
         jmap['descname'] = uid
     if rl is None:
