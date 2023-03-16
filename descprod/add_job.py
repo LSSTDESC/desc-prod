@@ -46,7 +46,7 @@ def add_job(jobtype, config, *, descname=None, parent=None, surl=None):
             sc = 999
         sys.stdout.flush()
         time.sleep(wait_time)
-        cout += 1
+        count += 1
     rmap = r.json()
     rc = rmap['status']
     if rc:
