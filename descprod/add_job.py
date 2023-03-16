@@ -19,7 +19,7 @@ def add_job(jobtype, config, *, descname=None, parent=None, surl=None):
     if uid is not None:
         jmap['descname'] = uid
     if surl is None:
-        url = desc.server_url()
+        url = descprod.server_url()
     else:
         url = surl
     url += '/add_job'
