@@ -710,5 +710,5 @@ def add_child_job():
     jdat = JobData(jid, descname)
     if jdat.configure(jobtype, cfg, sid):
         return {'status':4, 'message':jdat.errmsgs[-1]}
-    sdat.msg.append(f"Configured child {jobtype} {cfg}")
+    print(f"Added and configured child job {descname}/{jid}: {jobtype} {cfg}")
     return {'status':0}
