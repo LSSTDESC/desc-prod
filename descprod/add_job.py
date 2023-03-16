@@ -28,7 +28,7 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=5):
         url = descprod.server_url()
     else:
         url = surl
-    url += '/add_job'
+    url += '/add_child_job'
     wait_time = 10
     count = 0
     while count < ntry:
