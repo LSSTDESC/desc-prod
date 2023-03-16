@@ -74,7 +74,7 @@ def add_job_main():
             uid = args[0]
             args = args[1:]
         elif flag == '-p':
-            par = args[0]
+            parent = args[0]
             args = args[1:]
         elif flag == '-s':
             surl = args[0]
