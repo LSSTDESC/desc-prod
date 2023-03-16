@@ -7,7 +7,7 @@ import descprod
 import requests
 import pdb
 
-def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=5):
+def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
     '''
     Attempts to add a job with the provided characteristics.
     If successful, returns the jsam map for th job.
@@ -45,7 +45,7 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=5):
                     print(f"Add of job {jobtype} {config} at {surl} failed with status {urc}: {umsg}")
                     sc = 1000 + urc
                 else:
-                    print(f"Updated job {jobid} at {surl}")
+                    print(f"Updated job {jid} at {surl}")
         except Exception as e:
             print(f"Unable to reach server at {url}: {str(e)}")
             sc = 999
@@ -67,6 +67,7 @@ def add_job_main():
     parent = None
     surl = None
     config = ""
+    ntry = 1
     while len(args) and args[0][0] == '-':
         flag = args[0]
         args = args[1:]
@@ -80,6 +81,9 @@ def add_job_main():
         elif flag == '-s':
             surl = args[0]
             args = args[1:]
+        elif flag == '-n':
+            ntry = int(args[0])
+            args = args[1:]
         else:
             print(f"{myname}: Invalid command line flag: {flag}")
             return 1
@@ -89,6 +93,7 @@ def add_job_main():
         print(f"     -u - Username")
         print(f"     -s - Server URL.")
         print(f"     -p - Parent job ID")
+        print(f"     -n - Number of tries.")
         print(f"  JOBTYPE - Job type.")
         print(f"  CONFIG  - Job configuration..")
         return 0
@@ -107,7 +112,7 @@ def add_job_main():
     if debug:
         print(f"{myname}: Running with debugger.")
         pdb.set_trace()
-    resp = add_job(jobtype, config, parent, descname=uid, surl=surl)
+    resp = add_job(jobtype, config, parent, descname=uid, surl=surl, ntry=ntry)
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1
