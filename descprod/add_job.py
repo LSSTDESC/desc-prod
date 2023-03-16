@@ -40,8 +40,9 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=5):
             else:
                 rmap = r.json()
                 urc = rmap['status']
+                umsg = rmap['message'] if 'message' in rmap else 'OK?'
                 if urc:
-                    print(f"Add of job {jobtype} {config} at {surl} failed with status {urc}")
+                    print(f"Add of job {jobtype} {config} at {surl} failed with status {urc}: {umsg}")
                     sc = 1000 + urc
                 else:
                     print(f"Updated job {jobid} at {surl}")
