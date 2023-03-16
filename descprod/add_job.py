@@ -29,7 +29,7 @@ def add_job(jobtype, config, *, descname=None, parent=None, surl=None):
     count = 0
     while count < 10:
         try:
-            r = requests.post(url, timeout=10, json={'id':jobid, 'descname':user, 'job':info})
+            r = requests.post(url, timeout=10, json=jmap)
             sc = r.status_code
             if sc != 200:
                 print(f"Update of job {user}/{jobid} at {surl} failed with HTML code {sc}")
