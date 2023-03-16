@@ -11,7 +11,7 @@ def add_job(jobtype, config, *, descname=None, parent=None, surl=None):
     If successful, returns the jsam map for th job.
     Otherwise returns a string with an error message.
     '''
-    uid = descprod.get_login() if dnam is None else descnam
+    uid = descprod.get_login() if descname is None else descnam
     jnam = {'jobtype':jobtype, 'config':config}
     if parent is not None:
         jmam['parent'] = parent
