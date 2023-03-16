@@ -7,19 +7,23 @@ import descprod
 import requests
 import pdb
 
-def add_job(jobtype, config, *, descname=None, parent=None, surl=None):
+def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=5):
     '''
     Attempts to add a job with the provided characteristics.
     If successful, returns the jsam map for th job.
     Otherwise returns a string with an error message.
     '''
-    uid = descprod.get_login() if descname is None else descnam
+    uid = descprod.get_login() if descname is None else descname
     jnam = {'jobtype':jobtype, 'config':config}
     jmap = {}
-    if parent is not None:
-        jmap['parent'] = parent
-    if uid is not None:
-        jmap['descname'] = uid
+    if jobtype is None: return f"Invalid jobtype."
+    if config is None: return f"Invalid config."
+    if parent is None: return f"Invalid parent."
+    if uid is None: return f"Invalid descname."
+    jmap['jobtype'] = jobtype
+    jmap['config'] = config
+    jmap['parent'] = parent
+    jmap['descname'] = uid
     if surl is None:
         url = descprod.server_url()
     else:
@@ -27,7 +31,7 @@ def add_job(jobtype, config, *, descname=None, parent=None, surl=None):
     url += '/add_job'
     wait_time = 10
     count = 0
-    while count < 10:
+    while count < ntry:
         try:
             r = requests.post(url, timeout=10, json=jmap)
             sc = r.status_code
@@ -99,7 +103,7 @@ def add_job_main():
     if debug:
         print(f"{myname}: Running with debugger.")
         pdb.set_trace()
-    resp = add_job(jobtype, config, descname=uid, parent=parent, surl=surl)
+    resp = add_job(jobtype, config, parent, descname=uid, surl=surl)
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1

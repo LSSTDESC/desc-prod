@@ -688,3 +688,27 @@ def update_job():
     if len(errmsg): return {'status':5, 'message':f"Job {descname}/{jid}: {errmsg}"}
     return {'status':0}
 
+@app.route('/add_child_job', methods=['POST', 'GET'])
+def add_child_job():
+    """Handle request to add a job."""
+    if request.method == 'GET':
+        return 'Got GET instead of POST!!'
+    jmap = request.json
+    for nam in ['jobtype', 'config', 'parent', 'descname']:
+        if nam not in jmap:   return {'status':1, 'message':f"Request to add child job does not have field {nam}"}
+        if jmap[nam] is None: return {'status':2, 'message':f"Request to add child job does not have a value for field {nam}"}
+    jobtype = jmap['jobtype']
+    cfg = jmap['config']
+    parent = jmap['parent']
+    descname = jmap['descname']
+    # Require parent has the same username.
+    pjob = JobData.get_user_job(descname, parent, usedb=True)
+    if pjob is None:
+        return {'status':3, 'message':f"Parent job {descname}/{parent} was not found"}
+    sid = pjob.session()
+    jid = get_jobid()
+    jdat = JobData(jid, descname)
+    if jdat.configure(jobtype, cfg, sid):
+        return {'status':4, 'message':jdat.errmsgs[-1]}
+    sdat.msg.append(f"Configured child {jobtype} {cfg}")
+    return {'status':0}
