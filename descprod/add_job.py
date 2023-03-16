@@ -45,7 +45,7 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
                     print(f"Add of job {jobtype} {config} at {surl} failed with status {urc}: {umsg}")
                     sc = 1000 + urc
                 else:
-                    print(f"Success: {msg}")
+                    print(f"Success: {umsg}")
         except Exception as e:
             print(f"Unable to reach server at {url}: {str(e)}")
             sc = 999
@@ -53,10 +53,9 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
         time.sleep(wait_time)
         count += 1
     rmap = r.json()
-    rc = rmap['status']
-    if rc:
-        if rc: return f"Unable to add job: Error code is {rc}"
-    return r.json()['job']
+    if 'job' in rmap:
+        return rmap['job']
+    return 'Add job failed.'
 
 def add_job_main():
     args = sys.argv[1:]
@@ -117,7 +116,7 @@ def add_job_main():
         print(f"{myname}: ERROR: {resp}")
         return 1
     jdat = resp
-    print(f"{myname}: Started job {jid}:")
+    print(f"{myname}: Started job {jdat.id()}:")
     for key in descprod.JobData.data_names:
         if key in jdat:
             val = jdat[key]
