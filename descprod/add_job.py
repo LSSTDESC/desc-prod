@@ -45,7 +45,7 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
                     print(f"Add of job {jobtype} {config} at {surl} failed with status {urc}: {umsg}")
                     sc = 1000 + urc
                 else:
-                    print(f"Updated job {jid} at {surl}")
+                    print(f"Success: {msg}")
         except Exception as e:
             print(f"Unable to reach server at {url}: {str(e)}")
             sc = 999
