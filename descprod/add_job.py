@@ -100,6 +100,9 @@ def add_job_main():
     if len(args):
         config = args[0]
         args = args[1:]
+    if parent is None:
+        print(f"Parent must be provided.")
+        return 1
     if debug:
         print(f"{myname}: Running with debugger.")
         pdb.set_trace()
