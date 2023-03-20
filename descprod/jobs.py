@@ -33,6 +33,7 @@ class JobData:
                config - config string for the job
               session - sessiin where job was created
                   pid - process ID
+          create_time - job creation timestamp
            start_time - start timestamp
           update_time - heartbeat timestamp
             stop_time - stop timestamp
@@ -47,8 +48,8 @@ class JobData:
     """
     data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config', 'session']
     data_dbtypes = ['int',    'int',  'varchar', 'varchar', 'varchar',     'int']
-    data_names +=   [   'host',  'rundir', 'pid', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
-    data_dbtypes += ['varchar', 'varchar', 'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
+    data_names +=   [   'host',  'rundir', 'pid', 'create_time', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
+    data_dbtypes += ['varchar', 'varchar', 'int',         'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
     data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'host':128, 'rundir':256, 'progress':256}
     data_dbcons = {'id':'NOT NULL', 'descname':'NOT NULL'}
     dbg = 1
@@ -586,6 +587,7 @@ class JobData:
     def host(self):          return self.data('host')
     def rundir(self):        return self.data('rundir')
     def pid(self):           return self.data('pid')
+    def creste_time(self):   return self.data('creste_time')
     def start_time(self):    return self.data('start_time')
     def update_time(self):   return self.data('update_time')
     def stop_time(self):     return self.get_stop_time()
@@ -643,7 +645,9 @@ class JobData:
         self.set_data('id', a_idx)
         self.set_data('descname', a_descname)
         self.set_data('progress', 'Created.')
-        self.set_data('update_time', int(time.time()))
+        now = int(time.time())
+        self.set_data('create_time', now)
+        self.set_data('update_time', now)
         if rundir is not None: self.set_rundir(rundir)
         idx = self.index()
         descname = self.descname()
@@ -749,7 +753,7 @@ class JobData:
         If so, return blank. Otherwise return a message explaining
         why the job is not ready to run.
         '''
-        needs = ['id', 'descname', 'jobtype', 'config', 'update_time', 'progress']
+        needs = ['id', 'descname', 'jobtype', 'config', 'create_time', 'update_time', 'progress']
         nots = ['pid', 'start_time', 'stop_time', 'return_status']
         for nam in needs:
             if not self.has_data(nam):

@@ -51,7 +51,9 @@ class JobTable:
             if len(job.errmsgs): errmsg = job.errmsgs[-1]
             self.errmsgs.append(errmsg)
             self.stamsgs.append(job.progress())
-            sstim = sdate(job.start_time(), default='not-started')
+            stim = job.start_time()
+            if stim is None: stim = job.create_time()
+            sstim = sdate(stim, default='time-not-found')
             self.starts.append(sstim)
             self.durations.append(job.duration())
             self.ports.append(job.port())
@@ -84,7 +86,7 @@ class JobTable:
         txt += '    <th>Type</th>\n'
         txt += '    <th>Configuration</th>\n'
         txt += '    <th>Session</th>\n'
-        txt += '    <th>Start time</th>\n'
+        txt += '    <th>Create/start time</th>\n'
         txt += '    <th>Duration</th>\n'
         txt += '    <th>Host</th>\n'
         txt += '    <th>Run directory</th>\n'
