@@ -713,6 +713,7 @@ class JobData:
         else:
              self.do_error(myname, f"Invalid source option: {source}")
         JobData.jobs[idx] = self
+        print(f"{myname}: Inserting job {idx} for user {descname}")
         if descname not in JobData.ujobs:
             JobData.ujobs[descname] = {}
         JobData.ujobs[descname][idx] = self
