@@ -314,7 +314,7 @@ def home():
         #    msg += f"Run dir: {SessionData.rundir}"
         msg += sep
         msg += f'''\nCreate job: <form action="/form_create_job" method='POST'>'''
-        msg += '''<input type="text" name="jobtype"/>'''
+        msg += '''<input type="text" name="jobtype" value='parsltest'/>'''
         msg += '''<input type="text" name="config"/>'''
         msg += '''<input type="text" name="howfig"/>'''
         msg += '''<input type="submit" value="Submit"/></form>'''
@@ -518,7 +518,7 @@ def run_form_create_job():
     jty = request.form['jobtype']
     known_jty = ['parsltest']
     if jty not in known_jty:
-        SessionData.get().msg += f"Invalid job type: {jty}"
+        SessionData.get().msg.append(f"Invalid job type: {jty}")
     return redirect(url_for('home'))
     cfg = request.form['config']
     hfg = request.form['howfig']
