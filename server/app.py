@@ -313,7 +313,10 @@ def home():
         #    msg += sep
         #    msg += f"Run dir: {SessionData.rundir}"
         msg += sep
-        msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'><input type="text" name="config"/><input type="submit" value="Submit"/></form>'''
+        msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'>'''
+        msg += '''<input type="text" name="config"/>'''
+        msg += '''<input type="text" name="howfig"/>'''
+        msg += '''<input type="submit" value="Submit"/></form>'''
         msg += sep
         msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>\n'
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>\n'
@@ -498,19 +501,22 @@ def hello():
 def run_parsltest():
     myname = 'run_parsltest'
     if 'config' not in request.args.keys():
-          return "Invalid job description"
+          return "Invalid job description: missing config"
     cfg = request.args.get('config')
-    print(f"parsltest: {cfg}")
-    return do_parsltest(cfg)
+    hfg = ""
+    if 'howfig' in request.args.keys():
+        hfg = request.args.get('howfig')
+    print(f"run_parsltest: {cfg} {hfg}")
+    return do_parsltest(cfg, hfg)
 
 @app.route('/form_parsltest/', methods=['POST', 'GET'])
 def run_form_parsltest():
     if request.method == 'GET':
         return 'Got GET instead of POST!!'
     print(request.form['config'])
-    return do_parsltest(request.form['config'])
+    return do_parsltest(request.form['config'], request.form['howfig'])
 
-def do_parsltest(cfg):
+def do_parsltest(cfg, hfg):
     myname = 'do_parsltest'
     if len(cfg) == 0: return redirect(url_for('home'))
     jobtype = 'parsltest'
