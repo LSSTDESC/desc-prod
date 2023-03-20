@@ -314,9 +314,9 @@ def home():
         #    msg += f"Run dir: {SessionData.rundir}"
         msg += sep
         msg += f'''\n<form action="/form_create_job" method='POST'>Create job: '''
-        msg += '''<input type="text" name="jobtype" value='parsltest' style="width: 100px;" /> '''
-        msg += '''<input type="text" name="config" style="width: 200px;" /> '''
-        msg += '''<input type="text" name="howfig" style="width: 200px;" /> '''
+        msg += '''<input type="text" name="jobtype" value='parsltest' style="width: 150px;" /> '''
+        msg += '''<input type="text" name="config" style="width: 300px;" /> '''
+        msg += '''<input type="text" name="howfig" style="width: 300px;" /> '''
         msg += '''<input type="submit" value="Submit"/></form>'''
         msg += sep
         msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>\n'
