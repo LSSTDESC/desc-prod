@@ -697,25 +697,16 @@ def add_child_job():
     for nam in ['jobtype', 'config', 'parent', 'descname']:
         if nam not in jmap:   return {'status':1, 'message':f"Request to add child job does not have field {nam}"}
         if jmap[nam] is None: return {'status':2, 'message':f"Request to add child job does not have a value for field {nam}"}
-    print(1)
     jobtype = jmap['jobtype']
-    print(2)
     cfg = jmap['config']
-    print(3)
-    parent = jmap['parent']
-    print(4)
+    parent = int(jmap['parent'])
     descname = jmap['descname']
-    print(5)
     # Require parent has the same username.
     pjob = JobData.get_user_job(descname, parent, usedb=True)
-    print(6)
     if pjob is None:
         return {'status':3, 'message':f"Parent job {descname}/{parent} was not found"}
-    print(7)
     sid = pjob.session()
-    print(8)
     jid = get_jobid()
-    print(9)
     jdat = JobData(jid, descname)
     if jdat.configure(jobtype, cfg, sid, parent):
         return {'status':4, 'message':jdat.errmsgs[-1]}
