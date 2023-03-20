@@ -134,21 +134,23 @@ class JobData:
 
     @classmethod
     def get_jobs_from_db(cls, descname=None):
-        """"Retrieve a user's jobs from the local disk."""
+        """"Retrieve a user's jobs from the job DB."""
         myname = 'JobData.get_jobs_from_db'
         if descname not in cls.ujobs:
             cls.ujobs[descname] = {}
         cur = cls.db_query_where(f"descname='{descname}'", cols='id')
+        myjobs = cls.ujobs[descname]
         if cur is None:
             print(f"{myname}: DB query failed.")
             return {}
         jdats = []
         for row in cur.fetchall():
             idx = row[0]
-            jdat = JobData(idx, descname, 'db')
-            jdats.append(jdat)
+            if idx not in myjobs:
+                jdat = JobData(idx, descname, 'db')
+                jdats.append(jdat)
         print(f"{myname}: Fetched {len(jdats)} jobs for user {descname} from DB")
-        return cls.ujobs[descname]
+        return myjobs
 
     @classmethod
     def db_name(cls, new_name=None):
