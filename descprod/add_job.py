@@ -50,6 +50,7 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
                     sc = 1000 + urc
                 else:
                     print(f"Success: {umsg}")
+                    break
         except Exception as e:
             print(f"Unable to reach server at {url}: {str(e)}")
             sc = 999
