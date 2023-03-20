@@ -92,18 +92,29 @@ class JobData:
         If the job is not found and usedb is true, then construct it from the DB data.
         '''
         myname = 'JobData.get_user_job'
+        print(11)
         if descname in cls.ujobs:
+            print(12)
             if idx in cls.ujobs[descname]:
+            print(13)
                 return cls.ujobs[descname][idx]
         if usedb:
+            print(14)
             cur = cls.db_query_where(f"id={idx} AND descname='{descname}'")
+            print(15)
             if cur is None: return None
+            print(16)
             rows = cur.fetchall()
+            print(17)
             nrow = len(rows)
+            print(18)
             if nrow == 0: return None
+            print(19)
             if nrow > 1:
                 raise Exception(f"DB query for ID {idx} user {descname}' has too many ({nrow}) matches.")
+            print(20)
             return JobData(idx, descname, source='db')
+            print(21)
         return None
 
     @classmethod
