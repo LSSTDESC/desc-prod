@@ -587,7 +587,7 @@ class JobData:
     def host(self):          return self.data('host')
     def rundir(self):        return self.data('rundir')
     def pid(self):           return self.data('pid')
-    def creste_time(self):   return self.data('creste_time')
+    def create_time(self):   return self.data('creste_time')
     def start_time(self):    return self.data('start_time')
     def update_time(self):   return self.data('update_time')
     def stop_time(self):     return self.get_stop_time()
