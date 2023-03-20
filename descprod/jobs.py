@@ -674,7 +674,7 @@ class JobData:
                     self.stale_vars = set()
                     dbnams = self.get_db_table_schema()
                     row = rows[0]
-                    for (nam,val) in zip(dbnams[2:], row[2:]):
+                    for (nam,val) in zip(dbnams, row):
                         self.set_data(nam, val, set_stale=False)
                     self.job_table_name = self.current_table_name()
         elif source == 'disk':
