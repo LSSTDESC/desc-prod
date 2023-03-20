@@ -15,15 +15,15 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
     '''
     uid = descprod.get_login() if descname is None else descname
     jnam = {'jobtype':jobtype, 'config':config}
-    jmap = {}
+    pjmap = {}
     if jobtype is None: return f"Invalid jobtype."
     if config is None: return f"Invalid config."
     if parent is None: return f"Invalid parent."
     if uid is None: return f"Invalid descname."
-    jmap['jobtype'] = jobtype
-    jmap['config'] = config
-    jmap['parent'] = parent
-    jmap['descname'] = uid
+    pjmap['jobtype'] = jobtype
+    pjmap['config'] = config
+    pjmap['parent'] = parent
+    pjmap['descname'] = uid
     if surl is None:
         url = descprod.server_url()
     else:
@@ -34,7 +34,7 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
     jmap = {}
     while count < ntry:
         try:
-            r = requests.post(url, timeout=10, json=jmap)
+            r = requests.post(url, timeout=10, json=pjmap)
             sc = r.status_code
             if sc != 200:
                 print(f"Add of job {jobtype} {config} at {surl} failed with HTML code {sc}")
