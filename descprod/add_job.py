@@ -40,14 +40,19 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
                 print(f"Add of job {jobtype} {config} at {surl} failed with HTML code {sc}")
             else:
                 rmap = r.json()
+                if 'job' in rmap: jmap = rmap['job']
                 urc = rmap['status']
                 if 'message' in rmap:
                     umsg = rmap['message']
+                elif jmap is None:
+                    umsg = f"Job not found in server reponse."
                 else:
-                    umsg = f"Started job {rmap[descname]}/{rmap['id']}"
+                    umsg = f"Started job {jmap['descname']}/{jmap['id']}"
                 if urc:
                     print(f"Add of job {jobtype} {config} at {surl} failed with status {urc}: {umsg}")
                     sc = 1000 + urc
+                elif jmap is None:
+                    print(umsg)
                 else:
                     print(f"Success: {umsg}")
                     break
