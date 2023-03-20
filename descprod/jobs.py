@@ -716,7 +716,7 @@ class JobData:
         JobData.ujobs[descname][idx] = self
         if dbinsert: self.db_insert()
 
-    def configure(self, jobtype, config, sid):
+    def configure(self, jobtype, config, sid, parent=None):
         """
         Configure a job: assign a job type and a configuration string.
         """
@@ -734,6 +734,8 @@ class JobData:
         self.set_data('jobtype', jobtype)
         self.set_data('config', config)
         self.set_data('session', sid)
+        if parent is not None:
+            self.set_data('parent', parent)
         self.set_data('progress', 'Ready.')
         self.db_update()
         return 0

@@ -708,7 +708,7 @@ def add_child_job():
     sid = pjob.session()
     jid = get_jobid()
     jdat = JobData(jid, descname)
-    if jdat.configure(jobtype, cfg, sid):
+    if jdat.configure(jobtype, cfg, sid, parent):
         return {'status':4, 'message':jdat.errmsgs[-1]}
     print(f"Added and configured child job {descname}/{jid}: {jobtype} {cfg}")
     return {'status':0, 'job':jdat.jmap()}
