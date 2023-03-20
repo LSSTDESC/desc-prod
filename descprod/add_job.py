@@ -44,7 +44,7 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
                 if 'message' in rmap:
                     umsg = rmap['message']
                 else:
-                    umsg = f"Started job {rmap['descname']}/{rmap['id']}"
+                    umsg = f"Started job {rmap[descname]}/{rmap['id']}"
                 if urc:
                     print(f"Add of job {jobtype} {config} at {surl} failed with status {urc}: {umsg}")
                     sc = 1000 + urc
