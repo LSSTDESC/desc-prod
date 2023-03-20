@@ -115,11 +115,11 @@ def add_job_main():
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1
-    jdat = resp
-    print(f"{myname}: Started job {jdat.id()}:")
+    jmap = resp
+    #print(f"{myname}: Started job {jmap.id()}:")
     for key in descprod.JobData.data_names:
-        if key in jdat:
-            val = jdat[key]
+        if key in jmap:
+            val = jmap[key]
             if key[-5:] == '_time':
                 val = f"{descprod.sdate(val)} UTC"
             print(f"{key:>16}: {val}")
