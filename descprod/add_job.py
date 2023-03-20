@@ -31,6 +31,7 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
     url += '/add_child_job'
     wait_time = 10
     count = 0
+    rmap = {}
     while count < ntry:
         try:
             r = requests.post(url, timeout=10, json=jmap)
@@ -52,7 +53,6 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
         sys.stdout.flush()
         time.sleep(wait_time)
         count += 1
-    rmap = r.json()
     if 'job' in rmap:
         return rmap['job']
     return 'Add job failed.'
