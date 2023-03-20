@@ -7,9 +7,12 @@ def timestamp():
     return datetime.timestamp(datetime.now())
 
 # Return a formatted time string e.g. 2023-jan-08 13:55
-def sdate(tstamp=None, fmt='%Y-%m-%d %H:%M:%S'):
+def sdate(tstamp=None, fmt='%Y-%m-%d %H:%M:%S', default=None):
     if tstamp is None:
-        dt = datetime.now()
+        if default is None:
+            dt = datetime.now()
+        else:
+            return default
     else:
         dt = datetime.utcfromtimestamp(tstamp)
     return dt.strftime(fmt)
