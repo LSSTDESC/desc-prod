@@ -313,7 +313,8 @@ def home():
         #    msg += sep
         #    msg += f"Run dir: {SessionData.rundir}"
         msg += sep
-        msg += f'''\nParsltest job: <form action="/form_parsltest" method='POST'>'''
+        msg += f'''\nCreate job: <form action="/form_create_job" method='POST'>'''
+        msg += '''<input type="text" name="jobtype"/>'''
         msg += '''<input type="text" name="config"/>'''
         msg += '''<input type="text" name="howfig"/>'''
         msg += '''<input type="submit" value="Submit"/></form>'''
@@ -497,23 +498,31 @@ def hello():
     sdat.msg += [f"hello{name}</br>"]
     return redirect(url_for('home'))
 
-@app.route('/parsltest')
-def run_parsltest():
-    myname = 'run_parsltest'
-    if 'config' not in request.args.keys():
-          return "Invalid job description: missing config"
-    cfg = request.args.get('config')
-    hfg = ""
-    if 'howfig' in request.args.keys():
-        hfg = request.args.get('howfig')
-    print(f"run_parsltest: {cfg} {hfg}")
-    return do_parsltest(cfg, hfg)
+#@app.route('/parsltest')
+#def run_parsltest():
+#    myname = 'run_parsltest'
+#    if 'config' not in request.args.keys():
+#          return "Invalid job description: missing config"
+#    cfg = request.args.get('config')
+#    hfg = ""
+#    if 'howfig' in request.args.keys():
+#        hfg = request.args.get('howfig')
+#    print(f"run_parsltest: {cfg} {hfg}")
+#    return do_parsltest(cfg, hfg)
 
-@app.route('/form_parsltest/', methods=['POST', 'GET'])
-def run_form_parsltest():
+@app.route('/form_create_job/', methods=['POST', 'GET'])
+def run_form_create_job():
     if request.method == 'GET':
         return 'Got GET instead of POST!!'
-    print(request.form['config'])
+    sdat = SessionData.get()
+    jty = request.form['jobtype']
+    known_jty = ['parsltest']
+    if jty not in known_jty:
+        SessionData.get().msg += f"Invalid job type: {jty}"
+    return redirect(url_for('home'))
+    cfg = request.form['config']
+    hfg = request.form['howfig']
+    print(f"form_create_job: {jty} {cfg} {hfg}")
     return do_parsltest(request.form['config'], request.form['howfig'])
 
 def do_parsltest(cfg, hfg):
