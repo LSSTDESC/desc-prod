@@ -54,3 +54,4 @@ On perlmutter or cori, install with shifter:
 06 - Add pip install of desc-prod
 07 - Add pip install of homeptenv00
 08 - Drop workqueue (still in ptenv). Upgrade to descprod 0.3.25 w/o sudo from root in server/start.
+09 - Upgrade to descprod 0.3.33 which has start option git-safedir.

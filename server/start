@@ -51,16 +51,16 @@ ARGS="$*"
 
 # Actions to carry out before starting the service.
 if [ $# -gt 0 ]; then
-  # Prevent git dubious ownership errors.
-  if [ $OPT = 'git-safedir' ]; then
-     git config --global --add safe.directory '*'
-  fi
-  # Update parsl
   if [ $OPT = update ]; then
      OPT=update-parsl
      ARGS="update-desc-wfmon update-desc-prod $ARGS"
   fi
-  if [ $OPT = update-parsl ]; then
+  # Prevent git dubious ownership errors.
+  if [ $OPT = 'git-safedir' ]; then
+    echo start: Setting git safedir.
+    git config --global --add safe.directory '*'
+  # Update parsl
+  elif [ $OPT = update-parsl ]; then
     echo start: Updating parsl
     pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
   # Update desc-wfmon
