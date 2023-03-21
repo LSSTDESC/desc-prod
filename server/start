@@ -51,6 +51,10 @@ ARGS="$*"
 
 # Actions to carry out before starting the service.
 if [ $# -gt 0 ]; then
+  # Prevent git dubious ownership errors.
+  if [ $OPT = 'git-safedir' ]; then
+     git config --global --add safe.directory '*'
+  fi
   # Update parsl
   if [ $OPT = update ]; then
      OPT=update-parsl
