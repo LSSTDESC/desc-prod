@@ -49,7 +49,7 @@ def add_job(jobtype, config, howfig, parent, *, descname=None, surl=None, ntry=1
                 elif jmap is None:
                     umsg = f"Job not found in server reponse."
                 else:
-                    umsg = f"Started job {jmap['descname']}/{jmap['id']}"
+                    umsg = f"Added job {jmap['descname']}/{jmap['id']}"
                 if urc:
                     print(f"Add of job {jobtype} {config} {howfig} at {surl} failed with status {urc}: {umsg}")
                     sc = 1000 + urc
