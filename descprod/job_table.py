@@ -34,7 +34,9 @@ class JobTable:
             self.parents.append(job.parent())
             self.jobtypes.append(job.jobtype())
             self.configs.append(job.config())
-            self.howfigs.append(job.howfig())
+            howfig = job.howfig()
+            if howfig is None: howfig = ''
+            self.howfigs.append(howfig)
             pid = job.pid()
             #if pid is None: pid = -1
             self.pids.append(pid)
@@ -88,7 +90,7 @@ class JobTable:
         txt += '    <th>Parent</th>\n'
         txt += '    <th>Type</th>\n'
         txt += '    <th>Configuration</th>\n'
-        txt += '    <th>Howfig/th>\n'
+        txt += '    <th>Howfig</th>\n'
         txt += '    <th>Session</th>\n'
         txt += '    <th>Create/start time</th>\n'
         txt += '    <th>Duration</th>\n'
