@@ -50,11 +50,12 @@ if [ -n "$DOHELP" -o -z "$NAM" ]; then
 fi
 
 HOMDIR=$HOME/ptenv
-TARBAS=$HOMEDIR/tar
+TARBAS=$HOMDIR/tar
 CONDIR=
 TARCEN=
 TARDIR=
-LOC=${NAM:0:3}
+#LOC=${NAM:0:3}
+LOC=$NAM
 if [ $LOC = hom ]; then
   CONDIR=$HOMDIR
 elif [ $LOC = cfs ]; then
