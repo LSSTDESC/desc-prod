@@ -1,6 +1,7 @@
 cert
 tmp
 setup.sh
+job0*
 */tmp
 build
 desc_prod.egg-info

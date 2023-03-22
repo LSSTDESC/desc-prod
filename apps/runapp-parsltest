@@ -10,6 +10,8 @@
 #   CFG is the string passed to desc-wfmon-parsltest
 #   HFG is a configuration string searched for field ptenv:VER:LOC
 
+STALOG=current-status.txt
+
 # Default params for setting up the env.
 MYENV=ptenv
 MYVER=00
@@ -59,6 +61,7 @@ if [ -z "$ENV" ]; then
 fi
 
 if ! $ENV-find $LOC $VER; then
+  echo "Building env for parsltest: $ENV $VER $LOC" >$STALOG
   echo $MYNAME: Creating env $ENV $VER $LOC.
   time $ENV-create $LOC $VER
   if ! $ENV-find $LOC $VER; then
@@ -73,5 +76,6 @@ source $ENV-setup $LOC $VER
 
 echo
 echo $MYNAME: Running parsltest with $CFG
+echo "Running parsltest $CFG" >$STALOG
 desc-wfmon-parsltest $CFG
 exit $?
