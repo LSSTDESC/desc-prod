@@ -10,14 +10,21 @@ def check_config(config):
             1 - Invalid character
             2 - Four or mor contiguous dashes
             3 - Exactly two contiguos dashes
-            4 - Not a string
+            4 - Begins or ends with a dash
+            5 - Begins or ends with a colon
+            9 - Not a string
     '''
-    if type(config) is not str: return 4
+    dbg = 0
+    myname = 'check_config'
+    if dbg: print(f"{myname}: Checking '{config}'")
+    if type(config) is not str or len(config)==0: return 9
     for char in config:
-        if not char.isalpha() and char != ':' and char != '-' : return 1
+        if not char.isalpha() and not char.isdigit() and char != ':' and char != '-' : return 1
     if config.find('----') >= 0: return 2
     for cfg in split_compound_config(config):
         if cfg.find('--') >= 0: return 3
+    if config[0] == '-' or config[-1] == '-': return 4
+    if config[0] == ':' or config[-1] == ':': return 5
     return 0
 
 def split_config_field(field):

@@ -6,22 +6,53 @@
 # March 2023
 #
 # This is the deccprod application interface for parsltest.
+# Usage: $0 CFG HFG
+#   CFG is the string passed to desc-wfmon-parsltest
+#   HFG is a configuration string searched for field ptenv:VER:LOC
 
+# Default params for setting up the env.
+MYENV=ptenv
+MYVER=00
+MYLOC=home
+
+MYNAME=$(basename $0)
 MYCFG=$1
-MYHFG=$2
-MYLOC=${2:-home}
-MYVER=${3:-00}
+MYHFG=${2:-$MYENV:$MYVER:$MYLOC}
+
+if [ -z "$MYCFG" -o "$MYCFG" = "-h" ]; then
+  echo Usage: $MYNAME CFG HFG
+  echo "  CFG - Config passed to parsltest."
+  echo "  HFG - Env setup taken from field ptenv:VER:LOC [$MYENV:$MYVER:$MYLOC]"
+  exit 0
+fi
+
+# Parse the howfig to get the env params.
+if ! FIELDS=$(descprod-split-config $MYHFG); then
+  echo $MYNAME: Invalid howfig: $MYHFG
+  exit 1
+fi
+for FIELD in $FIELDS; do
+  echo field: $FIELD
+  if ! VALS=$(descprod-split-config-field $FIELD); then
+    echo $MYNAME: Invalid howfig field: $FIELD
+    exit 1
+  fi
+done
 
 if ! ptenv-find $MYLOC $MYVER; then
   echo $MYNAME: Creating env.
-  ptenv-create $MYLOC $MYVER
+  time ptenv-create $MYLOC $MYVER
   if ! ptenv-find $MYLOC $MYVER; then
     echo $MYNAME: ERROR: Creating env failed.
     exit 1
   fi
 fi
 
-source ptenv-setup $MYLOC $MYVER
+echo
+echo $MYNAME: Setup env 
+source $MYENV-setup $MYLOC $MYVER
 
+echo
+echo $MYNAME: Run parsltest with $MYCFG
 desc-wfmon-parsltest $MYCFG
 exit $?
