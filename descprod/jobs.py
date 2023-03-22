@@ -29,8 +29,10 @@ class JobData:
     Holds the data describing a job.
       # State data held in data and DB:
                 index - Job integer ID, unique to the site.
+               parent - ID of the parent job if there is one.
               jobtype - Job type: parsltest, ...
                config - config string for the job
+               howfig - how config string for the job
               session - sessiin where job was created
                   pid - process ID
           create_time - job creation timestamp
@@ -46,11 +48,11 @@ class JobData:
       _popen - Popen object. E.g. use poll to see if job has completed.
       port_errors - Error messages retrieving the port.
     """
-    data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config', 'session']
-    data_dbtypes = ['int',    'int',  'varchar', 'varchar', 'varchar',     'int']
+    data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config',  'howfig', 'session']
+    data_dbtypes = ['int',    'int',  'varchar', 'varchar', 'varchar', 'varchar'    'int']
     data_names +=   [   'host',  'rundir', 'pid', 'create_time', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
     data_dbtypes += ['varchar', 'varchar', 'int',         'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
-    data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'host':128, 'rundir':256, 'progress':256}
+    data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'howfig':512, 'host':128, 'rundir':256, 'progress':256}
     data_dbcons = {'id':'NOT NULL', 'descname':'NOT NULL'}
     dbg = 1
     jindent = 2          # json indentation
@@ -583,6 +585,7 @@ class JobData:
     def descname(self):      return self.data('descname')
     def jobtype(self):       return self.data('jobtype')
     def config(self):        return self.data('config')
+    def howfig(self):        return self.data('howfig')
     def session(self):       return self.data('session')
     def host(self):          return self.data('host')
     def rundir(self):        return self.data('rundir')
@@ -723,7 +726,7 @@ class JobData:
         JobData.ujobs[descname][idx] = self
         if dbinsert: self.db_insert()
 
-    def configure(self, jobtype, config, sid, parent=None):
+    def configure(self, jobtype, config, howfig, sid, parent=None):
         """
         Configure a job: assign a job type and a configuration string.
         """
@@ -733,6 +736,8 @@ class JobData:
             rstat += self.do_error(myname, f"Job type is already set: {self.jobtype()}", 1)
         if self.config() is not None:
             rstat += self.do_error(myname, f"Job config is already set: {self.config()}", 2)
+        if self.howfig() is not None:
+            rstat += self.do_error(myname, f"Job howfig is already set: {self.howfig()}", 2)
         if self.pid() is not None:
             rstat += self.do_error(myname, f"Job has already been started. Process ID: {self.pid()}", 4)
         if self.get_return_status() is not None:
@@ -740,6 +745,7 @@ class JobData:
         if rstat: return rstat
         self.set_data('jobtype', jobtype)
         self.set_data('config', config)
+        self.set_data('howfig', howfig)
         self.set_data('session', sid)
         if parent is not None:
             self.set_data('parent', parent)
@@ -753,7 +759,7 @@ class JobData:
         If so, return blank. Otherwise return a message explaining
         why the job is not ready to run.
         '''
-        needs = ['id', 'descname', 'jobtype', 'config', 'create_time', 'update_time', 'progress']
+        needs = ['id', 'descname', 'jobtype', 'config', 'howfig', 'create_time', 'update_time', 'progress']
         nots = ['pid', 'start_time', 'stop_time', 'return_status']
         for nam in needs:
             if not self.has_data(nam):
@@ -769,7 +775,8 @@ class JobData:
         '''Construct the shell command from the jobtype and config.'''
         jobtype = self.jobtype()
         config = self.config()
-        return f"runapp-{jobtype} {config}"
+        howfig = self.howfig()
+        return f"runapp-{jobtype} {config} {howfig}"
 
     def run(self, rundir=None, server=None):
         """

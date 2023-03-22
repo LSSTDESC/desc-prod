@@ -540,7 +540,7 @@ def do_parsltest(cfg, hfg):
     if len(jdat.errmsgs):
         sdat.msg.append(jdat.errmsgs)
         return redirect(url_for('home'))
-    if jdat.configure(jobtype, cfg, sid):
+    if jdat.configure(jobtype, cfg, hfg, sid):
         sdat.msg += jdat.errmsgs
         return redirect(url_for('home'))
     sdat.msg.append(f"Configured {jobtype} {cfg} in {jdat.rundir()}")
@@ -714,6 +714,7 @@ def add_child_job():
         if jmap[nam] is None: return {'status':2, 'message':f"Request to add child job does not have a value for field {nam}"}
     jobtype = jmap['jobtype']
     cfg = jmap['config']
+    hfg = jmap['howfig']
     parent = int(jmap['parent'])
     descname = jmap['descname']
     # Require parent has the same username.
@@ -723,7 +724,7 @@ def add_child_job():
     sid = pjob.session()
     jid = get_jobid()
     jdat = JobData(jid, descname)
-    if jdat.configure(jobtype, cfg, sid, parent):
+    if jdat.configure(jobtype, cfg, hfg, sid, parent):
         return {'status':4, 'message':jdat.errmsgs[-1]}
     print(f"add_child_job: Added and configured child job {descname}/{jid}: {jobtype} {cfg}")
     return {'status':0, 'job':jdat.jmap()}

@@ -1,7 +1,11 @@
 cert
 tmp
+setup.sh
 */tmp
 build
 desc_prod.egg-info
 descprod/__pycache__
 docker/*/build.log
+server/ports.txt
+docker/dptest
+fav

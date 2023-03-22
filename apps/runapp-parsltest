@@ -8,6 +8,7 @@
 # This is the deccprod application interface for parsltest.
 
 MYCFG=$1
+MYHFG=$2
 MYLOC=${2:-home}
 MYVER=${3:-00}
 
