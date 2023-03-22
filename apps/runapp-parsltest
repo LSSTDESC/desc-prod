@@ -72,6 +72,6 @@ echo $MYNAME: Setting up env $ENV $VER $LOC
 source $ENV-setup $LOC $VER
 
 echo
-echo $MYNAME: Running parsltest with $MYCFG
-desc-wfmon-parsltest $MYCFG
+echo $MYNAME: Running parsltest with $CFG
+desc-wfmon-parsltest $CFG
 exit $?
