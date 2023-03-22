@@ -18,6 +18,7 @@ class JobTable:
         self.parents = []
         self.jobtypes = []
         self.configs = []
+        self.howfigs = []
         self.sids = []
         self.pids = []
         self.hosts = []
@@ -33,6 +34,7 @@ class JobTable:
             self.parents.append(job.parent())
             self.jobtypes.append(job.jobtype())
             self.configs.append(job.config())
+            self.howfigs.append(job.howfig())
             pid = job.pid()
             #if pid is None: pid = -1
             self.pids.append(pid)
@@ -62,6 +64,7 @@ class JobTable:
         self.map['parent'] = self.parents
         self.map['jobtype'] = self.jobtypes
         self.map['config'] = self.configs
+        self.map['howfig'] = self.howfigs
         self.map['pid'] = self.pids
         self.map['sid'] = self.sids
         self.map['start'] = self.starts
@@ -85,6 +88,7 @@ class JobTable:
         txt += '    <th>Parent</th>\n'
         txt += '    <th>Type</th>\n'
         txt += '    <th>Configuration</th>\n'
+        txt += '    <th>Howfig/th>\n'
         txt += '    <th>Session</th>\n'
         txt += '    <th>Create/start time</th>\n'
         txt += '    <th>Duration</th>\n'
@@ -131,6 +135,7 @@ class JobTable:
             txt += f"    <td>{sparent}</td>{eol}"
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"
             txt += f"    <td>{self.configs[row]}</td>{eol}"
+            txt += f"    <td>{self.howfigs[row]}</td>{eol}"
             txt += f"    <td>{ssid}</td>{eol}"
             txt += f"    <td>{self.starts[row]}</td>{eol}"
             txt += f"    <td>{str(sduration(self.durations[row]))}</td>{eol}"

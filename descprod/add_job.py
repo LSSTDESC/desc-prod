@@ -7,7 +7,7 @@ import descprod
 import requests
 import pdb
 
-def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
+def add_job(jobtype, config, howfig, parent, *, descname=None, surl=None, ntry=1):
     '''
     Attempts to add a job with the provided characteristics.
     If successful, returns the jsam map for th job.
@@ -18,10 +18,12 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
     pjmap = {}
     if jobtype is None: return f"Invalid jobtype."
     if config is None: return f"Invalid config."
+    if howfig is None: return f"Invalid howfig."
     if parent is None: return f"Invalid parent."
     if uid is None: return f"Invalid descname."
     pjmap['jobtype'] = jobtype
     pjmap['config'] = config
+    pjmap['howfig'] = howfig
     pjmap['parent'] = parent
     pjmap['descname'] = uid
     if surl is None:
@@ -37,7 +39,7 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
             r = requests.post(url, timeout=10, json=pjmap)
             sc = r.status_code
             if sc != 200:
-                print(f"Add of job {jobtype} {config} at {surl} failed with HTML code {sc}")
+                print(f"Add of job {jobtype} {config} {howfig} at {surl} failed with HTML code {sc}")
             else:
                 rmap = r.json()
                 if 'job' in rmap: jmap = rmap['job']
@@ -49,7 +51,7 @@ def add_job(jobtype, config, parent, *, descname=None, surl=None, ntry=1):
                 else:
                     umsg = f"Started job {jmap['descname']}/{jmap['id']}"
                 if urc:
-                    print(f"Add of job {jobtype} {config} at {surl} failed with status {urc}: {umsg}")
+                    print(f"Add of job {jobtype} {config} {howfig} at {surl} failed with status {urc}: {umsg}")
                     sc = 1000 + urc
                 elif jmap is None:
                     print(umsg)
@@ -75,6 +77,7 @@ def add_job_main():
     parent = None
     surl = None
     config = ""
+    howfig = ""
     ntry = 1
     while len(args) and args[0][0] == '-':
         flag = args[0]
@@ -96,14 +99,15 @@ def add_job_main():
             print(f"{myname}: Invalid command line flag: {flag}")
             return 1
     if do_help:
-        print(f"Usage: {myname} [-h] [-d] [-s SURL] [-u USER] [-p PARENT] JOBTYPE [CONFIG]")
+        print(f"Usage: {myname} [-h] [-d] [-s SURL] [-u USER] [-p PARENT] JOBTYPE [CONFIG [HOWFIG]]")
         print(f"     -h - Show this message and exit.")
         print(f"     -u - Username")
         print(f"     -s - Server URL.")
         print(f"     -p - Parent job ID")
         print(f"     -n - Number of tries.")
         print(f"  JOBTYPE - Job type.")
-        print(f"  CONFIG  - Job configuration..")
+        print(f"  CONFIG  - Job configuration.")
+        print(f"  CONFIG  - Job howfig.")
         return 0
     if len(args):
         jobtype = args[0]
@@ -114,13 +118,16 @@ def add_job_main():
     if len(args):
         config = args[0]
         args = args[1:]
+    if len(args):
+        howfig = args[0]
+        args = args[1:]
     if parent is None:
         print(f"Parent must be provided.")
         return 1
     if debug:
         print(f"{myname}: Running with debugger.")
         pdb.set_trace()
-    resp = add_job(jobtype, config, parent, descname=uid, surl=surl, ntry=ntry)
+    resp = add_job(jobtype, config, howfig, parent, descname=uid, surl=surl, ntry=ntry)
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1
