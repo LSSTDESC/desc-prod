@@ -16,43 +16,62 @@ MYVER=00
 MYLOC=home
 
 MYNAME=$(basename $0)
-MYCFG=$1
-MYHFG=${2:-$MYENV:$MYVER:$MYLOC}
+CFG=$1
+HFG=${2:-$MYENV:$MYVER:$MYLOC}
 
-if [ -z "$MYCFG" -o "$MYCFG" = "-h" ]; then
+if [ -z "$CFG" -o "$CFG" = "-h" ]; then
   echo Usage: $MYNAME CFG HFG
   echo "  CFG - Config passed to parsltest."
   echo "  HFG - Env setup taken from field ptenv:VER:LOC [$MYENV:$MYVER:$MYLOC]"
   exit 0
 fi
 
-# Parse the howfig to get the env params.
-if ! FIELDS=$(descprod-split-config $MYHFG); then
-  echo $MYNAME: Invalid howfig: $MYHFG
+# Parse the howfig to get the env params: ENV, VER, LOC
+ENV=
+VER=$MYVER
+LOC=$MYLOC
+if ! FIELDS=$(descprod-split-config $HFG); then
+  echo $MYNAME: Invalid howfig: $HFG
   exit 1
 fi
 for FIELD in $FIELDS; do
-  echo field: $FIELD
-  if ! VALS=$(descprod-split-config-field $FIELD); then
+  if ! VALS=($(descprod-split-config-field $FIELD)); then
     echo $MYNAME: Invalid howfig field: $FIELD
     exit 1
   fi
+  NAM=${VALS[0]}
+  if [ $NAM = ptenv ]; then
+    ENV=$NAM
+    VAL1=${VALS[1]}
+    VAL2=${VALS[2]}
+    if [ -n "$VAL1" ]; then
+      VER=$VAL1
+    fi
+    if [ -n "$VAL2" ]; then
+      LOC=$VAL2
+    fi
+  fi
 done
 
-if ! ptenv-find $MYLOC $MYVER; then
-  echo $MYNAME: Creating env.
-  time ptenv-create $MYLOC $MYVER
-  if ! ptenv-find $MYLOC $MYVER; then
+if [ -z "$ENV" ]; then
+  echo MYNAME: Unable to deduce env from howfig $HFG
+  exit 2
+fi
+
+if ! $ENV-find $LOC $VER; then
+  echo $MYNAME: Creating env $ENV $VER $LOC.
+  time $ENV-create $LOC $VER
+  if ! $ENV-find $LOC $VER; then
     echo $MYNAME: ERROR: Creating env failed.
     exit 1
   fi
 fi
 
 echo
-echo $MYNAME: Setup env 
-source $MYENV-setup $MYLOC $MYVER
+echo $MYNAME: Setting up env $ENV $VER $LOC
+source $ENV-setup $LOC $VER
 
 echo
-echo $MYNAME: Run parsltest with $MYCFG
+echo $MYNAME: Running parsltest with $MYCFG
 desc-wfmon-parsltest $MYCFG
 exit $?
