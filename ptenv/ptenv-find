@@ -46,10 +46,10 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -n "$DOHELP" -o -z "$LOC" ]; then
-  echo Usage $(basename $0): [-h] [-t] LOC VER >&2
+  echo Usage $(basename $0): [-h] [-t] LOC [VER] >&2
   echo "  -h: Show this message." >&2
   echo "  -t: Return the tar file for for the env." >&2
-  echo "  -n: Return directory path without checking." >&2
+  echo "  -n: Return the env directory path without checking." >&2
   echo "If -n is not given, try to untar if the env is missing and" >&2
   echo "return the name only if it is found." >&2
   exit 0
@@ -57,61 +57,40 @@ fi
 
 PATH=$(dirname $(readlink -f $0)):$PATH
 
+ENVNAM=$(ptenv-name $LOC $VER)
+ENVDIR=$(ptenv-dir $LOC)
+TARDIR=$(ptenv-dir -t $LOC)
+ENVFIL=$ENVDIR/$ENVNAM
+TARFIL=$TARDIR/$ENVNAM.tz
+
 if [ -n "$DOTAR" ]; then
-  TARDIR=$(ptenv-dir -t $LOC)
-  if [ -z "$TARDIR" ]; then
-    exit 1
-  fi
-  echo $TARDIR/${LOC}ptenv$VER.tz
+  echo $TARFIL
   exit 0
-fi
-
-CONDIR=$(ptenv-dir $LOC)
-if [ -z "$CONDIR" ]; then
-  exit 1
-fi
-
-DIRNAM=miniconda3
-DIRNAMS=($DIRNAM)
-if [ -n "$VER" ]; then
-  DIRNAM=${LOC}ptenv${VER}
-  DIRNAMS="$DIRNAMS $DIRNAM"
 fi
 
 if [ -n "$NOCHECK" ]; then
-  echo $CONDIR/$DIRNAM
+  echo $ENVFIL
   exit 0
 fi
 
-for DIRNAM in $DIRNAMS; do
-  INSDIR=$CONDIR/$DIRNAM
-  NOTFOUNDS=
-  if [ ! -r $INSDIR ]; then
-    TARNAM=$DIRNAM.tz
-    TARDIR=$(ptenv-dir -t $LOC)
-    TARFIL=$TARDIR/$TARNAM
-    if [ -r $TARFIL ]; then
-      if [ ! -r $CONDIR ]; then
-        if ! mkdir -p $CONDIR; then
-          echo "ERROR: Unable to create $CONDIR" >&2
-          exit 1
-        fi
-      fi
-      echo "Untarring $TARFIL on $(hostname)" >&2
-      if ! tar -xzf $TARFIL -C $CONDIR; then
-        echo "ERROR: Unable to untar $TARFIL in $CONDIR" >&2
+if [ ! -r $ENVFIL ]; then
+  if [ -r $TARFIL ]; then
+    if [ ! -r $ENVDIR ]; then
+      if ! mkdir -p $ENVDIR; then
+        echo "ERROR: Unable to create $ENVDIR" >&2
         exit 1
       fi
-    else
-      NOTFOUNDS="$NOTFOUNDS $INSDIR $TARFIL"
     fi
-  fi
-  if [ -n "$NOTFOUNDS" ]; then
+    echo "Untarring $TARFIL on $(hostname)" >&2
+    if ! tar -xzf $TARFIL -C $ENVDIR; then
+      echo "ERROR: Unable to untar $TARFIL in $ENVDIR" >&2
+      exit 1
+    fi
+  else
     echo "Unable to find $INSDIR or its tar at any of" >&2
-    for FNAM in $NOTFOUNDS; do
-      echo "  $FNAM" >&2
-    done
+    echo "  $ENVFIL"
+    echo "  $TARFIL"
     exit 1
   fi
-done
+fi
 echo $INSDIR

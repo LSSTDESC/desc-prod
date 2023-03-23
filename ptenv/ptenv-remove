@@ -4,14 +4,47 @@ PATH=$(dirname $(readlink -f $0)):$PATH
 
 set -e
 
-LOC=$1
-VER=$2
+LOC=
+VER=
+HELP=
+RMTAR=
 
-if [ "$LOC" = -h -o -z "$VER" ]; then
-  echo Usage: $0 LOC VER
+MYNAME=$0
+shift
+ARG=$0
+while [ -n "$ARG" ]; do
+  if [ ${ARG:0:1} = '-' ]; then
+    FLG=${ARG:1}
+    if [ $FLG = h ]; then
+      HELP=true
+      break
+    elif [ $FLG = a ]; then
+      RMTAR=true
+    else
+      echo $MYNAME: Invalid flag: $ARG
+      exit 1
+    fi
+    if [ -z "$LOC" ]; then
+      LOC=$ARG
+    elif [ -z "$VER" ]; then
+      VER=$ARG
+    else
+      echo $MYNAME: Too many arguments.
+      exit 2
+    fi
+  fi
+done
+
+if [ -n "$HELP" -o -z "$LOC" ]; then
+  echo Usage: $0 [-a] LOC [VER]
+  echo "  Removes the ptenv installation of version VER at location LOC."
+  echo "  Omitting VER removes the conda installation."
+  echo "  -a - Also remove the associated tar file."
   exit 0
 fi
 
+FLGS=
+if [ -n "$VER"
 DIR=$(ptenv-find $LOC $VER)
 
 if [ ! -r $DIR ]; then
