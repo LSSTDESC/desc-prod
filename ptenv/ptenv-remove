@@ -2,28 +2,32 @@
 
 PATH=$(dirname $(readlink -f $0)):$PATH
 
-set -e
+#set -e
 
 LOC=
 VER=
 HELP=
+RMENV=true
 RMTAR=
 
-MYNAME=$0
-shift
-ARG=$0
-while [ -n "$ARG" ]; do
+MYNAME=$(basename $0)
+for ARG in $*; do
   if [ ${ARG:0:1} = '-' ]; then
     FLG=${ARG:1}
     if [ $FLG = h ]; then
       HELP=true
       break
     elif [ $FLG = a ]; then
+      RMENV=true
+      RMTAR=true
+    elif [ $FLG = t ]; then
+      RMENV=
       RMTAR=true
     else
       echo $MYNAME: Invalid flag: $ARG
       exit 1
     fi
+  else
     if [ -z "$LOC" ]; then
       LOC=$ARG
     elif [ -z "$VER" ]; then
@@ -33,32 +37,42 @@ while [ -n "$ARG" ]; do
       exit 2
     fi
   fi
+  shift
 done
 
 if [ -n "$HELP" -o -z "$LOC" ]; then
-  echo Usage: $0 [-a] LOC [VER]
+  echo Usage: $MYNAME [-t] [-a] LOC [VER]
   echo "  Removes the ptenv installation of version VER at location LOC."
   echo "  Omitting VER removes the conda installation."
+  echo "  -t - Remove only the associated tar file."
   echo "  -a - Also remove the associated tar file."
   exit 0
 fi
 
-FLGS=
-if [ -n "$VER"
-DIR=$(ptenv-find $LOC $VER)
-
-if [ ! -r $DIR ]; then
-  echo Installation not found: $DIR
-  exit 1
+FILS=
+if [ -n "$RMENV" ]; then
+  if FIL=$(ptenv-find -n $LOC $VER); then
+    FILS="$FILS $FIL"
+  fi
+fi
+if [ -n "$RMTAR" ]; then
+  if FIL=$(ptenv-find -t $LOC $VER); then
+    FILS="$FILS $FIL"
+  fi
 fi
 
-echo -n "Remove $DIR ?> "
-read RESP
-
-if [ ${RESP:0:1} = y ]; then
-  echo Removing $DIR
-  rm -rf $DIR
-else
-  echo Not removing $DIR
-fi
+for FIL in $FILS; do
+  if [ ! -r $FIL ]; then
+    echo Not found: $FIL
+    continue
+  fi
+  echo -n "Remove $FIL ?> "
+  read RESP
+  if [ ${RESP:0:1} = y ]; then
+    echo Removing $FIL
+    rm -rf $FIL
+  else
+    echo Not removing $FIL
+  fi
+done
 

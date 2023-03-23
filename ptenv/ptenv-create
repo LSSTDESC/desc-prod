@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Create conda environment for CESC parsl testing.
+# Create conda environment for running DESC parsltest.
 #
 # David Adams
 # November 2022
@@ -23,7 +23,7 @@ LOC=$1
 shift
 VER=${1:none}
 shift
-ENVNAME=${LOC}ptenv$VER
+ENVNAME=$(ptenv-name $LOC $VER)
 MYNAME=$(basename $0)
 BASDIR=
 
@@ -50,6 +50,8 @@ if [ -r $CONDIR/setup.sh ]; then
 else
   rm -rf $CONDIR
   mkdir $CONDIR
+  FLGFIL=$CONDIR/build-in-progress
+  touch $FLGFIL
   echo
   echo Fetching miniconda3
   #wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $CONDIR/miniconda3.sh
@@ -61,6 +63,7 @@ else
   echo
   echo Installing miniconda3
   bash $CONDIR/miniconda3.sh -b -u -p $CONDIR | tee $CONDIR/install.log
+  rm $FLGFIL
   echo
   echo Creating miniconda3 setup.
   echo 'PATH='$CONDIR'/bin:$PATH' >> $CONDIR/setup.sh
@@ -74,17 +77,15 @@ else
   echo "    Dest: $TARFIL"
   tar -czf $TARFIL -C $INSDIR miniconda3
   date
-  echo Installation complete.
-  #echo Please rerun to build environment $ENVNAME.
-  echo Reruning to build environment $ENVNAME.
-  $0 $LOC $VER
-  exit 0
+  echo Installation of conda is complete.
+  #$0 $LOC $VER
+  #exit 0
 fi
 
 echo
 if [ -z "$VER" ]; then
   echo Version must be supplied to build ptenv.
-  exit 1
+  exit 0
 fi
 source ptenv-config $VER
 if [ "$PTENV_VERSION" != $VER ]; then
@@ -117,6 +118,9 @@ if [ -d $ENVPATH -o -r $ENVPATH ]; then
   exit 2
 fi
 
+mkdir $ENVPATH
+FLGFIL=$ENVPATH/build-in-progress
+echo $(date) >$FLGFIL
 echo Creating conda environment $ENVPATH
 
 ARG=
@@ -170,6 +174,8 @@ if [ -n "$PTENV_DESCWFMON" ]; then
 fi
 echo ">>>>>>>>> Installing desc-wfmon from $SRC"
 pip install $SRC
+
+rm $FLGFIL
 
 # Tar up the build.
 TARFIL=$TARDIR/$ENVNAME.tz

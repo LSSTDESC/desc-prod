@@ -87,10 +87,39 @@ if [ ! -r $ENVFIL ]; then
       exit 1
     fi
   else
-    echo "Unable to find $INSDIR or its tar at any of" >&2
-    echo "  $ENVFIL"
-    echo "  $TARFIL"
+    echo "Unable to find env or its tar at any of" >&2
+    echo "  $ENVFIL" >&2
+    echo "  $TARFIL" >&2
     exit 1
   fi
 fi
-echo $INSDIR
+
+# If directory exists and build is in progress, wait for that build to finish.
+FLGFIL=$ENVFIL/build-in-progress
+MAXTRY=100
+NTRY=0
+NLINE=50
+TWAIT=1
+MAXWAIT=10
+while LONGWHEN=$(stat -c '%x' $FLGFIL 2>/dev/null); do
+  if [ $NTRY -eq 0 ]; then
+    WHEN=$(echo $LONGWHEN | sed s/[.].*//g)
+    echo It appears the env build is in progress since $WHEN >&2
+    echo Waiting until it completes. >&2
+    echo To force exit, remove $FLGFIL >&2
+  else
+    echo -n . >&2
+    if [ $(( (NTRY)%NLINE )) -eq 0 ]; then echo; fi
+  fi
+  sleep $TWAIT
+  NTRY=$(($NTRY+1))
+  if [ $TWAIT -lt $MAXWAIT ]; then TWAIT=$(($TWAIT+1)); fi
+  if [ $NTRY -gt $MAXTRY ]; then
+    echo Giving up. >&2
+    exit 1
+  fi
+done
+echo
+
+echo $ENVFIL
+exit 0
