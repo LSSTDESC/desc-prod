@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+# ptenv-name
+#
+# David Adams
+# March 2023
+#
+# Return the name for ptenv version VER and location LOC.
+# If VER is omitted, returns the cond name: minconda3.
+# If present, returns LOCptenvVER.
+
+DOHELP=
+LOC=
+VER=
+while [ $# -gt 0 ]; do
+  ARG=$1
+  if [ ${ARG:0:1} = '-' ]; then
+    FLG=${ARG:1}
+    if [ $FLG = h ]; then
+      DOHELP=true
+    else
+      echo ERROR: Invalid flag: $ARG >&2
+      exit 1
+    fi
+  else
+    if [ -z "$LOC" ]; then
+      LOC=$ARG
+    elif [ -z "$VER" ]; then
+      VER=$ARG
+    else
+      echo ERROR: Too many locations: $LOC $LOC $ARG >&2
+      exit 1
+    fi
+  fi
+  shift
+done
+
+if [ -n "$DOHELP" -o -z "$LOC" ]; then
+  echo Usage $(basename $0): [-h] LOC [VER] >&2
+  echo "  Returns the name for a ptenv installation." >&2
+  echo "  -h: Show this message." >&2
+  exit 0
+fi
+
+if [ -z "$VER" ]; then
+  echo miniconda3
+else
+  echo ${LOC}ptenv$VER
+fi
+exit 0
