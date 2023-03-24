@@ -10,12 +10,18 @@ export PTENV_VER=${2}
 export PTENV_BINDIR=$(readlink -f $(dirname $BASH_SOURCE))
 export PTENV_INSDIR=$($PTENV_BINDIR/ptenv-find $PTENV_LOC $PTENV_VER)
 echo $PTENV_INSDIR
-if [ -n "$PTENV_INSDIR" -a -r "$PTENV_INSDIR" ]; then
-  _GSET=$PTENV_INSDIR/setup.sh
-  echo Setting up ptenv environment $PTENV_LOC-$PTENV_VER
-  source $_GSET
-  export PS1=$PTENV_LOC-$PTENV_VER'> '
-  alias ptenv-versions=$PTENV_BINDIR/ptenv-versions
+SUP=
+if [ -n "$PTENV_INSDIR" ]; then
+  if [ -r $PTENV_INSDIR ]; then
+    _GSET=$PTENV_INSDIR/setup.sh
+    echo Setting up ptenv environment $PTENV_LOC-$PTENV_VER
+    source $_GSET
+    export PS1=$PTENV_LOC-$PTENV_VER'> '
+    alias ptenv-versions=$PTENV_BINDIR/ptenv-versions
+    SUP=true
+  else
+    echo ERROR: Unable to read $PTENV_INSDIR
+  fi
 else
   echo ERROR: ptenv env $PTENV_LOC-$PTENV_VER not found
 fi
