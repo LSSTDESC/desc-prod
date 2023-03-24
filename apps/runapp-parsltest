@@ -11,13 +11,18 @@
 #   HFG is a configuration string searched for field ptenv:VER:LOC
 
 STALOG=current-status.txt
+MYNAME=$(basename $0)
+
+function myecho() {
+  echo $MYNAME: $*
+  echo $MYNAME: $* >$STALOG
+}
 
 # Default params for setting up the env.
 MYENV=ptenv
 MYVER=00
 MYLOC=home
 
-MYNAME=$(basename $0)
 CFG=$1
 HFG=${2:-$MYENV:$MYVER:$MYLOC}
 
@@ -33,12 +38,12 @@ ENV=
 VER=$MYVER
 LOC=$MYLOC
 if ! FIELDS=$(descprod-split-config $HFG); then
-  echo $MYNAME: Invalid howfig: $HFG
+  myecho Invalid howfig: $HFG
   exit 1
 fi
 for FIELD in $FIELDS; do
   if ! VALS=($(descprod-split-config-field $FIELD)); then
-    echo $MYNAME: Invalid howfig field: $FIELD
+    myecho Invalid howfig field: $FIELD
     exit 1
   fi
   NAM=${VALS[0]}
@@ -56,26 +61,24 @@ for FIELD in $FIELDS; do
 done
 
 if [ -z "$ENV" ]; then
-  echo MYNAME: Unable to deduce env from howfig $HFG
+  myecho Unable to deduce env from howfig $HFG
   exit 2
 fi
 
 if ! $ENV-find $LOC $VER; then
-  echo "Building env for parsltest: $ENV $VER $LOC" >$STALOG
-  echo $MYNAME: Creating env $ENV $VER $LOC.
+  myecho Creating env $ENV $VER $LOC.
   time $ENV-create $LOC $VER
   if ! $ENV-find $LOC $VER; then
-    echo $MYNAME: ERROR: Creating env failed.
+    myecho "ERROR: Unable to create env $ENV $LOC $VER."
     exit 1
   fi
 fi
 
 echo
-echo $MYNAME: Setting up env $ENV $VER $LOC
+myecho Setting up env $ENV $VER $LOC
 source $ENV-setup $LOC $VER
 
 echo
-echo $MYNAME: Running parsltest with $CFG
-echo "Running parsltest $CFG" >$STALOG
+myecho Running parsltest with $CFG
 desc-wfmon-parsltest $CFG
 exit $?

@@ -498,52 +498,39 @@ def hello():
     sdat.msg += [f"hello{name}</br>"]
     return redirect(url_for('home'))
 
-#@app.route('/parsltest')
-#def run_parsltest():
-#    myname = 'run_parsltest'
-#    if 'config' not in request.args.keys():
-#          return "Invalid job description: missing config"
-#    cfg = request.args.get('config')
-#    hfg = ""
-#    if 'howfig' in request.args.keys():
-#        hfg = request.args.get('howfig')
-#    print(f"run_parsltest: {cfg} {hfg}")
-#    return do_parsltest(cfg, hfg)
-
 @app.route('/form_create_job/', methods=['POST', 'GET'])
 def run_form_create_job():
     if request.method == 'GET':
         return 'Got GET instead of POST!!'
     sdat = SessionData.get()
-    jty = request.form['jobtype']
+    jty = request.form['jobtype'].strip()
     known_jty = ['parsltest']
     if jty not in known_jty:
         SessionData.get().msg.append(f"Invalid job type: {jty}")
         return redirect(url_for('home'))
-    cfg = request.form['config']
-    hfg = request.form['howfig']
+    cfg = request.form['config'].strip()
+    hfg = request.form['howfig'].strip()
     print(f"form_create_job: {jty} {cfg} {hfg}")
-    return do_parsltest(request.form['config'], request.form['howfig'])
+    return do_create_job(jty, cfg, hfg)
 
-def do_parsltest(cfg, hfg):
-    myname = 'do_parsltest'
+def do_create_job(jty, cfg, hfg):
+    myname = 'do_create_job'
     if len(cfg) == 0: return redirect(url_for('home'))
-    jobtype = 'parsltest'
     sdat = SessionData.get()
     sid = sdat.session_id
     udat = sdat.user()
     if udat.descname == 'nologin':
-        sdat.msg.append('Log in to run parsltest')
+        sdat.msg.append('Log in to make a job request')
         return redirect(url_for('home'))
     jobid = get_jobid()
     jdat = JobData(jobid, udat.descname)
     if len(jdat.errmsgs):
         sdat.msg.append(jdat.errmsgs)
         return redirect(url_for('home'))
-    if jdat.configure(jobtype, cfg, hfg, sid):
+    if jdat.configure(jty, cfg, hfg, sid):
         sdat.msg += jdat.errmsgs
         return redirect(url_for('home'))
-    sdat.msg.append(f"Configured {jobtype} {cfg} in {jdat.rundir()}")
+    sdat.msg.append(f"Configured {jty} {cfg} {hfg}")
     return redirect(url_for('home'))
 
 @app.route('/startjob')
@@ -592,7 +579,7 @@ def delete_job():
     sdat = SessionData.get()
     udat = sdat.user()
     if udat.descname == 'nologin':
-        sdat.msg.append('Log in to run parsltest')
+        sdat.msg.append('Log in to delete a job')
         return redirect(url_for('home'))
     jobid = int(request.args['id'])
     job = JobData.get_user_job(udat.descname, jobid)
