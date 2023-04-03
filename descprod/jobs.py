@@ -286,7 +286,7 @@ class JobData:
                 nchar = cls.data_nchars.get(nam, 0)
                 if nchar:
                     assert(typ == 'varchar')
-                    typ += f"[{nchar}]"
+                    typ += f"({nchar})"
                 else:
                     assert(typ != 'varchar')
                     flen = ''
