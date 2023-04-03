@@ -49,7 +49,7 @@ class JobData:
       port_errors - Error messages retrieving the port.
     """
     data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config',  'howfig', 'session']
-    data_dbtypes = ['int',    'int',  'varchar', 'varchar', 'varchar', 'varchar'    'int']
+    data_dbtypes = ['int',    'int',  'varchar', 'varchar', 'varchar', 'varchar',     'int']
     data_names +=   [   'host',  'rundir', 'pid', 'create_time', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
     data_dbtypes += ['varchar', 'varchar', 'int',         'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
     data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'howfig':512, 'host':128, 'rundir':256, 'progress':256}
@@ -218,7 +218,7 @@ class JobData:
         return con
 
     @classmethod
-    def db_table(cls, table_name=None, *, create_table=False, drop_table=False, db_name=None, create_db=False, check_schema=False, verbose=0):
+    def db_table(cls, table_name=None, *, create_table=False, drop_table=False, db_name=None, create_db=False, check_schema=False, add_schema=False, verbose=0):
         """
         Manipulate a job table in the DB.
           db_name - Database name [descprod]
@@ -227,6 +227,8 @@ class JobData:
             drop_table - if True, deletes the table
           create_table - if True, creates the table
              create_db - if True, creates the database
+          check_schema - If True, check that all expected fields are present
+            add_schema - If True, add any missing fields
         Returns if the table exists.
         """
         myname = 'JobData.db_table'
@@ -271,7 +273,7 @@ class JobData:
             con.commit()
             haveit = cls.db_table()
             print(f"{myname}: Create was successful.")
-        if check_schema and haveit:
+        if (check_schema or add_schema) and haveit:
             print(f"{myname}: Checking schema in {tnam}")
             cls.connections.clear()
             com = f"DESCRIBE {tnam}"
@@ -281,12 +283,13 @@ class JobData:
                 nam = ent[0]
                 schema[nam] = ent
             for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
-                line = f"{nam}[{typ}]: "
+                jdesc = f"{nam}[{typ}]: "
                 if nam in schema:
-                    line += str(schema[nam])
+                    dbdesc = str(schema[nam])
                 else:
-                    line += "NOT FOUND"
-                print(line)
+                    dbdesc = = "NOT FOUND"
+                    haveit = False
+                print(f"{jdesc:>30}: {dbdesc}")
         return haveit
 
     @classmethod
