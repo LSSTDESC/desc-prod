@@ -218,7 +218,7 @@ class JobData:
         return con
 
     @classmethod
-    def db_table(cls, table_name=None, *, create_table=False, drop_table=False, db_name=None, create_db=False, verbose=0):
+    def db_table(cls, table_name=None, *, create_table=False, drop_table=False, db_name=None, create_db=False, check_schema=False, verbose=0):
         """
         Manipulate a job table in the DB.
           db_name - Database name [descprod]
@@ -271,6 +271,21 @@ class JobData:
             con.commit()
             haveit = cls.db_table()
             print(f"{myname}: Create was successful.")
+        if check_schema and haveit:
+            print(f"{myname}: Checking schema in {tnam}")
+            cls.connections.clear()
+            com = f"DESCRIBE {tnam}"
+            cur.execute(com)
+            schema = {}
+            for ent in cur.fetchall():
+                nam = ent['Field']
+                schema[nam] = ent
+            for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
+                line = f"{name}[{type}]: "
+                if nam in schema:
+                    line += schema[nam]
+                else:
+                    line += "NOT FOUND"
         return haveit
 
     @classmethod
