@@ -281,7 +281,7 @@ class JobData:
                 nam = ent[0]
                 schema[nam] = ent
             for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
-                line = f"{name}[{type}]: "
+                line = f"{nam}[{type}]: "
                 if nam in schema:
                     line += schema[nam]
                 else:
