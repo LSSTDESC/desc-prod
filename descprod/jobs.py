@@ -287,8 +287,8 @@ class JobData:
                 if nam in schema:
                     dbdesc = str(schema[nam])
                 else:
-                    dbdesc = = "NOT FOUND"
-                    haveit = False
+                    dbdesc = "NOT FOUND"
+                    haveit = check_schema
                 print(f"{jdesc:>30}: {dbdesc}")
         return haveit
 
