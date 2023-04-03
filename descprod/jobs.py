@@ -278,7 +278,7 @@ class JobData:
             cur.execute(com)
             schema = {}
             for ent in cur.fetchall():
-                nam = ent['Field']
+                nam = ent[0]
                 schema[nam] = ent
             for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
                 line = f"{name}[{type}]: "
