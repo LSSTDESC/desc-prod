@@ -283,11 +283,18 @@ class JobData:
                 nam = ent[0]
                 schema[nam] = ent
             for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
-                jdesc = f"{nam}[{typ}]: "
+                nchar = cls.data_nchars.get(nam, 0)
+                if nchar:
+                    assert(typ == 'varchar')
+                    flen = f"({nchar})"
+                else:
+                    assert(typ != 'varchar')
+                    flen = ''
+                jdesc = f"{nam}, {typ}{flen}"
                 if nam in schema:
                     dbdesc = str(schema[nam])
                 else:
-                    dbdesc = "NOT FOUND"
+                    dbdesc = "***** NOT FOUND *****"
                     haveit = check_schema
                 print(f"{jdesc:>30}: {dbdesc}")
         return haveit
