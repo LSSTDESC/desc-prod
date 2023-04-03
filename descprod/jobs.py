@@ -298,7 +298,7 @@ class JobData:
                     if dbtyp != typ:
                         dbdesc += f" ***** TYPE MISMATCH: {typ} != {dbtyp} *****"
                         if check_schema: haveit = False
-                if add_schema:
+                elif add_schema:
                     coldef = f"{dbtype}"
                     constraint = cls.data_dbcons.get(nam, '')
                     if len(constraint):
