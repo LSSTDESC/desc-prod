@@ -286,6 +286,7 @@ class JobData:
                     line += str(schema[nam])
                 else:
                     line += "NOT FOUND"
+                print(line)
         return haveit
 
     @classmethod
