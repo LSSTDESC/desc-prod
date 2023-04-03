@@ -304,7 +304,9 @@ class JobData:
                     if len(constraint):
                         coldef += f" {constraint}"
                     com = f"ALTER TABLE {tnam} ADD {nam} {coldef} {where}"
-                    dbdesc = com
+                    cur.execute(com)
+                    con.commit()
+                    dbdesc = f"***** Added column {nam} to DB table {tnam} *****"
                 else:
                     dbdesc = "***** NOT FOUND *****"
                     if check_schema: haveit = False
