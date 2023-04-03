@@ -283,7 +283,7 @@ class JobData:
             for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
                 line = f"{nam}[{type}]: "
                 if nam in schema:
-                    line += schema[nam]
+                    line += str(schema[nam])
                 else:
                     line += "NOT FOUND"
         return haveit
