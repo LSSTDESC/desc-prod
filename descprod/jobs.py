@@ -282,7 +282,7 @@ class JobData:
             for ent in cur.fetchall():
                 nam = ent[0]
                 schema[nam] = ent
-            last_cnam = 'ERROR'
+            where = "FIRST"
             for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
                 nchar = cls.data_nchars.get(nam, 0)
                 if nchar:
@@ -299,16 +299,17 @@ class JobData:
                         dbdesc += f" ***** TYPE MISMATCH: {typ} != {dbtyp} *****"
                         if check_schema: haveit = False
                 elif add_schema:
-                    coldef = f"{dbtype}"
+                    coldef = f"{dbtyp}"
                     constraint = cls.data_dbcons.get(nam, '')
                     if len(constraint):
                         coldef += f" {constraint}"
-                    com = f"ALTER TABLE {tnam} ADD {nam} {coldef} AFTER {last_cnam}"
+                    com = f"ALTER TABLE {tnam} ADD {nam} {coldef} {where}"
                     dbdesc = com
                 else:
                     dbdesc = "***** NOT FOUND *****"
                     if check_schema: haveit = False
                 print(f"{jdesc:>30}: {dbdesc}")
+                where = f"AFTER {nam}"
         return haveit
 
     @classmethod
