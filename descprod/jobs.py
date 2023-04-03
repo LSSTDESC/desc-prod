@@ -286,16 +286,20 @@ class JobData:
                 nchar = cls.data_nchars.get(nam, 0)
                 if nchar:
                     assert(typ == 'varchar')
-                    flen = f"({nchar})"
+                    typ += f"[{nchar}]"
                 else:
                     assert(typ != 'varchar')
                     flen = ''
                 jdesc = f"{nam}, {typ}{flen}"
                 if nam in schema:
                     dbdesc = str(schema[nam])
+                    dbtyp = schema[nam][1]
+                    if dbtyp != typ:
+                        dbdesc += " ***** TYPE MISMATCH *****"
+                        if check_schema: haveit = False
                 else:
                     dbdesc = "***** NOT FOUND *****"
-                    haveit = check_schema
+                    if check_schema: haveit = False
                 print(f"{jdesc:>30}: {dbdesc}")
         return haveit
 
