@@ -293,7 +293,7 @@ class JobData:
                 jdesc = f"{nam}, {typ}{flen}"
                 if nam in schema:
                     dbdesc = str(schema[nam])
-                    dbtyp = str(schema[nam][1])
+                    dbtyp = schema[nam][1].decode()
                     if dbtyp != typ:
                         dbdesc += f" ***** TYPE MISMATCH: {typ} != {dbtyp} *****"
                         if check_schema: haveit = False
