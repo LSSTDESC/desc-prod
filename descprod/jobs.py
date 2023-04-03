@@ -295,7 +295,7 @@ class JobData:
                     dbdesc = str(schema[nam])
                     dbtyp = str(schema[nam][1])
                     if dbtyp != typ:
-                        dbdesc += " ***** TYPE MISMATCH: {typ} != {dbtyp} *****"
+                        dbdesc += f" ***** TYPE MISMATCH: {typ} != {dbtyp} *****"
                         if check_schema: haveit = False
                 else:
                     dbdesc = "***** NOT FOUND *****"
