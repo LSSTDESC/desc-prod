@@ -10,7 +10,7 @@ Here we give conventions for such strings.
 2. Each string is a series of fields separated by a single dash (-).
 Exactly two successive dashes (--) and four or more (----, -----, ...)
 are not allowed.
-A configuration string amy not begin or end with a dash.
+A configuration string may not begin or end with a dash.
 
 3. Dash triplets (---) delimit simple configuration strings in a compound
 configuration string.
