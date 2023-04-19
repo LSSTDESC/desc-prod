@@ -8,7 +8,7 @@ Here we give conventions for such strings.
 [a-z, A-Z, 0-9, -, :] with capital letters discouraged.
 
 2. Each string is a series of fields separated by a single dash (-).
-Exactlty two successive dashes (--) and four or more (----, -----, ...)
+Exactly two successive dashes (--) and four or more (----, -----, ...)
 are not allowed.
 A configuration string amy not begin or end with a dash.
 
