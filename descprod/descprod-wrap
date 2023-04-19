@@ -6,7 +6,7 @@
 # January 2023
 #
 
-wver = 16
+wver = 17
 
 import sys
 import os
@@ -30,7 +30,8 @@ jsep = (',', ': ')
 dohelp = len(sys.argv) > 1 and sys.argv[1] == '-h'
 nargexp = [7,8]
 doerr = len(sys.argv) not in nargexp
-this = os.path.basename(sys.argv[0])
+fullthis = sys.argv[0]
+this = os.path.basename(fullthis)
 
 if dohelp:
     print(f"Usage: {this} COM RUNDIR LOGFIL STAFIL")
@@ -71,6 +72,7 @@ if logname[0] != '/': logname = f"{rundir}/{logname}"
 if jnam[0] != '/':    jnam    = f"{rundir}/{jnam}"
 
 print(f"Running job {jobid} for user {user} in {rundir} with wrapper version {wver}")
+print(f"Wrapper is {fullthis}")
 sys.stdout.flush()
 
 nowtime = int(time.time())

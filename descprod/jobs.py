@@ -1,6 +1,7 @@
 import os
 import socket
 import shutil
+import stat
 import json
 import subprocess
 import time
@@ -843,6 +844,19 @@ class JobData:
                     rstat += self.do_error(myname, f"Could not create run directory: {rundir}: {e}.", 3)
             remote = True
         if rstat: return rstat
+        fwrapbas = 'descprod-wrap'
+        fwrapsrc = shutil.which(fwrapbas)
+        if len(fwrapsrc) == 0:
+            self.do_error(myname, f"Unable to find wrapper: {fwrapbas}", 3)
+            return 4
+        fwrapdst = f"{rundir}/{fwrapbas}"
+        try:
+            shutil.copyfile(fwrapsrc, fwrapdst)
+            wrapstat = os.stat(fwrapdst).st_mode | stat.S_IEXEC
+            os.chmod(fwrapdst, wrapstat)
+        except Exception as e:
+            self.do_error(myname, [e, f"Unable to copy wrapper: {fwrapsrc} to {fwrapdst}"], 4)
+            return 5
         self.set_rundir(rundir)
         #print(self.jmap())
         jnam = self.job_config_file()
@@ -861,12 +875,12 @@ class JobData:
                 shwcom += 'source /home/descprod/local/etc/setup_parsl.sh; '
             if len(runopts.env_file):
                 shwcom += f"set >{runopts.env_file}; "
-            shwcom += f"descprod-wrap '{scom}' {self.rundir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
+            shwcom += f"{fwrapdst} '{scom}' {self.rundir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
             if server is not None: shwcom += f" {server}"
-            #com += ['bash', '-login', '-c', shwcom]  # March 27, 2023: No--login does not have desc-prod commands.
-            com += ['bash', '-c', shwcom]
+            com += ['bash', '-login', '-c', shwcom]
+            #com += ['bash', '-c', shwcom]  # Apri 3, 2023. Now able to run command without descprod.
         else:
-            com += ['descprod-wrap', scom, self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
+            com += ['{fwrapdst}', scom, self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
             if server is not None: com += ["{server}"]
         logfil = open(self.wrapper_log_file(), 'w')
         #print(shwcom, logfil)
