@@ -34,7 +34,7 @@ fullthis = sys.argv[0]
 this = os.path.basename(fullthis)
 
 if dohelp:
-    print(f"Usage: {this} COM RUNDIR LOGFIL STAFIL")
+    print(f"Usage: {this} COM RUNDIR LOGFIL STAFIL JOBID DESCNAME SURL")
     print(f"  COM is a shell command line.")
     print(f"  RUNDIR is the directory where the command is run.")
     print(f"  LOGFIL has the stdout and stderr.")

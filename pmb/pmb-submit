@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+
+# pmb-submit.py
+#
+# David Adams
+# April 2023
+#
+# Submits a job to perlmutter batch.
+# First argument is a config string whose first field must start with "pmb:".
+# Remaining arguments are the command to run in batch.
+
+import os
+import sys
+import subprocess
+
+this = os.path.basename(sys.argv[0])
+
+def myexit(rc, msg):
+    print(f"{this}: {msg}")
+    exit(rc)
+
+howfig = sys.argv[1]
+runcom = ''
+comargs = sys.argv[2:]
+while len(comargs):
+    runcom += comargs[0]
+    comargs = comargs[1:]
+runcom = runcom.strip()
+
+# Parse the howfig to find batch instructions.
+#   pmb:TMINUTE:QOS:CONSTRAINT:acct
+stmin = 0
+qos = ''
+cons='cpu'
+acct = 'm1727'
+qoss = ['regular', 'debug']
+dohelp = len(runcom) == 0
+hows = howfig.split('-')
+if len(hows) == 1:
+    namvals = hows[0].split(':')
+    nam = namvals[0]
+    vals = namvals[1:]
+    nval = len(vals)
+    if nam == 'pmb':
+        if nval >= 1:
+            stmin = vals[0]
+            if nval >=2:
+                qos = vals[1]
+                if nval >= 3:
+                    cons = vasl[2]
+else:
+    dohelp = True
+
+if dohelp:
+    this = os.path.basename(sys.argv[0])
+    print(f"Usage: {this} pmb:TIME:QOS:CONS:ACCT COM")
+    print(f"  TIME - Batch time limit in minutes.")
+    print(f"   QOS - Batch QOS. See below for default.")
+    print(f"  CONS - cpu or gpu [cpu].")
+    print(f"  ACCT - NERSC project [m1727].")
+    print(f"All but the time limit may be omitted or left blank.")
+    print(f"Default for QOS is debug if time is 30 min or less and")
+    print(f"otherwise is regular.")
+    exit(0)
+
+
+if not stmin.isdigit() or int(stmin)<=0:
+    myexit(1, f"Invalid time limit: {stmin}.")
+else:
+    tmin = int(stmin)
+    tfmt = f"{tmin//60}:{tmin%60:02}:00"
+
+if qos == '':
+    if tmin <= 30: qos = 'debug'
+    else: qos = 'regular'
+    
+if qos not in qoss:
+    myexit(2, f"Invalid QOS: {qos}.")
+
+subcom = f"sbatch --time={tfmt} --constraint={cons} --qos={qos} --account={acct} {runcom}"
+print(f"Submitting batch job.")
+print(f"    Time limit: {tfmt} ({tmin} minutes)")
+print(f"    Constraint: {cons}")
+print(f"           QOS: {qos}")
+print(f"       Account: {acct}")
+print(f"       Command: {runcom}")
+res = subprocess.run(subcom, shell=True, capture_output=True)
+rc = res.returncode
+sout = res.stdout.decode()
+serr = res.stderr.decode()
+print(f"Submission returned status {rc}.")
+print(sout)
+print(serr)
+
+

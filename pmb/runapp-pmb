@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+# runapp-pmb
+#
+# David Adams
+# April 2023
+#
+# Descprod application wrapper for pmb.
+# Usage runapp-pmb NAME CONFIG HOWFIG
+#     NAME - The final descprod application name.
+#   CONFIG - The config for that application
+#   HOWFIG - The howfig (how configuration)
+# The howfig is a series of dash-separated fields. The first of these must begin
+# with "pmb:" 
+# First argument is a config string whose first field must start with "pmb:".
+# Remaining arguments are the command to run in batch.
+
+import os
+import sys
+import subprocess
+
+this = os.path.basename(sys.argv[0])
+
+def myexit(rc, msg):
+    print(f"{this}: {msg}")
+    exit(rc)
+
+config = sys.argv[1]
+howfig = sys.argv[2]
