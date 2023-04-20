@@ -23,13 +23,13 @@ howfig = sys.argv[1]
 runcom = ''
 comargs = sys.argv[2:]
 while len(comargs):
-    runcom += comargs[0]
+    runcom += f" {comargs[0]}"
     comargs = comargs[1:]
 runcom = runcom.strip()
 
 # Parse the howfig to find batch instructions.
 #   pmb:TMINUTE:QOS:CONSTRAINT:acct
-stmin = 0
+stmin = '0'
 qos = ''
 cons='cpu'
 acct = 'm1727'
@@ -48,6 +48,8 @@ if len(hows) == 1:
                 qos = vals[1]
                 if nval >= 3:
                     cons = vasl[2]
+    else:
+        dohelp = True
 else:
     dohelp = True
 
