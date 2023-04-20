@@ -4,11 +4,12 @@ David Adams
 Version 0.1  
 April 20, 2023
 
-DESCprod jobs are specified are specified with three strings: job type,
+DESCprod jobs are specified are specified with three strings: jobtype,
 config and howfig.
 The first two specify what to process and the last how to carry out the processing.
-The last two are config strings and the covention for those are specified in
+The last two are config strings and the convention for those are specified in
 a [separate document](doc/configs.md).
+
 
 DESCprod jobs are run as follows:
 * User issues the descprod-start-job command where
@@ -28,4 +29,14 @@ I.e., APPNAME is name of the first howfig constitent if that name is registered,
 The script runapp-APPNAME is run with the config and howfig strings as arguments.
 For direct jobs, this script is expected to deduce what processing to carry out from the config string and to use
 howfig for hints or requirements on how to carry out that processing.
-For indirect jobs, the
+
+For indirect jobs, no arguments are passed but the script can find the full job description in config.json
+in the working directory.
+The script might strip its constituent to create a subjob and the start the latter in batch or on a
+dedicated scheduling sytem. Or submit itelf to batch.
+Or it might split the job into pieces by assigning a different config to each and run those
+directly or as subjobs.
+
+Part of the regular status report sent from the wrapper to server is the job progress.
+This is obtained from the last line in the file current-status.txt in the working directory.
+The runapp script or application itself should regularly update that file.
