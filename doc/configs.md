@@ -1,24 +1,28 @@
 # DESCprod configuration strings
 
-What to process and how process it are specified for DESCprod jobs by respectively
-providing the config and howfig configuration strings.
-Here we give conventions for such strings.
+David Adams  
+Version 2.0  
+April 20, 2023
 
-1. Configuration strings may only include letters, digits, dash and colon
+DESCpprod jobs are specified are specified with three strings: jobtype,
+config and howfig.
+The first two specify what to process and the last how to carry out the processing.
+The last two are config strings and the covention for those are specified here.
+
+1. Simple configuration strings may only include letters, digits, dash and colon
 [a-z, A-Z, 0-9, -, :] with capital letters discouraged.
 
-2. Each string is a series of fields separated by a single dash (-).
-Exactly two successive dashes (--) and four or more (----, -----, ...)
-are not allowed.
-A configuration string may not begin or end with a dash.
+2. Howfig may be compound, i.e. consist of a series comma-separated constituents.
+Each constituent is a simple configuration strings.
+An empty howfig has no constuents and one that is not empty and has no commas
+has one constituent.
 
-3. Dash triplets (---) delimit simple configuration strings in a compound
-configuration string.
+3. Each simple configuration string is a series of fields separated by a single dash (-).
+For howfig constituents, the first field (i.e. the substring preceding the first dash)
+is the howfig type.
+If the type of the first howfig constitutent is registered with DESCprod,
+the application associated with them is run in place of that associated with the job type.
 
-4. Single dashes within a (simple) configuration string separate fields.
+4. It is intended that colons within a field separate the field name from a trailing sequence of optional values.
+For example a string might be nam1:v11-nam2-nam3:v31:v32".
 
-5. Colons within a field separate the field name from a trailing sequence of optional
-values. For example a string might be nam1:v11-nam2-nam3:v31:v32".
-Two or more succesive colons are not allowed, i.e. values may not be ommitted except
-at the end of a field.
-A string may not begin or end with a colon.
