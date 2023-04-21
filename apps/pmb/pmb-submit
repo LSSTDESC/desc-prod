@@ -11,6 +11,7 @@
 
 import os
 import sys
+import socket
 import subprocess
 
 this = os.path.basename(sys.argv[0])
@@ -32,6 +33,8 @@ runcom = runcom.strip()
 stmin = '0'
 qos = ''
 cons='cpu'
+if socket.gethostname()[0:4] == 'cori':
+    cons = 'haswell'
 acct = 'm1727'
 qoss = ['local', 'regular', 'debug']
 dohelp = len(runcom) == 0
@@ -47,7 +50,7 @@ if len(hows) == 1:
             if nval >=2:
                 qos = vals[1]
                 if nval >= 3:
-                    cons = vasl[2]
+                    cons = vals[2]
     else:
         dohelp = True
 else:
@@ -79,7 +82,7 @@ if qos == '':
 if qos not in qoss:
     myexit(2, f"Invalid QOS: {qos}.")
 
-if qos = 'local':
+if qos == 'local':
     subcom = f"nohup runcom &"
     print(f"Running: {runcom}")
 else:
@@ -90,12 +93,31 @@ else:
     print(f"           QOS: {qos}")
     print(f"       Account: {acct}")
     print(f"       Command: {runcom}")
+    print(subcom)
 res = subprocess.run(subcom, shell=True, capture_output=True)
 rc = res.returncode
-sout = res.stdout.decode()
-serr = res.stderr.decode()
+sout = res.stdout.decode().strip()
+serr = res.stderr.decode().strip()
 print(f"Submission returned status {rc}.")
-print(sout)
-print(serr)
+line = '=========================================='
+print(line)
+if len(sout): print(sout)
+print(line)
+if len(serr): print(serr)
+print(line)
+
+if rc == 0:
+    pfx = 'Submitted batch job '
+    lpfx = len(pfx)
+    bidnam = 'batch_id.dat'
+    if sout[0:lpfx] == pfx:
+        bid = int(sout[lpfx:])
+        print(f"        Job ID: {bid}")
+        with open(bidnam, 'w') as fid:
+            fid.write(f"{bid}\n")
+    else:
+        print('ERROR: batch job ID not found.')
+
+
 
 exit(rc)

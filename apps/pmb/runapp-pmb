@@ -43,4 +43,10 @@ pmbcfg = howfig[0:ipos]
 howrem = howfig[ipos+1:]
 
 pmbcom = f"runapp-{jobtype} {config} {howrem}"
-pmb-submit pmbcfg pmbcom
+pmb-wrap pmbcfg pmbcom
+JOBID=$(cat batch_id.dat)
+while true; do
+    SLIN="$(sqs --job $JOBID)"
+    if [ -z "$SLIN" ]; then break; fi
+    echo $SLIN
+done
