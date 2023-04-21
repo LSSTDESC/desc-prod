@@ -38,9 +38,9 @@ if socket.gethostname()[0:4] == 'cori':
 acct = 'm1727'
 qoss = ['local', 'regular', 'debug']
 dohelp = len(runcom) == 0
-hows = howfig.split('-')
+hows = howfig.split(',')
 if len(hows) == 1:
-    namvals = hows[0].split(':')
+    namvals = hows[0].split('-')
     nam = namvals[0]
     vals = namvals[1:]
     nval = len(vals)

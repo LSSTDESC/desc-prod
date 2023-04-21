@@ -17,17 +17,12 @@
 
 import os
 import sys
+import json
 import subprocess
 
 this = os.path.basename(sys.argv[0])
 
-STALOG=current-status.txt
-MYNAME=$(basename $0)
-
-function myecho() {
-  echo $MYNAME: $*
-  echo $MYNAME: $* >$STALOG
-}
+stalog='current-status.txt'
 
 def myexit(rc, msg):
     print(f"{this}: {msg}")
@@ -39,14 +34,23 @@ config  = jmap['config']
 howfig  = jmap['howfig']
 
 ipos = howfig.find(',')
-pmbcfg = howfig[0:ipos]
-howrem = howfig[ipos+1:]
+if ipos < 0:
+    pmbcfg = howfig
+    howrem = ''
+else:
+    pmbcfg = howfig[0:ipos]
+    howrem = howfig[ipos+1:]
 
 pmbcom = f"runapp-{jobtype} {config} {howrem}"
-pmb-wrap pmbcfg pmbcom
-JOBID=$(cat batch_id.dat)
-while true; do
-    SLIN="$(sqs --job $JOBID)"
-    if [ -z "$SLIN" ]; then break; fi
-    echo $SLIN
-done
+com = f"pmb-wrap {pmbcfg} {pmbcom}"
+res = subprocess.run(com, shell=True, capture_output=True)
+rc = res.returncode
+sout = res.stdout.decode().strip()
+serr = res.stderr.decode().strip()
+print(f"${this} returned status {rc}.")
+line = '=========================================='
+print(line)
+if len(sout): print(sout)
+print(line)
+if len(serr): print(serr)
+print(line)
