@@ -2,7 +2,7 @@
 
 David Adams  
 Version 0.1  
-April 20, 2023
+April 21, 2023
 
 DESCprod jobs are specified are specified with three strings: jobtype,
 config and howfig.
@@ -19,7 +19,7 @@ DESCprod jobs are run as follows:
   * The wrapper copy is started in a fresh shell with series af arguments including that command
   * Status is reported to stdout and the return code (0 for success)
 * The wrapper continues to run as an orphan process:
-  * The wrapper starts the application command in another shell
+  * The wrapper starts the application command (runapp-APPNAME) in another shell
   * At regular intervals, the wrapper checks and reports progress back to the DESCprod server
   * After the command completes, the wrapper send final report to the server and exits
 
