@@ -21,9 +21,26 @@ import subprocess
 
 this = os.path.basename(sys.argv[0])
 
+STALOG=current-status.txt
+MYNAME=$(basename $0)
+
+function myecho() {
+  echo $MYNAME: $*
+  echo $MYNAME: $* >$STALOG
+}
+
 def myexit(rc, msg):
     print(f"{this}: {msg}")
     exit(rc)
 
-config = sys.argv[1]
-howfig = sys.argv[2]
+jmap = json.load(open('config.json'))
+jobtype = jmap['jobtype']
+config  = jmap['config']
+howfig  = jmap['howfig']
+
+ipos = howfig.find(',')
+pmbcfg = howfig[0:ipos]
+howrem = howfig[ipos+1:]
+
+pmbcom = f"runapp-{jobtype} {config} {howrem}"
+pmb-submit pmbcfg pmbcom

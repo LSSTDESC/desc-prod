@@ -33,7 +33,7 @@ stmin = '0'
 qos = ''
 cons='cpu'
 acct = 'm1727'
-qoss = ['regular', 'debug']
+qoss = ['local', 'regular', 'debug']
 dohelp = len(runcom) == 0
 hows = howfig.split('-')
 if len(hows) == 1:
@@ -79,13 +79,17 @@ if qos == '':
 if qos not in qoss:
     myexit(2, f"Invalid QOS: {qos}.")
 
-subcom = f"sbatch --time={tfmt} --constraint={cons} --qos={qos} --account={acct} {runcom}"
-print(f"Submitting batch job.")
-print(f"    Time limit: {tfmt} ({tmin} minutes)")
-print(f"    Constraint: {cons}")
-print(f"           QOS: {qos}")
-print(f"       Account: {acct}")
-print(f"       Command: {runcom}")
+if qos = 'local':
+    subcom = f"nohup runcom &"
+    print(f"Running: {runcom}")
+else:
+    subcom = f"sbatch --time={tfmt} --constraint={cons} --qos={qos} --account={acct} {runcom}"
+    print(f"Submitting batch job.")
+    print(f"    Time limit: {tfmt} ({tmin} minutes)")
+    print(f"    Constraint: {cons}")
+    print(f"           QOS: {qos}")
+    print(f"       Account: {acct}")
+    print(f"       Command: {runcom}")
 res = subprocess.run(subcom, shell=True, capture_output=True)
 rc = res.returncode
 sout = res.stdout.decode()
@@ -94,4 +98,4 @@ print(f"Submission returned status {rc}.")
 print(sout)
 print(serr)
 
-
+exit(rc)
