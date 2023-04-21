@@ -23,7 +23,7 @@ DESCprod jobs are run as follows:
   * At regular intervals, the wrapper checks and reports progress back to the DESCprod server
   * After the command completes, the wrapper send final report to the server and exits
 
-For *direct jobs*, the application name is the job type (e.g. parsltest) but this may be overriden
+For *direct jobs*, the application name (APPNAME) is the job type (e.g. parsltest) but this may be overriden
 (and the job run indirectly) by registering a howfig type and using that name in first howfig constituent.
 I.e., APPNAME is name of the first howfig constitent if that name is registered, and otherwise is the job type.
 The script runapp-APPNAME is run with the config and howfig strings as arguments.
