@@ -813,11 +813,21 @@ class JobData:
             return f"""Job is not ready to run (progress is "{self.progress()}"."""
         return ''
 
+    def registered_howtypes(self):
+        '''Return the list of registered howtypes.'''
+        return ['pmb']
+
     def command(self):
         '''Construct the shell command from the jobtype and config.'''
         jobtype = self.jobtype()
         config = self.config()
         howfig = self.howfig()
+        use_howtype = False
+        if len(howfig):
+            howtype = howfig.split('-')[0]
+            use_howtype = howtype in self.registered_howtypes()
+        if use_howtype:
+            return f"runapp-{howtype}"
         return f"runapp-{jobtype} {config} {howfig}"
 
     def run(self, rundir=None, server=None):
