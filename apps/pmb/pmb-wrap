@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# pmb-wrap
+#
+# David Adams
+# April 2023
+#
+
+BIDFIL=batch_id.dat
+rm -f $BIDFIL
+
+pmb-submit $*
+RC=$?
+
+if [ $RC -ne 0 ]; then
+  exit $RC
+fi
+
+JOBID=$(cat $BIDFIL)
+if [ -z "$JOBID" ]; then
+  echo Job ID not found: $JOBID
+  exit 21
+fi
+
+while true; do
+    SLIN="$(sqs --noheader --job $JOBID)"
+    if [ -z "$SLIN" ]; then break; fi
+    echo $SLIN
+    sleep 10
+done
+exit 0
