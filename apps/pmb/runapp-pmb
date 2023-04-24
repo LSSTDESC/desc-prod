@@ -11,9 +11,7 @@
 #   CONFIG - The config for that application
 #   HOWFIG - The howfig (how configuration)
 # The howfig is a series of dash-separated fields. The first of these must begin
-# with "pmb:" 
-# First argument is a config string whose first field must start with "pmb:".
-# Remaining arguments are the command to run in batch.
+# with "pmb-" 
 
 import os
 import sys

@@ -29,14 +29,14 @@ while len(comargs):
 runcom = runcom.strip()
 
 # Parse the howfig to find batch instructions.
-#   pmb:TMINUTE:QOS:CONSTRAINT:acct
+#   pmb-TMINUTE-QOS-CONSTRAINT-acct
 stmin = '0'
-qos = ''
+qos = 'auto'
 cons='cpu'
 if socket.gethostname()[0:4] == 'cori':
     cons = 'haswell'
 acct = 'm1727'
-qoss = ['local', 'regular', 'debug']
+qoss = ['local', 'regular', 'debug', 'auto']
 dohelp = len(runcom) == 0
 hows = howfig.split(',')
 if len(hows) == 1:
@@ -58,7 +58,7 @@ else:
 
 if dohelp:
     this = os.path.basename(sys.argv[0])
-    print(f"Usage: {this} pmb:TIME:QOS:CONS:ACCT COM")
+    print(f"Usage: {this} pmb-TIME-QOS-CONS-ACCT COM")
     print(f"  TIME - Batch time limit in minutes.")
     print(f"   QOS - Batch QOS. See below for default.")
     print(f"  CONS - cpu or gpu [cpu].")
@@ -67,7 +67,6 @@ if dohelp:
     print(f"Default for QOS is debug if time is 30 min or less and")
     print(f"otherwise is regular.")
     exit(0)
-
 
 if not stmin.isdigit() or int(stmin)<=0:
     myexit(1, f"Invalid time limit: {stmin}.")

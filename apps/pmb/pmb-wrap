@@ -13,13 +13,13 @@ pmb-submit $*
 RC=$?
 
 if [ $RC -ne 0 ]; then
-  exit $RC
+    exit $RC
 fi
 
 JOBID=$(cat $BIDFIL)
 if [ -z "$JOBID" ]; then
-  echo Job ID not found: $JOBID
-  exit 21
+    echo Job ID not found: $JOBID
+    exit 21
 fi
 
 while true; do
