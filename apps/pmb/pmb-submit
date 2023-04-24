@@ -74,7 +74,7 @@ else:
     tmin = int(stmin)
     tfmt = f"{tmin//60}:{tmin%60:02}:00"
 
-if qos == '':
+if qos == 'auto':
     if tmin <= 30: qos = 'debug'
     else: qos = 'regular'
     
@@ -82,7 +82,7 @@ if qos not in qoss:
     myexit(2, f"Invalid QOS: {qos}.")
 
 if qos == 'local':
-    subcom = f"nohup runcom &"
+    subcom = f"nohup {runcom} &"
     print(f"Running: {runcom}")
 else:
     subcom = f"sbatch --time={tfmt} --constraint={cons} --qos={qos} --account={acct} {runcom}"
