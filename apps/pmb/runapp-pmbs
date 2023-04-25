@@ -18,7 +18,7 @@ import sys
 import json
 import subprocess
 
-def runit(com)
+def runit(com):
     print()
     print(f"Running command: {com})"
     res = subprocess.run(com, shell=True, capture_output=True)
