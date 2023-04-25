@@ -815,7 +815,7 @@ class JobData:
 
     def registered_howtypes(self):
         '''Return the list of registered howtypes.'''
-        return ['pmb']
+        return ['pmb', 'pmbs']
 
     def command(self):
         '''Construct the shell command from the jobtype and config.'''
