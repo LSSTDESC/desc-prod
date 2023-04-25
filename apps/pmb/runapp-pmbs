@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+# runapp-pmb
+#
+# David Adams
+# April 2023
+#
+# Descprod application wrapper pmbs for pmb.
+# Usage runapp-pmbs NAME CONFIG HOWFIG
+#     NAME - The final descprod application name.
+#   CONFIG - The config for that application
+#   HOWFIG - The howfig (how configuration)
+# The howfig is a series of dash-separated fields. The first of these must begin
+# with "pmb-" 
+
+import os
+import sys
+import json
+import subprocess
+
+def runit(com)
+    print()
+    print(f"Running command: {com})"
+    res = subprocess.run(com, shell=True, capture_output=True)
+    rc = res.returncode
+    sout = res.stdout.decode().strip()
+    serr = res.stderr.decode().strip()
+    print(f"${this} returned status {rc}.")
+    line = '=========================================='
+    print(line)
+    if len(sout): print(sout)
+    print(line)
+    if len(serr): print(serr)
+    print(line)
+    if rc: exit(rc)
+    return sout
+
+this = os.path.basename(sys.argv[0])
+
+stalog='current-status.txt'
+
+def myexit(rc, msg):
+    print(f"{this}: {msg}")
+    exit(rc)
+
+jmap = json.load(open('config.json'))
+jid = int(jmap["id"])
+jobtype = jmap['jobtype']
+config  = jmap['config']
+howfig  = jmap['howfig']
+
+ipos = howfig.find(',')
+if ipos < 0:
+    pmbcfg = howfig
+    howrem = ''
+else:
+    pmbcfg = howfig[0:ipos]
+    howrem = howfig[ipos+1:]
+
+sout = runit(f"descprod-add-job -p {jid} {jobtype} {config} {howrem}")
+sjmap = json.loads(sout)
+sjid = sjmap["id"]
+runit(f"pmb-wrap {pmbcfg} {descprod-start-job {sjid}"
+
+pmbcom = f"runapp-{jobtype} {config} {howrem}"
+
