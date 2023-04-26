@@ -6,7 +6,7 @@
 # January 2023
 #
 
-wver = 17
+wver = 18
 
 import sys
 import os
@@ -23,6 +23,8 @@ def get_progress_from_file():
         with open(snam) as sfil:
             for line in sfil: pass
     return line.strip()
+
+print(f"DESCprod wrapper {sys.argv[0]} version {wver} called with {len(sys.argv)-1} arguments.")
 
 jindent = 2
 jsep = (',', ': ')

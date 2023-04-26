@@ -29,7 +29,8 @@ while len(comargs):
 runcom = runcom.strip()
 
 # Parse the howfig to find batch instructions.
-#   pmb-TMINUTE-QOS-CONSTRAINT-acct
+#   pmbX-TMINUTE-QOS-CONSTRAINT-acct
+# X denotes any string not containing '-'.
 stmin = '0'
 qos = 'auto'
 cons='cpu'
@@ -44,7 +45,7 @@ if len(hows) == 1:
     nam = namvals[0]
     vals = namvals[1:]
     nval = len(vals)
-    if nam == 'pmb':
+    if nam[0:3] == 'pmb':
         if nval >= 1:
             stmin = vals[0]
             if nval >=2:
@@ -58,7 +59,7 @@ else:
 
 if dohelp:
     this = os.path.basename(sys.argv[0])
-    print(f"Usage: {this} pmb-TIME-QOS-CONS-ACCT COM")
+    print(f"Usage: {this} pmbX-TIME-QOS-CONS-ACCT COM")
     print(f"  TIME - Batch time limit in minutes.")
     print(f"   QOS - Batch QOS. See below for default.")
     print(f"  CONS - cpu or gpu [cpu].")

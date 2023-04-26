@@ -36,7 +36,7 @@ def add_job(jobtype, config, howfig, parent, *, descname=None, surl=None, ntry=1
     jmap = {}
     while count < ntry:
         try:
-            r = requests.post(url, timeout=10, json=pjmap)
+            r = requests.post(url, timeout=100, json=pjmap)
             sc = r.status_code
             if sc != 200:
                 print(f"Add of job {jobtype} {config} {howfig} at {surl} failed with HTML code {sc}")
@@ -79,6 +79,7 @@ def add_job_main():
     config = ""
     howfig = ""
     ntry = 1
+    jfilnam = ''
     while len(args) and args[0][0] == '-':
         flag = args[0]
         args = args[1:]
@@ -95,6 +96,9 @@ def add_job_main():
         elif flag == '-n':
             ntry = int(args[0])
             args = args[1:]
+        elif flag == '-o':
+            jfilnam = args[0]
+            args = args[1:]
         else:
             print(f"{myname}: Invalid command line flag: {flag}")
             return 1
@@ -105,6 +109,7 @@ def add_job_main():
         print(f"     -s - Server URL.")
         print(f"     -p - Parent job ID")
         print(f"     -n - Number of tries.")
+        print(f"     -o - Nam of output json file.")
         print(f"  JOBTYPE - Job type.")
         print(f"  CONFIG  - Job configuration.")
         print(f"  CONFIG  - Job howfig.")
@@ -133,10 +138,25 @@ def add_job_main():
         return 1
     jmap = resp
     #print(f"{myname}: Started job {jmap.id()}:")
+    dofil = bool(len(jfilnam))
+    if dofil:
+        fout = open(jfilnam, 'w')
+        fout.write("{\n")
+    sep = ''
     for key in descprod.JobData.data_names:
         if key in jmap:
             val = jmap[key]
             if key[-5:] == '_time':
                 val = f"{descprod.sdate(val)} UTC"
             print(f"{key:>16}: {val}")
+            if dofil:
+                if len(sep):
+                    fout.write(sep)
+                else:
+                    sep = ",\n"    
+                qkey=f"\"{key}\""
+                fout.write(f"{qkey:>18}: \"{val}\"")
+    if dofil:
+        fout.write("\n}\n")
+        fout.close()
     return 0

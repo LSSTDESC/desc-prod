@@ -31,18 +31,20 @@ def start_job(jid, dnam, url):
     rs = job.run(rundir=rundir, server=url)
     if rs:
         return f"Job start failed with error {rs}: {job.errmsgs[-1]}"
-    return job.jmap()
+    return job
 
 def start_job_main():
     args = sys.argv[1:]
     do_help = False
     debug = False
+    wait = False
     myname = os.path.basename(sys.argv[0])
     while len(args) and args[0][0] == '-':
         flag = args[0]
         args = args[1:]
         if flag == '-h': do_help = True
         elif flag == '-d': debug = True
+        elif flag == '-w': wait = True
         else:
             print(f"{myname}: Invalid command line flag: {flag}")
             return 1
@@ -56,6 +58,7 @@ def start_job_main():
         print(f"Usage: {myname} [-h] [-d] JOBID USER URL")
         print(f"     -h - Show this message and exit.")
         print(f"     -d - Run with debugger.")
+        print(f"     -w - Wait for job to complete before exiting.")
         print(f"  JOBID - Job ID.")
         print(f"   USER - DESC username.")
         print(f"    URL - server URL [{descprod.server_url()}]")
@@ -72,7 +75,8 @@ def start_job_main():
     if isinstance(resp, str):
         print(f"{myname}: ERROR: {resp}")
         return 1
-    jdat = resp
+    job = resp
+    jdat = job.jmap()
     print(f"{myname}: Started job {jid}:")
     for key in descprod.JobData.data_names:
         if key in jdat:
@@ -80,4 +84,10 @@ def start_job_main():
             if key[-5:] == '_time':
                 val = f"{descprod.sdate(val)} UTC"
             print(f"{key:>16}: {val}")
+    if wait:
+        print(f"{myname}: Waiting for process {job.popen().pid} to complete.")
+        timeout = None
+        job.popen().wait(timeout)
+        rc = job.popen().returncode
+        print(f"{myname}: Process return code: {rc}")
     return 0

@@ -18,21 +18,34 @@ import sys
 import json
 import subprocess
 
-def runit(com):
+# Update the status messgae sent back to the server.
+def report_status(msg, rc=0):
+    sfilnam = 'current-status.txt'
+    with open(sfilnam, 'w') as sfil:
+        if rc:
+            pfx = f"ERROR {rc}"
+        else:
+            pfx = "STATUS"
+        print(f"runapp_pbms: {pfx}: {msg}")
+        sfil.write(f"{msg}\n")
+
+def runit(com, errmsg):
     print()
-    print(f"Running command: {com})"
+    print(f"Running command: {com}")
     res = subprocess.run(com, shell=True, capture_output=True)
     rc = res.returncode
     sout = res.stdout.decode().strip()
     serr = res.stderr.decode().strip()
-    print(f"${this} returned status {rc}.")
+    print(f"Command returned status {rc}.")
     line = '=========================================='
     print(line)
     if len(sout): print(sout)
     print(line)
     if len(serr): print(serr)
     print(line)
-    if rc: exit(rc)
+    if rc:
+        report_status(errmsg, rc)
+        exit(rc)
     return sout
 
 this = os.path.basename(sys.argv[0])
@@ -40,7 +53,7 @@ this = os.path.basename(sys.argv[0])
 stalog='current-status.txt'
 
 def myexit(rc, msg):
-    print(f"{this}: {msg}")
+    report_status(msg, rc)
     exit(rc)
 
 jmap = json.load(open('config.json'))
@@ -48,6 +61,10 @@ jid = int(jmap["id"])
 jobtype = jmap['jobtype']
 config  = jmap['config']
 howfig  = jmap['howfig']
+
+# pmb* may not be used as a job type.
+if jobtype[0:3] == 'pmb':
+    myexit(21, f"Forbidden job type: {jobtype}.")
 
 ipos = howfig.find(',')
 if ipos < 0:
@@ -57,10 +74,19 @@ else:
     pmbcfg = howfig[0:ipos]
     howrem = howfig[ipos+1:]
 
-sout = runit(f"descprod-add-job -p {jid} {jobtype} {config} {howrem}")
-sjmap = json.loads(sout)
+# This script expect the first howfig to be of type pmbs.
+if pmbcfg[0:5] != 'pmbs-':
+    myexit(22, f"Unexpected howfig: {pmbcfg}")
+
+pmbcfg = f"pmb-{pmbcfg[5:]}"
+
+sjfnam = 'subjob-config.json'
+sout = runit(f"descprod-add-job -p {jid} -o {sjfnam} {jobtype} {config} {howrem}", "Add job failed.")
+fil = open(sjfnam)
+sjmap = json.load(fil)
+fil.close()
 sjid = sjmap["id"]
-runit(f"pmb-wrap {pmbcfg} {descprod-start-job {sjid}"
+report_status(f"Created and submitting job {sjid}.")
 
-pmbcom = f"runapp-{jobtype} {config} {howrem}"
-
+runit(f"pmb-submit {pmbcfg} descprod-start-job -w {sjid}", "Batch submission of {sjid} failed.")
+report_status(f"Submitted job {sjid} to batch queue.")

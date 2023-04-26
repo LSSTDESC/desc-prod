@@ -640,6 +640,10 @@ class JobData:
     def return_status(self): return self.get_return_status()
     def progress(self):      return self.get_progress()
 
+    def popen(self):
+        '''Return the popen object if the jobs has bee started locally. Otherwise None.'''
+        return self._popen
+
     def jmap(self):
         """Write the data to a json map."""
         myname = 'JobData.jmap'
@@ -877,6 +881,7 @@ class JobData:
         if not remote and runopts.use_sudo:
             com = ['sudo', '-u', self.usr.descname]
         shell = runopts.use_shell
+        lognam = self.wrapper_log_file()
         if shell:
             shwcom = ""
             if runopts.setup_conda:
@@ -886,15 +891,24 @@ class JobData:
             if len(runopts.env_file):
                 shwcom += f"set >{runopts.env_file}; "
             shwcom += f"{fwrapdst} '{scom}' {self.rundir()} {self.log_file()} {self.wrapper_config_file()} {self.index()} {self.descname()}"
+            shwcom += f" >{lognam} 2>&1"
             if server is not None: shwcom += f" {server}"
             com += ['bash', '-login', '-c', shwcom]
             #com += ['bash', '-c', shwcom]  # Apri 3, 2023. Now able to run command without descprod.
         else:
             com += ['{fwrapdst}', scom, self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
             if server is not None: com += ["{server}"]
-        logfil = open(self.wrapper_log_file(), 'w')
+        #logfil = open(self.wrapper_log_file(), 'w')
         #print(shwcom, logfil)
-        self._popen = subprocess.Popen(com, cwd=self.rundir(), stdout=logfil, stderr=logfil)
+        rundir = self.rundir()
+        #self._popen = subprocess.Popen(com, cwd=rundir, stdout=logfil, stderr=logfil)
+        self._popen = subprocess.Popen(com, cwd=rundir)
+        noisy= True
+        if noisy:
+            print(f"JobData.run: Started subprocess.")
+            print(f"JobData.run:    Command: {com}")
+            print(f"JobData.run:    Run dir: {rundir}")
+            print(f"JobData.run:   Log file: {lognam}")
         self.set_data('progress', 'Running.')
         self.db_update()
         wmap = self.get_wrapper_info()

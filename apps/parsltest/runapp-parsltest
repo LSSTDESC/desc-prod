@@ -33,6 +33,9 @@ if [ -z "$CFG" -o "$CFG" = "-h" ]; then
   exit 0
 fi
 
+myecho Config: $CFG
+myecho Howfig: $HFG
+
 # Parse the howfig to get the env params: ENV, VER, LOC
 ENV=
 VER=$MYVER
