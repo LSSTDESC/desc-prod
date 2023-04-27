@@ -515,10 +515,10 @@ def run_form_create_job():
 
 def do_create_job(jty, cfg, hfg):
     myname = 'do_create_job'
+    sdat = SessionData.get()
     if len(cfg) == 0:
         sdat.msg.appen('Job configuration must be provided.')
         return redirect(url_for('home'))
-    sdat = SessionData.get()
     sid = sdat.session_id
     udat = sdat.user()
     if udat.descname == 'nologin':
