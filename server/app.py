@@ -504,10 +504,10 @@ def run_form_create_job():
         return 'Got GET instead of POST!!'
     sdat = SessionData.get()
     jty = request.form['jobtype'].strip()
-    known_jty = ['parsltest']
-    if jty not in known_jty:
-        SessionData.get().msg.append(f"Invalid job type: {jty}")
-        return redirect(url_for('home'))
+    #known_jty = ['parsltest']
+    #if jty not in known_jty:
+    #    SessionData.get().msg.append(f"Invalid job type: {jty}")
+    #    return redirect(url_for('home'))
     cfg = request.form['config'].strip()
     hfg = request.form['howfig'].strip()
     print(f"form_create_job: {jty} {cfg} {hfg}")

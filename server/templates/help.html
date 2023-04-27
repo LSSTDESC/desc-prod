@@ -14,10 +14,17 @@ desc-prod 0.3.52
 
 <h3>Introduction</h3>
 DESCprod is a web service and supporting code to help users to run DESC jobs at NERSC.
-<br><br>
-For an overview and current status, please see the
-<a href =https://drive.google.com/file/d/1uAMfWpQLenxF_50mjmBWqISEEDxOkdrc/view?usp=share_link>talk by David Adams</a>
-at the January 25, 2023 DESC CO meeting.
+<li>For an overview and status reports, please see
+<ul>
+<li>
+<a href =https://drive.google.com/file/d/1uAMfWpQLenxF_50mjmBWqISEEDxOkdrc/view?usp=share_link>
+Talk by David Adams at the January 25, 2023 DESC CO meeting</a>
+</li>
+<li>
+<a href =https://drive.google.com/file/d/1GNceYkg1MO2_nBJoq31O2LYamXKJZYEs/view?usp=share_link>
+Talk by David Adams at the March 22, 2023 DESC CO meeting</a>
+</li>
+</ul>
 
 <h3>Web interface</h3>
 To use the DESC web server, point your browser to <a href=https://www.descprod.org>https://www.descprod.org</a>.
@@ -31,15 +38,26 @@ and DESC IDs.
 Once the link is established, login will take you to the DESCprod home page where you can submit
 job and see the status of jobs submitted earlier.
 <br><br>
-Jobs are specified by a job type and a configuration string.
-Right now, it is only possible to run parslte/pre
-To configure a job, enter a configuration string in the parsltest box and click the submit button.
-An example configuration string is:
+Jobs are specified with three strings:
+<ul>
+<li>appname - The name of the application to run.</li>
+<li>config - What to do: which input data, which processing steps, configuration prameters, ....</li>
+<li>howfig - How to carry out the processing: software source, batch submission or not, job splitting, ....</li>
+</ul>
+Enter these on the line labeled "Create job:" to create a new job.
+
+<br><br>
+Right now, the only supported application is parsltest from <a href=https://github.com/LSSTDESC/desc-wfmon>desc-wfmon</a>.
+An example config string is:
 <pre>
     wq-sleep-ttsk10-ntsk20-nwrk4
 </pre>
-This is a request to use the WorkQueue scheduler to run 20 10-second sleep jobs using
-four workers.
+This is a request to use the WorkQueue scheduler to run 20 10-second sleep jobs using four workers.
+
+<h3>Web interface</h3>
+A job with application name APPNAME is ultimately run by calling the script runapp_APPNAME.
+It is passed the config and howfig strings as arguments and is responsible for intepreting those
+and running the job.
 <br><br>
 The job may be started on the local system by hovering over the job ID and selecting "Start job".
 Resources are limited there and so please do not run more than a few tasks at a time
