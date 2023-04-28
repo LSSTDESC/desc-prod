@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# runapp_mysleep
+#
+# David Adams
+# April 2023
+#
+# Example DESCprod application.
+
+MYNAME=$(basename $0)
+
+msg() {
+  MSG=$1
+  echo $MYNAME: $1
+  echo $1 >current-status.txt
+}
+
+CFG=$1
+HFG=$2
+
+TIM=$CFG
+
+if [ -z "$TIM" ]; then
+  echo "ERROR: Time must be provided."
+  exit 1
+fi
+
+msg "I'm sleeping for $TIM seconds."
+if ! sleep $TIM; then
+  msg "ERROR: Invalid sleep time: $TIM"
+  exit 2
+fi
+
+msg "I'm awake now."
