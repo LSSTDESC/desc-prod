@@ -10,7 +10,7 @@ David Adams
 <br>
 April 2023
 <br>
-desc-prod 0.3.52
+desc-prod 0.3.53
 
 <h3>Introduction</h3>
 DESCprod is a web service and supporting code to help users to run DESC jobs at NERSC.
@@ -54,47 +54,67 @@ An example config string is:
 </pre>
 This is a request to use the WorkQueue scheduler to run 20 10-second sleep jobs using four workers.
 
-<h3>Web interface</h3>
-A job with application name APPNAME is ultimately run by calling the script runapp_APPNAME.
+<h3>Application interface</h3>
+A job with application name APPNAME is ultimately run by calling the script runapp-APPNAME.
 It is passed the config and howfig strings as arguments and is responsible for intepreting those
-and running the job.
+and running the job. It returns 0 to indicate success.
+The application should also regularly update current-status.txt with a short line giving the
+current status of processing.
+That text is regularly reported back to the server and can be seen in the job monitor.
 <br><br>
-The job may be started on the local system by hovering over the job ID and selecting "Start job".
-Resources are limited there and so please do not run more than a few tasks at a time
-for more than a few minutes.
-After starting, you can get status updates by refreshing the page.
-Once the job is done, hover over the job ID to obtain links to archive or delete the job.
-There is not much point to archive now as the jobs don't do anything too intersting and
-we do no yet have the facility to retrieve them from the archive.
+An example application mysleep may be found at
+<a href=dune-proc/examples/runapp-mysleep](https://github.com/LSSTDESC/desc-prod/blob/main/examples/runapp-mysleep>
+desc-prod/examples/runapp-mysleep</a>.
+Copy it to your bin area and you should be able to run a job with appname "mysleep" and config set to the
+number of seconds to sleep.
+
+<h3>How interface</h3>
+The how configuration string (aka howfig) is a sequence of comma-separated constituents.
+If the first constituent is of the form HOWNAME-XXX, and HOWNAME is a name registered with DESCprod,
+then runapp-HOWNAME is run instead of runapp-APPNAME with the expectation that the first will either call
+the second or create a subjob with application name APPNAME.
+Other than such registered constituents, the howfig is intepreted by the application script.
 <br><br>
-More typical operation is to start the job on a remote machine such as perlmutter.
-For security reasons, you cannot yet start the job there from the server but have to log in
-to the run machine issue a command there.
-<br><br>
-First install desc-prod on that machine, e.g. with
+DESCprod provides registered howfig applications pmb and pmbs that cause the job to run in batch.
+Use howfig pmb-10 in the parsltest example to run with a 10 minute time limit in perlmutter batch.
+With this option, you can safely run 200+ perlmutter workers in the parsltest example above.
+You can also replace sleep with ifix0 to run CPU-intenive jobs or ifixw to run jobs that are
+CPU and I/O intensive.
+
+<h3>Running jobs</h3>
+
+After a job has been specified on the DESCprod server, it may be started on any client computer with
+network access to the server but the primary goal is to support the NERSC machines: perlmutter login
+and batch and perhaps workflow machines.
+The first step is to install desc-prod on the client:
 <pre>
-module load python
-cd &lt;some-dir&gt;
-git clone https://github.com/LSSTDESC/desc-prod.git
-pip install ./desc-prod
+  module install python
+  cd some-dir
+  git clone https://github.com/LSSTDESC/desc-prod.git
+  cd desc-prod
+  pip install .
 </pre>
-The first line is to use the default python installation at NERSC.
-Any recent version such as that in DESC releases is also fine.
-A job may be started with <i>descprod-start-job</i> and its existence and status
-can checked with <i>descprod-get-job</i>. E.g., to start and check job 1234:
+The first line ensures a recent version of python at NERSC.
+<br><br>
+After specifying a a job on the server, you can find its ID in the left-most column of the job table.
+Start the job on the client with
 <pre>
-descprod-start-job 1234
-descprod-get-job 1234
+  descprod-start-job ID
 </pre>
-If your descprod username differs from that on the local system, the former must be added
-to these commands.
-The server URL must also be provided if you are not using the default server.
-Use -h for help on either command.
+Use -h for help on this and other descprod commands.
+If all goes well, a subdirectory job...ID will be created in the current directory and the job
+will be run there.
+Refresh the server page to update the job table and see the job status change.
+After completion, there will be a return code (0 if all went well) and an appropriate message in the last column.
+<br><br>
+To remove clutter on the server page, jobs may be deleted arter completion:
+hover over the job ID to obtain links to archive or delete the job.
+There is not much point to archive now as we do not yet have the facility to retrieve them from the archive.
+<br><br>
 
 <H3>Coming soon</H3>
 Our next planned deliverables include:
 <ul>
-<li>Configuration options so jobs will start in perlmutter.</li>
 <li>Support for LSST pipeline jobs.</li>
 </ul>
 Stay tuned.
