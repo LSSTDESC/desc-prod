@@ -8,9 +8,9 @@
 <h2>Welcome to DESCprod</h2>
 David Adams
 <br>
-April 2023
+April 30, 2023
 <br>
-desc-prod 0.3.53
+desc-prod 0.3.54
 
 <h3>Introduction</h3>
 DESCprod is a web service and supporting code to help users to run DESC jobs at NERSC.
@@ -110,9 +110,29 @@ After completion, there will be a return code (0 if all went well) and an approp
 To remove clutter on the server page, jobs may be deleted arter completion:
 hover over the job ID to obtain links to archive or delete the job.
 There is not much point to archive now as we do not yet have the facility to retrieve them from the archive.
-<br><br>
 
-<H3>Coming soon</H3>
+<h3>Job output and error handling</h3>
+After a job has completed, the return code will appear in the job table and the status message (last column) is updated.
+A nonzero code indicates a problem.
+DESCprod does not yet provide any mechanism for automatic resubmission or resumption of failed or interrupted jobs.
+Such could be added as a howfig applications analogous to pmb.
+The job table includes the name of the run node and run directory and users can navigate (typically via perlmutter login)
+to that directory and examine the logs and other files.
+Log output (stdout and stderr) for the process runnning the wrapper is written to <i>wrapper.log</i> and
+log output from the runapp script to <i>jobXXXXXX.log</i> where XXXXXX is the zero-padded job ID.
+<br><br>
+The job table is updated by refreshing the DESCprod home page.
+Before a job is started, the node and run directory will be blank and the create/start time is the time of creation.
+Once a job iis started, the host and run directory will be filled and the create/start time replaced
+with the process start time.
+The job duration is the time of the last wrapper message received since the start/create time.
+This will continue to update at the job update interval (currently 10 sec) until the job completes.
+If the duration and status message fail to update when a job is in the run state, then
+communication has been lost with the wrapper.
+This could inddicate the wrapper has hung or crashed, the run node was shut down, or could be due to
+network or server problems.
+
+<H3>Coming next</H3>
 Our next planned deliverables include:
 <ul>
 <li>Support for LSST pipeline jobs.</li>
