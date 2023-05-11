@@ -1,10 +1,18 @@
 # desc-prod
-This package provides code to supporting the descprod project which includes a DESC production service and clients for that service.
-The goal of the project is to make it easy for DESC members to run jobs at NERSC.
-The system provides (or will provide soon) direct support to run LSST pipeline jobs
-and can run working group and user analysis jobs that provide a specified application interface.
-For a recent status report see the
-[talk at the January 25, 2023 DESC CO meeting](https://drive.google.com/file/d/1uAMfWpQLenxF_50mjmBWqISEEDxOkdrc/view?usp=share_link).
+
+David Adams  
+Updated 11-may-2023  
+
+The DESCprod project has the goal to make it easy for DESC members to run production jobs at NERSC.
+This package (desc-prod) provides the code to run the DESC production service at NERSC SPIN
+along with its [web interface](https://www.descprod.org/home)
+and client commands to access that service.
+An interface is defined so different applications can be run without modifying the code here.
+This package provides on example application, parsltest, which runs many test jobs in parallel.
+Suppport for LSST pipeline jobs is being added in the [desc-gen3-prod package](https://github.com/LSSTDESC/desc-gen3-prod).
+
+More information on the project and this and other applications may be found on the
+[service help page](https://www.descprod.org/help).
 
 ## Service
 A web service is provided at https://www.descprod.org.
@@ -13,31 +21,37 @@ if you afre not already registered with descprod, follow the instructions to reg
 The clients below contact this service by default.
 
 ## Installation
-To use the descprod clients, you must first install this package.
+To use the descprod client code, install this package.
 Check it out from git and build with pip:
 <pre>
+module load python
 mkdir &lt;install-dir>
 cd &lt;install-dir>
 git clone https://github.com/LSSTDESC/desc-prod.git
 cd desc-prod
 pip install .
 </pre>
-Note the installation requires a recent version of python.
-One option at NERSC is to use the default python module:
-<pre>
-module load python
-</pre>
+The first line ensures a recent version of python at NERSC and can be omitted if you
+have already set one up in anotehr way.
 
-## Clients
-The following clients are provided:
+## Client interface
+Client commands include:
 * descprod-version - Shows the installed version of this package.
 * descprod-show-job - Shows the job data for a given job ID.
+* desprod-start-job - Start a job on the local machine.
+* descprod-add-job - Add a new job.
+
+Use option -h for help on any of these commands.
+The last three refer to jobs configured on the server.
+At present, the start command is the only way to start a job.
+It is intended that jobs be added using the web interface but the add command provides
+means to circumvent that.
 
 ## Contents
-[descprod](descprod) - Installed code used by clients and servers.  
-[docker](docker) - Configuration files and supporting scripts for building docker images.  
-[service](service) - Scripts useful for building the production service.  
-[ptenv](ptenv) - Scripts to build and use parsltest conda envs at NERC.  
+[descprod](descprod) - Installed python code used by clients and servers.  
+[docker](docker) - Configuration files and supporting scripts for building docker images for the service.  
+[server](server) - Scripts and html to suppoprt the production service.  
+[apps](apps) - Example applications.
 
 ## More information
 
