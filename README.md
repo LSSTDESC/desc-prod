@@ -1,7 +1,8 @@
 # desc-prod
 
 David Adams  
-Updated 11-may-2023  
+May 11, 2023  
+Version 0.2
 
 The DESCprod project has the goal to make it easy for DESC members to run production jobs at NERSC.
 This package (desc-prod) provides the code to run the DESC production service at NERSC SPIN
@@ -32,7 +33,13 @@ cd desc-prod
 pip install .
 </pre>
 The first line ensures a recent version of python at NERSC and can be omitted if you
-have already set one up in anotehr way.
+have already set one up in another way.
+
+## Applications
+
+Applications provide a simple means for users to extend DESCprod to run arbitrary production code.
+The progress of jobs through the DESCprod system and the application interface are described
+in the [application document](doc/apps.md).
 
 ## Client interface
 Client commands include:
