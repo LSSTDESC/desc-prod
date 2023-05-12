@@ -1,13 +1,13 @@
 # desc-prod
 
 David Adams  
-May 11, 2023  
-Version 0.2
+May 13, 2023  
+Version 0.2.1
 
 The DESCprod project has the goal to make it easy for DESC members to run production jobs at NERSC.
-This package (desc-prod) provides the code to run the DESC production service at NERSC SPIN
-along with its [web interface](https://www.descprod.org/home)
-and client commands to access that service.
+This package (desc-prod) provides the code to run the DESC production service at NERSC SPIN,
+a [web interface](https://www.descprod.org/home) to that service,
+and client commands to access the service from other nodes.
 An interface is defined so different applications can be run without modifying the code here.
 This package provides on example application, parsltest, which runs many test jobs in parallel.
 Suppport for LSST pipeline jobs is being added in the [desc-gen3-prod package](https://github.com/LSSTDESC/desc-gen3-prod).
@@ -18,8 +18,8 @@ More information on the project and this and other applications may be found on 
 ## Service
 A web service is provided at https://www.descprod.org.
 Follow that link and log in with google credentials to view a page where you can submit jobs and track theior progress.
-if you afre not already registered with descprod, follow the instructions to register.
-The clients below contact this service by default.
+New users should follow the instructions on the page to register.
+Client scripts (9including those listedd below) below contact this service by default.
 
 ## Installation
 To use the descprod client code, install this package.
