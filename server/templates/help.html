@@ -8,9 +8,17 @@
 <h2>Welcome to DESCprod</h2>
 David Adams
 <br>
-April 30, 2023
+May 12, 2023
 <br>
-desc-prod 0.3.54
+desc-prod 0.4.3
+
+<!--
+<H1>
+***********************************
+<br>
+This page is under development.
+***********************************
+-->
 
 <h3>Introduction</h3>
 DESCprod is a web service and supporting code to help users to run DESC jobs at NERSC.
@@ -25,6 +33,12 @@ Talk by David Adams at the January 25, 2023 DESC CO meeting</a>
 Talk by David Adams at the March 22, 2023 DESC CO meeting</a>
 </li>
 </ul>
+The <a href=https://github.com/LSSTDESC/desc-prod/blob/main/README.md>desc-prod README</a>
+provides some description of the supporting code.
+<br><br>
+See the <a href=https://github.com/LSSTDESC/desc-prod/blob/main/doc/apps.md>application document</a>
+for a description of how jobs flow though DESCprod and information on adding support for different
+types of production jobs.
 
 <h3>Web interface</h3>
 To use the DESC web server, point your browser to <a href=https://www.descprod.org>https://www.descprod.org</a>.
@@ -40,46 +54,63 @@ job and see the status of jobs submitted earlier.
 <br><br>
 Jobs are specified with three strings:
 <ul>
-<li>appname - The name of the application to run.</li>
+<li>jobtype - The name of the type of job to run.</li>
 <li>config - What to do: which input data, which processing steps, configuration prameters, ....</li>
 <li>howfig - How to carry out the processing: software source, batch submission or not, job splitting, ....</li>
 </ul>
 Enter these on the line labeled "Create job:" to create a new job.
 
 <br><br>
-Right now, the only supported application is parsltest from <a href=https://github.com/LSSTDESC/desc-wfmon>desc-wfmon</a>.
-An example config string is:
+The server will accept any job type.
+It is the reponsibility of the client that starts the job on a remote machine to install or set up a product
+that provides the a direct application for the job type.
+Available direct applications include
+<ul>
+<li>mysleep
+<li>parsltest
+<li><a href=https://github.com/LSSTDESC/desc-gen3-prod/blob/main/doc/app-g3wfquery.md> g3wfquery</a>
+</ul>
+
+The first two are included in the <a href=https://github.com/LSSTDESC/desc-wfmon>desc-wfmon package</a>.
+An example config string for parsltest is:
 <pre>
     wq-sleep-ttsk10-ntsk20-nwrk4
 </pre>
 This is a request to use the WorkQueue scheduler to run 20 10-second sleep jobs using four workers.
 
 <h3>Application interface</h3>
-A job with application name APPNAME is ultimately run by calling the script runapp-APPNAME.
+A job with type JOBTYPE is ultimately run by calling the script runapp-JOBTYPE.
 It is passed the config and howfig strings as arguments and is responsible for intepreting those
 and running the job. It returns 0 to indicate success.
 The application should also regularly update current-status.txt with a short line giving the
 current status of processing.
 That text is regularly reported back to the server and can be seen in the job monitor.
 <br><br>
-An example application mysleep may be found at
+The example application mysleep may be found at
 <a href=dune-proc/examples/runapp-mysleep](https://github.com/LSSTDESC/desc-prod/blob/main/examples/runapp-mysleep>
 desc-prod/examples/runapp-mysleep</a>.
-Copy it to your bin area and you should be able to run a job with appname "mysleep" and config set to the
+Copy it to your bin area and you should be able to run a job with jobname "mysleep" and config set to the
 number of seconds to sleep.
 
 <h3>How interface</h3>
 The how configuration string (aka howfig) is a sequence of comma-separated constituents.
-If the first constituent is of the form HOWNAME-XXX, and HOWNAME is a name registered with DESCprod,
-then runapp-HOWNAME is run instead of runapp-APPNAME with the expectation that the first will either call
-the second or create a subjob with application name APPNAME.
+The name of the first constituent is its first field, i.e. HNAM in HMAW-HFLD1-HFLD2-....
+If HNAM is a name registered with DESCprod,
+then runapp-HNAM is run instead of runapp-JOBTYPE with the expectation that the first will either call
+the second or create a subjob with that job name.
 Other than such registered constituents, the howfig is intepreted by the application script.
 <br><br>
-DESCprod provides registered howfig applications pmb and pmbs that cause the job to run in batch.
-Use howfig pmb-10 in the parsltest example to run with a 10 minute time limit in perlmutter batch.
-With this option, you can safely run 200+ perlmutter workers in the parsltest example above.
-You can also replace sleep with ifix0 to run CPU-intenive jobs or ifixw to run jobs that are
-CPU and I/O intensive.
+Available indirect applications include
+<ul>
+<li>pmb - Run the direct application (runapp-JOBNAME) in batch. The wrapper continues to run on the client
+node until the batch job finishes.
+<li>pmbs - Create a DESCprod subjob to run the direct application and submit a batch job that runs a client
+that starts that job. The parent job ends after submission and the child reports progress to the server.
+</ul>
+Both of these are provided as part of desc-prod.
+With these option, you can safely run 200+ perlmutter workers in the parsltest example above.
+Replace replace sleep with ifix0 in the config to run CPU-intenive jobs or with ifixw to run jobs that are
+both CPU and I/O intensive.
 
 <h3>Running jobs</h3>
 
