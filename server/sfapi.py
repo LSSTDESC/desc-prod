@@ -41,7 +41,7 @@ class Sfapi:
         if self._debug: print(f"{myname}: Fetching key")
         if len(client_key) == 0:
             print('>>> The SF API client ID must be stored in SFAPI_ID.')
-            #return
+            return
         ldict = {}
         exec(f"val =  {client_key}", globals(), ldict)
         private_key = ldict['val']
