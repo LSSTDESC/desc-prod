@@ -18,6 +18,7 @@ class Sfapi:
     session = None
 
     def  __init__(self, dbg=None, timeout=None, sysname=None, baseurl =None):
+        myname = 'Sfapi:init'
         if dbg is not None: set_debug(dbg)
         if timeout is not None: set_timeout(timeout)
         if sysname is not None: set_system(sysname)
@@ -30,11 +31,14 @@ class Sfapi:
         # to do this.
         # Cut and paste the first two values to define these values.
         token_url = "https://oidc.nersc.gov/c2id/token"
+        if self._debug: print(f"{myname}: Fetching ID")
         client_id = os.getenv('SFAPI_ID', '')
+        if self._debug: print(f"{myname}: SFAPI ID: {client_id}")
         if len(client_id) == 0:
             print('>>> The SF API client ID must be stored in SFAPI_ID.')
             return 1
         client_key = os.getenv('SFAPI_KEY', '')
+        if self._debug: print(f"{myname}: Fetching ID")
         if len(client_key) == 0:
             print('>>> The SF API client ID must be stored in SFAPI_ID.')
             return 2
@@ -48,6 +52,7 @@ class Sfapi:
             grant_type="client_credentials",
             token_endpoint=token_url
         )
+        if self._debug: print(f"{myname}: Fetching token")
         self.session.fetch_token()
 
     def message(self, message):
