@@ -33,12 +33,12 @@ class Sfapi:
         token_url = "https://oidc.nersc.gov/c2id/token"
         if self._debug: print(f"{myname}: Fetching ID")
         client_id = os.getenv('SFAPI_ID', '')
-        if self._debug: print(f"{myname}: SFAPI ID: {client_id}")
         if len(client_id) == 0:
             print('>>> The SF API client ID must be stored in SFAPI_ID.')
             return 1
+        if self._debug: print(f"{myname}: SFAPI ID: {client_id}")
         client_key = os.getenv('SFAPI_KEY', '')
-        if self._debug: print(f"{myname}: Fetching ID")
+        if self._debug: print(f"{myname}: Fetching key")
         if len(client_key) == 0:
             print('>>> The SF API client ID must be stored in SFAPI_ID.')
             return 2
