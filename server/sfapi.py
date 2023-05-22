@@ -33,11 +33,11 @@ class Sfapi:
         client_id = os.getenv('SFAPI_ID', '')
         if len(client_id) == 0:
             print('>>> The SF API client ID must be stored in SFAPI_ID.')
-            exit(1)
+            return 1
         client_key = os.getenv('SFAPI_KEY', '')
         if len(client_key) == 0:
             print('>>> The SF API client ID must be stored in SFAPI_ID.')
-            exit(1)
+            return 2
         ldict = {}
         exec(f"val =  {client_key}", globals(), ldict)
         private_key = ldict['val']
