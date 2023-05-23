@@ -606,7 +606,7 @@ def delete_job():
     return redirect(url_for('home'))
 
 @app.route('/copyjob')
-def delete_job():
+def copy_job():
     sdat = SessionData.get()
     udat = sdat.user()
     if udat.descname == 'nologin':
