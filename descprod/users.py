@@ -27,6 +27,9 @@ class UserData:
         self.run_dir = f"{self.home_dir}/rundirs"
         self.archive_dir = f"{self.home_dir}/archives"
         self.delete_dir = f"{self.home_dir}/deleted"
+        self.jobtype = ''
+        self.config = ''
+        self.howfig = ''
 
     def is_admin(self):
         return self.descname in UserData.admins

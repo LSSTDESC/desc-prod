@@ -314,9 +314,9 @@ def home():
         #    msg += f"Run dir: {SessionData.rundir}"
         msg += sep
         msg += f'''\n<form action="/form_create_job" method='POST'>Create job: '''
-        msg += '''<input type="text" name="jobtype" value='parsltest' style="width: 150px;" /> '''
-        msg += '''<input type="text" name="config" style="width: 300px;" /> '''
-        msg += '''<input type="text" name="howfig" style="width: 300px;" /> '''
+        msg += '''<input type="text" name="jobtype" value={udat.jobtype} style="width: 150px;" /> '''
+        msg += '''<input type="text" name="config"  value={udat.config}  style="width: 300px;" /> '''
+        msg += '''<input type="text" name="howfig"  value={udat.howfig}  style="width: 300px;" /> '''
         msg += '''<input type="submit" value="Submit"/></form>'''
         msg += sep
         msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>\n'
@@ -533,6 +533,9 @@ def do_create_job(jty, cfg, hfg):
         sdat.msg += jdat.errmsgs
         return redirect(url_for('home'))
     sdat.msg.append(f"Configured {jty} {cfg} {hfg}")
+    udat.jobtype = jty
+    udat.config = cfg
+    udat.howfig = hfg
     return redirect(url_for('home'))
 
 @app.route('/startjob')
