@@ -288,7 +288,7 @@ def home():
         jtab = JobTable(udat.descname)
         # Use the last job to to get the starting job config if it is not already set.
         if udat.jobtype == '':
-            jids = jtab.jobs.keys()
+            jids = list(jtab.jobs.keys())
             jids.sort()
             jid_last = jids[-1]
             job_last = jtab.jobs[jid_last]
