@@ -1014,6 +1014,8 @@ class JobData:
         txt += f"<a href={q}{baseurl}/archivejob?id={self.index()}{q}>Archive job {self.index()}</a>"
         txt += '<br>'
         txt += f"<a href={q}{baseurl}/deletejob?id={self.index()}{q}>Delete job {self.index()}</a>"
+        txt += '<br>'
+        txt += f"<a href={q}{baseurl}/copyjob?id={self.index()}{q}>Copy job {self.index()}</a>"
         return txt
 
     def is_active(self):

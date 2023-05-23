@@ -605,6 +605,23 @@ def delete_job():
             sdat.msg.append(f"Job {jobid} scheduled for deletion at {delfil}")
     return redirect(url_for('home'))
 
+@app.route('/copyjob')
+def delete_job():
+    sdat = SessionData.get()
+    udat = sdat.user()
+    if udat.descname == 'nologin':
+        sdat.msg.append('Log in to delete a job')
+        return redirect(url_for('home'))
+    jobid = int(request.args['id'])
+    job = JobData.get_user_job(udat.descname, jobid)
+    if job is None:
+        sdat.msg.append(f"Job {jobid} not found for user {udat.descname}")
+    else:
+        udat.jobtype = job.jobtype()
+        udat.config = job.config()
+        udat.howfig = job.howfig()
+    return redirect(url_for('home'))
+
 def ready():
     if SessionData.sjob is None: return True
     rcode = SessionData.ret.poll()
