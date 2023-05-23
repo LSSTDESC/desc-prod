@@ -292,9 +292,9 @@ def home():
             jids.sort()
             jid_last = jids[-1]
             job_last = jtab.jobs[jid_last]
-            udat.jobtype = job_last.jobtype
-            udat.config = job_last.config
-            udat.howfig = job_last.howfig
+            udat.jobtype = job_last.jobtype()
+            udat.config = job_last.config()
+            udat.howfig = job_last.howfig()
         njob = len(jtab.jobs)
         msg += f"User {udat.descname} has {njob} active job"
         if njob != 1: msg += 's'
