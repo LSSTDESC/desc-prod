@@ -286,6 +286,15 @@ def home():
         msg += sep
         msg += sep
         jtab = JobTable(udat.descname)
+        # Use the last job to to get the starting job config if it is not already set.
+        if udat.jobtype == '':
+            jids = jtab.jobs.keys()
+            jids.sort()
+            jid_last = jids[-1]
+            job_last = jtab.jobs[jid_last]
+            udat.jobtype = job_last.jobtype
+            udat.config = job_last.config
+            udat.howfig = job_last.howfig
         njob = len(jtab.jobs)
         msg += f"User {udat.descname} has {njob} active job"
         if njob != 1: msg += 's'
