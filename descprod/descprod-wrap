@@ -115,6 +115,8 @@ while rc is None or sc != 200:
             info['return_status'] = rc
             if rc < 0:
                 prefix = f"Process received signal {-rc}"
+            elif rc == 124:  # Return code from linux timeout command if it times out
+                prefix = f"Timeout"
             elif rc > 0:
                 prefix = f"Failed"
             else:
