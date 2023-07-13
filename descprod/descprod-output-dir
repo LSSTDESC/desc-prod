@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# descprod-output-dir
+#
+# Return the base directory where descprod and its applications
+# should write. This includes job directories and software
+# installations.
+
+MYNAME=$(basename $0)
+OPT=$1
+SUBDIR=${2:-.}
+
+if [[ $1 == -h ]]; then
+  echo Usage: $MYNAME: [OPT [SUBDIR]]
+  echo "  Where OPT [create] is any of the following"
+  echo "       get - Return the descprod base output directory."
+  echo "    create - Return the directory and creates it if absent."
+  echo "      list - display directory listing"
+  echo "  If SUBDIR is provided, that subdirectory is used in the above."
+  exit 0
+fi
+
+OUTDIR=$DESCPROD_OUTPUT_DIR
+if [[ ! -n $OUTDIR ]]; then
+  OUTDIR=${PSCRATCH:-${SCRATCH:-${HOME:-.}}}/descprod-out
+fi
+OUTDIR=$OUTDIR/$SUBDIR
+
+if [[ $OPT == get ]]; then
+  echo $OUTDIR
+elif [[ $OPT == create ]]; then
+  if [ ! -r $OUTDIR ]; then
+    mkdir $OUTDIR && MSG="INFO: Created $OUTDIR" || MSG="ERROR: Unable to create $OUTDIR"
+    echo $MYNAME: $MSG >&2
+  fi
+  echo $OUTDIR
+elif [[ $OPT == list ]]; then
+  ls -ls $OUTDIR
+else
+  echo $MYNAME: Invalid option: $OPT
+fi
