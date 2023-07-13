@@ -4,6 +4,10 @@ import sys
 import os
 import descprod
 import pdb
+import subprocess
+
+def _runcom(com):
+    return subprocess.run(com, stdout=subprocess.PIPE).stdout.decode('utf-8').strip()
 
 def start_job(jid, dnam, url):
     '''
@@ -26,7 +30,11 @@ def start_job(jid, dnam, url):
     cmsg = job.ready_to_run()
     if len(cmsg):
         return f"Job cannot be started. {cmsg}"
-    rundir = f"{os.getcwd()}/{job.idname()}"
+    if len(_runcom(['descprod-output-dir', 'create', 'jobs'])) == 0:
+        return f"Unable to find/create base job directory."
+    rundir = _runcom(['descprod-output-dir', 'get', f"jobs/{job.idname()}"])
+    if len(rundir) == 0:
+        return f"Unable to find run directory."
     print(f"Starting job {jid} for {descname} in {rundir}")
     rs = job.run(rundir=rundir, server=url)
     if rs:
