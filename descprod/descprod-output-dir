@@ -37,7 +37,7 @@ fi
 
 if [[ $OPT == create ]]; then
   if [ ! -r $OUTDIR ]; then
-    if mkdir $OUTDIR; then
+    if mkdir -p $OUTDIR; then
       echo $MYNAME: Created $OUTDIR >&2
     else
       echo $MYNAME: ERROR: Unable to create $OUTDIR >&2
