@@ -77,7 +77,7 @@ print(f"Running job {jobid} for user {user} in {rundir} with wrapper version {wv
 print(f"Wrapper is {fullthis}")
 sys.stdout.flush()
 
-nowtime = int(time.time())
+nowtime0 = int(time.time())
 logfil = open(logname, 'w')
 info = {}
 info['wrapper_version'] = wver
@@ -86,8 +86,8 @@ info['descname'] = user
 info['command'] = command
 info['rundir'] = rundir
 info['log_file'] = logname
-info['start_time'] = nowtime
-info['update_time'] = nowtime
+info['start_time'] = nowtime0
+info['update_time'] = nowtime0
 info['host'] = socket.getfqdn()
 pop = subprocess.Popen(command, shell=True, cwd=rundir, stdout=logfil, stderr=logfil)
 pid = pop.pid
@@ -124,7 +124,7 @@ while rc is None or sc != 200:
         info['update_time'] = nowtime
         progress = f"{prefix}{sep}{get_progress_from_file()}"
         pfil = open('progress.log', 'a')
-        pfil.write(f"{int(nowtime)}: {progress}\n")
+        pfil.write(f"{int(nowtime-nowtime0):8}: {progress}\n")
         pfil.close()
         if len(progress):
             info['progress'] = progress
