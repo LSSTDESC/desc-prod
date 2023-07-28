@@ -123,6 +123,9 @@ while rc is None or sc != 200:
                 prefix = f"Done"
         info['update_time'] = nowtime
         progress = f"{prefix}{sep}{get_progress_from_file()}"
+        pfil = open('progress.log', 'a')
+        pfil.write(f"{int(nowtime)}: {progress}\n")
+        pfil.close()
         if len(progress):
             info['progress'] = progress
         with open(jnam, 'w') as jfil:
