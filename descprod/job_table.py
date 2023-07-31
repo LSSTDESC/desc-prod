@@ -13,7 +13,8 @@ class JobTable:
         self.refresh()
 
     def refresh(self):
-        self.jobs = JobData.get_jobs_from_db(self.descname)
+        self.jobs, self.error_message = JobData.get_jobs_from_db(self.descname)
+        if len(self.error_message): return
         self.jobids = []
         self.parents = []
         self.jobtypes = []

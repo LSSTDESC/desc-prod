@@ -140,13 +140,15 @@ class JobData:
     def get_jobs_from_db(cls, descname=None):
         """"Retrieve a user's jobs from the job DB."""
         myname = 'JobData.get_jobs_from_db'
+        msg = ''   # Blank for success
         if descname not in cls.ujobs:
             cls.ujobs[descname] = {}
         cur = cls.db_query_where(f"descname='{descname}'", cols='id')
         myjobs = cls.ujobs[descname]
         if cur is None:
-            print(f"{myname}: DB query failed.")
-            return {}
+            msg = "Job DB query failed."
+            print(f"{myname}: {msg}")
+            return {}, msg
         jdats = []
         for row in cur.fetchall():
             idx = row[0]
@@ -154,7 +156,7 @@ class JobData:
                 jdat = JobData(idx, descname, 'db')
                 jdats.append(jdat)
         print(f"{myname}: Fetched {len(jdats)} jobs for user {descname} from DB")
-        return myjobs
+        return myjobs, msg
 
     @classmethod
     def db_name(cls, new_name=None):

@@ -286,6 +286,9 @@ def home():
         msg += sep
         msg += sep
         jtab = JobTable(udat.descname)
+        if (jtab.error_message):
+              msg += f"ERROR: {jtab.error_message}"
+              return sdat.make_response(msg)
         # Use the last job to to get the starting job config if it is not already set.
         if udat.jobtype == '':
             jids = list(jtab.jobs.keys())
