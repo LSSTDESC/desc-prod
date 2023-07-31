@@ -238,7 +238,7 @@ class JobData:
         con = cls.connect_db(create_db=create_db)
         if con is None:
             print(f"{myname}: Unable to connect to DB {dbnam}")
-            raise Exception(f"{myname}: Unable to connect to DB {dbnam}")
+            #raise Exception(f"{myname}: Unable to connect to DB {dbnam}")
             return None
         cur = con.cursor()
         check_query = f"SHOW TABLES LIKE '{tnam}'"
