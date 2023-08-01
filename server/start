@@ -98,7 +98,14 @@ if [ $# -gt 0 ]; then
     echo start: Setting debug.
     export SERVER_OPTS="$SERVER_OPTS debug"
   # Start mysql server.
-  elif [ $OPT = mysql ]; then
+  elif [ ${OPT:0:5} = mysql ]; then
+    REM=${OPT:6}
+    if [ "$REM" = noaio ]; then
+      echo start: Disabling native aio for mysql.
+      CNFFILE=/etc/mysq/conf.d/noaio.cnf
+      echo '[mysqld]' >$CNFFILE
+      echo 'innodb_use_native_aio = 0' >> $CNFFILE
+    fi
     echo start: Starting mysql server.
     $ASROOT service mysql start
   else
