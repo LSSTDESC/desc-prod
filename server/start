@@ -102,7 +102,7 @@ if [ $# -gt 0 ]; then
     REM=${OPT:6}
     if [ "$REM" = noaio ]; then
       echo start: Disabling native aio for mysql.
-      CNFFILE=/etc/mysq/conf.d/noaio.cnf
+      CNFFILE=/etc/mysql/conf.d/noaio.cnf
       echo '[mysqld]' >$CNFFILE
       echo 'innodb_use_native_aio = 0' >> $CNFFILE
     fi
