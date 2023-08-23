@@ -152,18 +152,6 @@ def html_head():
     msg = '<!DOCTYPE html>\n'
     msg += '<html lang="en">\n'
     msg += '<head>\n'
-    if False:
-        # Refresh page each time listener selects browser tab.
-        msg += '<script>\n'
-        msg += 'document.addEventListener("visibilitychange", () => {\n'
-        msg += '    if (document.hidden){\n'
-        msg += '        console.log("Browser tab is hidden")\n'
-        msg += '    } else {\n'
-        msg += '        console.log("Browser tab is visible")\n'
-        msg += '        location.reload();\n'
-        msg += '    }\n'
-        msg += '});\n'
-        msg += '</script>\n'
     msg += '<meta http-equiv="refresh", content="60">\n'
     #msg += f"""  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">"""
     msg += '<style>\n'
@@ -263,7 +251,12 @@ def home():
     if SessionData.dbg: print('home: Constructing home page.')
     sep = '<br>\n'
     msg = html_head()
-    if True:
+    msg += '<h2>DESCprod</h2>\n'
+    sdat = SessionData.get()
+    udat = sdat.user()
+    if SessionData.dbg: print(f"home: User is {sdat.user_name} [{sdat.sesskey}]")
+    have_user = sdat.sesskey is not None
+    if have_user and True:
         # Refresh page each time listener selects browser tab.
         msg += '<script>\n'
         msg += 'document.addEventListener("visibilitychange", () => {\n'
@@ -272,11 +265,6 @@ def home():
         msg += '    }\n'
         msg += '});\n'
         msg += '</script>\n'
-    msg += '<h2>DESCprod</h2>\n'
-    sdat = SessionData.get()
-    udat = sdat.user()
-    if SessionData.dbg: print(f"home: User is {sdat.user_name} [{sdat.sesskey}]")
-    have_user = sdat.sesskey is not None
     if have_user or True:
         if len(sdat.msg):
             if isinstance(sdat.msg, list):
