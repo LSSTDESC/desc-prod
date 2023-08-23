@@ -151,5 +151,14 @@ while rc is None or sc != 200:
             sc = 999
         sys.stdout.flush()
     time.sleep(wait_time)
+# Finally run the closeout script if it exists.
+# We pass it the return code from the main script.
+conam = './descprod-closeout'
+if os.path.isfile(conam):
+    print(f"Running closeout script.")
+    corc = subprocess.call([conam, str(rc)])
+    print(f"Closeout script return code: {corc}.")
+else:
+    print(f"Closeout script not found: {cnam}")
 print(f"Done.")
 exit(rc)
