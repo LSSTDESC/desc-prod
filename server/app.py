@@ -155,6 +155,7 @@ def html_head():
     if True:
         # Refresh page each time listener selects browser tab.
         msg += '<script>\n'
+        msg += 'document.setTimeout(() => { location.reload(); }, 5000);\n'
         msg += 'document.addEventListener("visibilitychange", () => {\n'
         msg += 'if (document.hidden){\n'
         msg += '    console.log("Browser tab is hidden")\n'
