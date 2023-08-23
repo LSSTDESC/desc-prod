@@ -265,7 +265,7 @@ def home():
         msg += '});\n'
         msg += '</script>\n'
         # Refresh page every 60 sec.
-        msg += '<meta http-equiv="refresh", content="6">\n'
+        msg += '<meta http-equiv="refresh", content="60">\n'
     if have_user or True:
         if len(sdat.msg):
             if isinstance(sdat.msg, list):
