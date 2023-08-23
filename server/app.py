@@ -153,6 +153,7 @@ def html_head():
     msg += '<html lang="en">\n'
     msg += '<head>\n'
     #msg += f"""  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">"""
+    msg += '<meta http-equiv="refresh", content="5">\n'
     msg += '<style>\n'
     msg += '.dataframe table, th, td {font-size:12pt; border: none; padding-left: 20px; text-align:right;}\n'
     msg += '.dropbtn {\n'
