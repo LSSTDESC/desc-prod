@@ -674,6 +674,7 @@ def show_session():
 def req(path):
     sdat = SessionData.get()
     sdat.msg.append(f"Invalid command: {request.url}")
+    print(f"req: Ignoring request {request.url}")
     return redirect(url_for('home'))
     msg = ''
     msg += f"      url: {request.url}<br><br>"
@@ -690,6 +691,10 @@ def req(path):
     msg += f"<br><br>"
     msg += f" get data: {request.get_data().decode('UTF-8')}<br><br>"
     return msg
+
+@app.route('/favicon.ico')
+def got_favicon():
+    print(f"got_favicon: Ignoring request {request.url}")
 
 @app.route('/get_job', methods=['POST'])
 def get_job():
