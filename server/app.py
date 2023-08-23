@@ -161,7 +161,7 @@ def html_head():
         msg += '} else {\n'
         msg += '    console.log("Browser tab is visible")\n'
         msg += '    location.reload();\n'
-        msg += '});\n'}
+        msg += '});\n'
         msg += '</script>\n'
     msg += '<meta http-equiv="refresh", content="5">\n'
     #msg += f"""  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">"""
