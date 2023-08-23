@@ -152,7 +152,6 @@ def html_head():
     msg = '<!DOCTYPE html>\n'
     msg += '<html lang="en">\n'
     msg += '<head>\n'
-    msg += '<meta http-equiv="refresh", content="60">\n'
     #msg += f"""  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">"""
     msg += '<style>\n'
     msg += '.dataframe table, th, td {font-size:12pt; border: none; padding-left: 20px; text-align:right;}\n'
@@ -265,6 +264,8 @@ def home():
         msg += '    }\n'
         msg += '});\n'
         msg += '</script>\n'
+        # Refresh page every 60 sec.
+        msg += '<meta http-equiv="refresh", content="6">\n'
     if have_user or True:
         if len(sdat.msg):
             if isinstance(sdat.msg, list):
