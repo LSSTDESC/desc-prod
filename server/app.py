@@ -155,7 +155,6 @@ def html_head():
     if True:
         # Refresh page each time listener selects browser tab.
         msg += '<script>\n'
-        msg += 'document.setTimeout(() => { location.reload(); }, 5000);\n'
         msg += 'document.addEventListener("visibilitychange", () => {\n'
         msg += '    if (document.hidden){\n'
         msg += '        console.log("Browser tab is hidden")\n'
@@ -264,6 +263,17 @@ def home():
     if SessionData.dbg: print('home: Constructing home page.')
     sep = '<br>\n'
     msg = html_head()
+    if True:
+        # Refresh page each time listener selects browser tab.
+        msg += '<script>\n'
+        msg += 'document.addEventListener("visibilitychange", () => {\n'
+        msg += '    if (document.hidden){\n'
+        msg += '        document.write("User tab is not visible")\n'
+        msg += '    } else {\n'
+        msg += '        document.write("User tab is visible")\n'
+        msg += '    }\n'
+        msg += '});\n'
+        msg += '</script>\n'
     msg += '<h2>DESCprod</h2>\n'
     sdat = SessionData.get()
     udat = sdat.user()
