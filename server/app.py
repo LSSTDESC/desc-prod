@@ -152,7 +152,7 @@ def html_head():
     msg = '<!DOCTYPE html>\n'
     msg += '<html lang="en">\n'
     msg += '<head>\n'
-    if True:
+    if False:
         # Refresh page each time listener selects browser tab.
         msg += '<script>\n'
         msg += 'document.addEventListener("visibilitychange", () => {\n'
@@ -267,7 +267,7 @@ def home():
         # Refresh page each time listener selects browser tab.
         msg += '<script>\n'
         msg += 'document.addEventListener("visibilitychange", () => {\n'
-        msg += '    if (document.hidden){\n'
+        msg += '    if ( document.hidden ){\n'
         msg += '        alert("Body: User tab is hidden")\n'
         msg += '    } else {\n'
         msg += '        alert("Body: User tab is visible")\n'
