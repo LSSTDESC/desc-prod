@@ -695,6 +695,7 @@ def req(path):
 @app.route('/favicon.ico')
 def got_favicon():
     print(f"got_favicon: Ignoring request {request.url}")
+    return {}
 
 @app.route('/get_job', methods=['POST'])
 def get_job():
