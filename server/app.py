@@ -263,10 +263,11 @@ def home():
         msg += '        location.reload()\n'
         msg += '    }\n'
         msg += '});\n'
-        msg += 'setTimeout(() => {location.reload()}, 6000);\n'
+        # Refresh page every 60 sec.
+        msg += 'setTimeout(() => {location.reload()}, 60000);\n'
         msg += '</script>\n'
         # Refresh page every 60 sec.
-        msg += '<meta http-equiv="refresh", content="60">\n'
+        #msg += '<meta http-equiv="refresh", content="60">\n'
     if have_user or True:
         if len(sdat.msg):
             if isinstance(sdat.msg, list):
