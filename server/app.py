@@ -152,8 +152,19 @@ def html_head():
     msg = '<!DOCTYPE html>\n'
     msg += '<html lang="en">\n'
     msg += '<head>\n'
-    #msg += f"""  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">"""
+    if True:
+        # Refresh page each time listener selects browser tab.
+        msg += '<script>\n'
+        msg += 'document.addEventListener("visibilitychange", function() {\n'
+        msg += 'if (document.hidden){\n'
+        msg += '    console.log("Browser tab is hidden")\n'
+        msg += '} else {\n'
+        msg += '    console.log("Browser tab is visible")\n'
+        msg += '    location.reload();\n'
+        msg += '});\n'}
+        msg += '</script>\n'
     msg += '<meta http-equiv="refresh", content="5">\n'
+    #msg += f"""  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">"""
     msg += '<style>\n'
     msg += '.dataframe table, th, td {font-size:12pt; border: none; padding-left: 20px; text-align:right;}\n'
     msg += '.dropbtn {\n'
