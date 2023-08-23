@@ -263,6 +263,8 @@ def home():
         msg += '        location.reload()\n'
         msg += '    }\n'
         msg += '});\n'
+        msg += 'setTimeout(() => {location.reload()}, 6000);\n'
+        msg += 'alert('Refreshed');\n'
         msg += '</script>\n'
         # Refresh page every 60 sec.
         msg += '<meta http-equiv="refresh", content="60">\n'
