@@ -133,20 +133,22 @@ if [ ! -r $LOGDIR ]; then
 fi
 echo $(date): $HOSTNAME >> $LOGDIR/host.log
 
-# Install ptenv hom 00 if needed.
-if PTDIR=$(ptenv-find hom 00 2>/dev/null); then
-  echo start: Found ptenv at $PTDIR
-else
-  echo start: Installing ptenv.
-  ptenv-create hom 00
-  if ! PTDIR=$(ptenv-find hom 00 2>/dev/null); then
-    echo start: Installing ptenv again.
-    ptenv-create hom 00
-  fi
+if false; then
+  # Install ptenv hom 00 if needed.
   if PTDIR=$(ptenv-find hom 00 2>/dev/null); then
-    echo start: Installed ptenv at $PTDIR
+    echo start: Found ptenv at $PTDIR
   else
-    echo start: ERROR: Installation of ptenv failed.
+    echo start: Installing ptenv.
+    ptenv-create hom 00
+    if ! PTDIR=$(ptenv-find hom 00 2>/dev/null); then
+      echo start: Installing ptenv again.
+      ptenv-create hom 00
+    fi
+    if PTDIR=$(ptenv-find hom 00 2>/dev/null); then
+      echo start: Installed ptenv at $PTDIR
+    else
+      echo start: ERROR: Installation of ptenv failed.
+    fi
   fi
 fi
   
