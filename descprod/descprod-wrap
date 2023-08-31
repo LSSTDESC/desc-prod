@@ -159,6 +159,6 @@ if os.path.isfile(conam):
     corc = subprocess.call([conam, str(rc)])
     print(f"Closeout script return code: {corc}.")
 else:
-    print(f"Closeout script not found: {cnam}")
+    print(f"Closeout script not found: {conam}")
 print(f"Done.")
 exit(rc)
