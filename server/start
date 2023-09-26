@@ -40,6 +40,11 @@ copyit() {
   fi
 }
 
+# Freeze so service manager can start a shell.
+freeze() {
+  tail -f /dev/null
+}
+
 THIS=$(readlink -f $0)
 THISDIR=$(dirname $THIS)
 THISVER=$(descprod-version)
@@ -113,10 +118,10 @@ if [ $# -gt 0 ]; then
   fi
   cd /home/descprod
   if ! /home/descprod/dev/desc-prod/server/start $ARGS; then
+    # Not sure why but exit 1 does not bring uss here.
     echo start: Start failed with args: $ARGS
     echo start: Keeping container open so shell can be started to debug the problem.
-    tail -f /dev/null
-    exit $?
+    freeze
   fi
   exit
 fi
@@ -131,8 +136,7 @@ if [ ! -r $HOMDIR ]; then
     $ASROOT ln -s $EXTMNT01 $HOMDIR
   else
     echo start: Mount not found: $EXTMNT01
-    tail -f /dev/null
-    exit 1
+    freeze
   fi
 fi
 # Startup config.
@@ -218,11 +222,11 @@ if [ $OPT = server ]; then
   done
   if [ -z "$GOOGLE_CLIENT_ID" ]; then
     echo GOOGLE client ID not found
-    exit 1
+    freeze
   fi
   if [ -z "$GOOGLE_CLIENT_SECRET" ]; then
     echo GOOGLE client secret not found
-    exit 1
+    freeze
   fi
   # Start server. Run as the current user.
   echo start: Starting server as $UNAM.
