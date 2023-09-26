@@ -203,10 +203,10 @@ if [ $OPT = server ]; then
       echo start: Please add this with a shot and unique site name.
     fi
     JIDFIL=$LOCDIR/etc/jobid.txt
-    if [ ! -r $JIDFIL* ]; then
+    if [ ! -r $JIDFIL ]; then
       echo start: Unable to find $JIDFIL
       echo start: If this is a new server, please create it with:
-      echo start:   "echo 0 > $JIDFILE"
+      echo start:   "echo 0 > $JIDFIL"
       freeze
     fi
     echo start: Current/last job ID is $(cat $JIDFIL)
