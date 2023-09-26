@@ -126,6 +126,7 @@ if [ ! -r $HOMDIR ]; then
     $ASROOT ln -s $EXTMNT01 $HOMDIR
   else
     echo start: Mount not found: $EXTMNT01
+    exit 1
   fi
 fi
 # Startup config.
