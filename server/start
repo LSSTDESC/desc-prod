@@ -42,6 +42,7 @@ copyit() {
 
 # Freeze so service manager can start a shell.
 freeze() {
+  echo start: Freezing...
   tail -f /dev/null
 }
 
@@ -78,10 +79,10 @@ if [ $# -gt 0 ]; then
   elif [ $OPT = update-desc-prod ]; then
     echo start: Updating desc-prod.
     cd /home/descprod/dev/desc-prod
-    echo "Version before: $(descprod-version)"
+    echo start: "Version before: $(descprod-version)"
     git pull
     pip install .
-    echo "Version after: $(descprod-version)"
+    echo start: "Version after: $(descprod-version)"
   # Enable SSL with cert and key on local disk.
   elif [ $OPT = ssl ]; then
     echo start: Enabling SSL.
@@ -108,8 +109,8 @@ if [ $# -gt 0 ]; then
     if [ "$REM" = noaio ]; then
       echo start: Disabling native aio for mysql.
       CNFFILE=/etc/mysql/conf.d/noaio.cnf
-      echo '[mysqld]' >$CNFFILE
-      echo 'innodb_use_native_aio = 0' >> $CNFFILE
+      echo start: '[mysqld]' >$CNFFILE
+      echo start: 'innodb_use_native_aio = 0' >> $CNFFILE
     fi
     echo start: Starting mysql server.
     $ASROOT service mysql start
@@ -216,16 +217,16 @@ if [ $OPT = server ]; then
   for SUP in google sfapi; do
     SUPFIL=/home/descprod/local/etc/setup_$SUP.sh
     if [ -r $SUPFIL ]; then
-      echo Setting up $SUP
+      echo start: Setting up $SUP
       source $SUPFIL
     fi
   done
   if [ -z "$GOOGLE_CLIENT_ID" ]; then
-    echo GOOGLE client ID not found
+    echo start: GOOGLE client ID not found
     freeze
   fi
   if [ -z "$GOOGLE_CLIENT_SECRET" ]; then
-    echo GOOGLE client secret not found
+    echo start: GOOGLE client secret not found
     freeze
   fi
   # Start server. Run as the current user.
@@ -245,11 +246,11 @@ fi
 
 # Start rp test.
 if [ $OPT = rptest ]; then
-  echo starting rp test...
+  echo start: Starting rp test...
   cd data/dev/materials-flask-google-login
   pip install -r requirements.txt
   while true; do
-    echo Running app
+    echo start: Running app
     python app.py
     sleep 10
   done
