@@ -253,7 +253,7 @@ def home():
     msg += '<h2>DESCprod</h2>\n'
     sdat = SessionData.get()
     udat = sdat.user()
-    if SessionData.dbg: print(f"home: User is {sdat.user_name} [{sdat.sesskey}]")
+    if SessionData.dbg: print(f"home: User is {sdat.user()} [{sdat.sesskey}]")
     have_user = sdat.sesskey is not None
     if have_user and True:
         # Refresh page each time listener selects browser tab.
