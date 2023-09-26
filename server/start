@@ -3,7 +3,7 @@
 # Container entry point.
 #
 # start [UP1 [UP2 ...]] OPT
-#   OPT = server - Start parsltets server
+#   OPT = server - Start descprod server
 #         jupyter - Start singl-user jupyter service
 #         wait - Do nothing without exiting
 #   UPi is any of
@@ -113,6 +113,12 @@ if [ $# -gt 0 ]; then
   fi
   cd /home/descprod
   /home/descprod/dev/desc-prod/server/start $ARGS
+  if [ $? -ne 0 ]; then
+    echo start: Start failed with args: $ARGS
+    echo start: Initialing wait so shell can be startd to debug problem.
+    /home/descprod/dev/desc-prod/server/start wait
+    exit $?
+  fi
   exit
 fi
 
