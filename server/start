@@ -112,11 +112,10 @@ if [ $# -gt 0 ]; then
     echo start: WARNING: Ignoring unknown flag: $OPT
   fi
   cd /home/descprod
-  /home/descprod/dev/desc-prod/server/start $ARGS
-  if [ $? -ne 0 ]; then
+  if ! /home/descprod/dev/desc-prod/server/start $ARGS; then
     echo start: Start failed with args: $ARGS
-    echo start: Initialing wait so shell can be startd to debug problem.
-    /home/descprod/dev/desc-prod/server/start wait
+    echo start: Keeping container open so shell can be started to debug the problem.
+    tail -f /dev/null
     exit $?
   fi
   exit
