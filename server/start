@@ -120,8 +120,7 @@ if [ $# -gt 0 ]; then
   cd /home/descprod
   if ! /home/descprod/dev/desc-prod/server/start $ARGS; then
     # Not sure why but exit 1 does not bring uss here.
-    echo start: Start failed with args: $ARGS
-    echo start: Keeping container open so shell can be started to debug the problem.
+    echo start: ERROR: Start failed with args: $ARGS
     freeze
   fi
   exit
@@ -136,7 +135,7 @@ if [ ! -r $HOMDIR ]; then
     echo start: Creating $HOMDIR 
     $ASROOT ln -s $EXTMNT01 $HOMDIR
   else
-    echo start: Mount not found: $EXTMNT01
+    echo ERROR: start: Mount not found: $EXTMNT01
     freeze
   fi
 fi
@@ -204,7 +203,7 @@ if [ $OPT = server ]; then
     fi
     JIDFIL=$LOCDIR/etc/jobid.txt
     if [ ! -r $JIDFIL ]; then
-      echo start: Unable to find $JIDFIL
+      echo start: ERROR: Unable to find $JIDFIL
       echo start: If this is a new server, please create it with:
       echo start:   "echo 0 > $JIDFIL"
       freeze
@@ -222,11 +221,11 @@ if [ $OPT = server ]; then
     fi
   done
   if [ -z "$GOOGLE_CLIENT_ID" ]; then
-    echo start: GOOGLE client ID not found
+    echo start: ERROR: GOOGLE client ID not found
     freeze
   fi
   if [ -z "$GOOGLE_CLIENT_SECRET" ]; then
-    echo start: GOOGLE client secret not found
+    echo start: ERROR: GOOGLE client secret not found
     freeze
   fi
   # Start server. Run as the current user.
