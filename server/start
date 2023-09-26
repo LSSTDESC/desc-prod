@@ -177,9 +177,6 @@ PKGDIR=$DESCHOME/dev/desc-prod
 SRCDIR=$PKGDIR/server
 PATH="$PATH:$SRCDIR/bin"
 copyit $SRCDIR/setup.sh $DESCHOME
-for FIL in descprod-wrap; do
-  $ASROOT cp $SRCDIR/$FIL /bin
-done
 cp -r $SRCDIR/static $DESCHOME
 JUPCFGDIR=$DESCHOME/.jupyter
 if [ ! -r $JUPCFGDIR ]; then
@@ -207,7 +204,10 @@ if [ $OPT = server ]; then
     fi
     JIDFIL=$LOCDIR/etc/jobid.txt
     if [ ! -r $JIDFIL* ]; then
-      echo start: WARNING: Creating missing job ID file: $JIDFIL
+      echo start: Unable to find $JIDFIL
+      echo start: If this is a new server, please create it with:
+      echo start:   "echo 0 > $JIDFILE"
+      freeze
     fi
     echo start: Current/last job ID is $(cat $JIDFIL)
     # Transfer the new user files. Thes are copied in when a user is added.
