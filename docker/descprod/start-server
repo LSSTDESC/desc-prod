@@ -1,4 +1,5 @@
 echo
 echo '************************************************************************************'
 echo
-./start 09 git-safedir update-desc-prod mysql server
+#./start 09 git-safedir update-desc-prod mysql server
+./start 09 git-safedir update-desc-prod server

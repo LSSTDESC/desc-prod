@@ -1,0 +1,75 @@
+FROM --platform=linux/amd64 ubuntu/mysql:latest
+LABEL maintainer="David Adams dladams@bnl.gov"
+
+RUN apt-get update
+RUN apt-get install -y sudo
+RUN apt-get install -y dnsutils
+RUN apt-get install -y wget
+RUN apt-get install -y curl
+RUN apt-get install -y python3
+RUN apt-get install -y python-is-python3
+RUN apt-get install -y python3-pip
+RUN apt-get install -y git
+RUN apt-get install -y vim
+RUN apt-get install -y nginx
+RUN apt-get install -y net-tools
+RUN apt-get install -y lsof
+RUN apt-get install -y openssh-server
+RUN apt-get install -y mysql-server
+
+RUN useradd -m descprod -g users -G sudo
+RUN echo 'descprod ALL = (ALL:ALL) NOPASSWD: ALL' >>/etc/sudoers
+RUN chsh --shell /bin/bash descprod
+RUN mkdir /home/mysql  # Avoid mysqld warning message.
+
+RUN service ssh start
+
+USER descprod
+ENV HOME=/home/descprod
+WORKDIR $HOME
+ENV PATH=$HOME/bin:$PATH
+RUN mkdir .ssh
+RUN mkdir dev
+
+# Install conda
+ENV CONDA_DIR /home/descprod/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /home/descprod/conda
+ENV PATH=$CONDA_DIR/bin:$PATH
+RUN echo source ${CONDA_DIR}/etc/profile.d/conda.sh >${CONDA_DIR}/setup.sh
+RUN echo conda activate $CONDA_DIR >>${CONDA_DIR}/setup.sh
+
+# Install work_queue
+#RUN conda install -y -c conda-forge ndcctools --no-deps
+
+# Install python packages
+RUN pip install matplotlib
+RUN pip install flask
+RUN pip install oauthlib
+RUN pip install authlib
+RUN pip install Flask-Login
+RUN pip install mysql-connector-python
+RUN pip install parsl@git+https://github.com/parsl/parsl@desc#parsl[monitoring,workqueue]
+RUN pip install jupyterlab
+
+WORKDIR /home/descprod/dev
+RUN git clone https://github.com/LSSTDESC/desc-wfmon.git
+RUN pip install ./desc-wfmon
+RUN git clone https://github.com/LSSTDESC/desc-prod.git
+RUN pip install ./desc-prod
+
+# Install ptenv for parsltest..
+RUN ptenv-create hom 00
+
+WORKDIR /home/descprod
+
+# Configure ssh. We have to first generate a key for descprod
+# and then copy it the root authorized list.
+ENV SETSSH=$HOME/dev/desc-prod/server/descprod-setup-ssh
+RUN $SETSSH descprod
+USER root
+RUN $SETSSH root
+#USER descprod
+
+ENTRYPOINT ["/home/descprod/dev/desc-prod/server/start"]
+CMD ["update", "server"]

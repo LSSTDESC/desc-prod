@@ -124,6 +124,8 @@ if [ ! -r $HOMDIR ]; then
   if [ -r $EXTMNT01 ]; then
     echo start: Creating $HOMDIR 
     $ASROOT ln -s $EXTMNT01 $HOMDIR
+  else
+    echo start: Mount not found: $EXTMNT01
   fi
 fi
 # Startup config.
