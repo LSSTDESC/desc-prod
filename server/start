@@ -109,8 +109,8 @@ if [ $# -gt 0 ]; then
     if [ "$REM" = noaio ]; then
       echo start: Disabling native aio for mysql.
       CNFFILE=/etc/mysql/conf.d/noaio.cnf
-      echo start: '[mysqld]' >$CNFFILE
-      echo start: 'innodb_use_native_aio = 0' >> $CNFFILE
+      echo '[mysqld]' >$CNFFILE
+      echo 'innodb_use_native_aio = 0' >> $CNFFILE
     fi
     echo start: Starting mysql server.
     $ASROOT service mysql start
