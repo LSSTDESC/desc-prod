@@ -20,10 +20,10 @@ import string
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = ("https://accounts.google.com/.well-known/openid-configuration")
-if 1:
-    print(f"    GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}")
-    print(f"GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}")
-    print(f"GOOGLE_DISCOVERY_URL: ${GOOGLE_DISCOVERY_URL}")
+if 0:
+    print(f"      GOOGLE_CLIENT_ID: {GOOGLE_CLIENT_ID}")
+    print(f"  GOOGLE_CLIENT_SECRET: {GOOGLE_CLIENT_SECRET}")
+    print(f"  GOOGLE_DISCOVERY_URL: {GOOGLE_DISCOVERY_URL}")
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
 # Return map of [username, googlename] indexed by authorized google IDs.
