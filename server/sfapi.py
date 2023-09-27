@@ -91,7 +91,7 @@ class Sfapi:
         """Return the system status in a string"""
         dbg = self.debug()
         if len(self.errmsg):
-            return f"Unable to fetch perlmutter status: {self.errmsg)"
+            return f"Unable to fetch perlmutter status: {self.errmsg}"
         baseurl = self.baseurl()
         if dbg > 1: print('>>> Fetching machine status.')
         url = f"{baseurl}/status/{self.sysname()}"
