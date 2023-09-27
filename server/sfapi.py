@@ -16,6 +16,7 @@ class Sfapi:
     _baseurl = "https://api.nersc.gov/api/v1.2"
     return_status = None
     session = None
+    errmsg = ""
 
     def  __init__(self, dbg=None, timeout=None, sysname=None, baseurl =None):
         myname = 'Sfapi:init'
@@ -35,25 +36,31 @@ class Sfapi:
         client_id = os.getenv('SFAPI_ID', '')
         if len(client_id) == 0:
             print('>>> The SF API client ID must be stored in SFAPI_ID.')
+            self.errmsg = "SFAPI_ID is not defined"
             return
         if self._debug: print(f"{myname}: SFAPI ID: {client_id}")
         client_key = os.getenv('SFAPI_KEY', '')
         if self._debug: print(f"{myname}: Fetching key")
         if len(client_key) == 0:
-            print('>>> The SF API client ID must be stored in SFAPI_ID.')
+            print('>>> The SF API client key must be stored in SFAPI_KEY.')
+            self.errmsg = "SFAPI_KEY is not defined"
             return
         ldict = {}
         exec(f"val =  {client_key}", globals(), ldict)
         private_key = ldict['val']
-        self.session = OAuth2Session(
-            client_id, 
-            private_key, 
-            PrivateKeyJWT(token_url),
-            grant_type="client_credentials",
-            token_endpoint=token_url
-        )
-        if self._debug: print(f"{myname}: Fetching token")
-        self.session.fetch_token()
+        try:
+            self.session = OAuth2Session(
+                client_id, 
+                private_key, 
+                PrivateKeyJWT(token_url),
+                grant_type="client_credentials",
+                token_endpoint=token_url
+            )
+            if self._debug: print(f"{myname}: Fetching token")
+            self.session.fetch_token()
+            self.errmsg = ""
+        except:
+            self.errmsg = "Unable to authenticate"
 
     def message(self, message):
         print(f"Sfapi: {msg}")
@@ -83,8 +90,8 @@ class Sfapi:
     def get_status(self):
         """Return the system status in a string"""
         dbg = self.debug()
-        if self.session is None:
-            return f"SFAPI is not authenticated."
+        if len(self.errmsg:
+            return f"Unable to fetch perlmutter status: {self.errmsg)"
         baseurl = self.baseurl()
         if dbg > 1: print('>>> Fetching machine status.')
         url = f"{baseurl}/status/{self.sysname()}"
