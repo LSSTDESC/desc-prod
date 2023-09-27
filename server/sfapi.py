@@ -60,7 +60,7 @@ class Sfapi:
             self.session.fetch_token()
             self.errmsg = ""
         except:
-            self.errmsg = "Unable to authenticate"
+            self.errmsg = "Authentication failed"
 
     def message(self, message):
         print(f"Sfapi: {msg}")
