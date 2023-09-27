@@ -83,7 +83,7 @@ class Sfapi:
     def get_status(self):
         """Return the system status in a string"""
         dbg = self.debug()
-        if self._session is None:
+        if self.session is None:
             return f"SFAPI is not authenticated."
         baseurl = self.baseurl()
         if dbg > 1: print('>>> Fetching machine status.')
