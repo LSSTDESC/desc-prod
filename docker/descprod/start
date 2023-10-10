@@ -2,7 +2,7 @@
 #
 # Read flags.
 HELP=
-UOPTS=
+UOPTS=descprod
 TAG=10
 while [ $# -gt 0 ]; do
   ARG=$1
@@ -45,7 +45,7 @@ fi
 # Remaining arguments are passed to the container.
 COPTS="$*"
 if [ -z "$COPTS" ]; then
-  COPTS="update-desc-prod mysql:noaio server"
+  COPTS="git-safedir update-desc-prod mysql:noaio server"
 fi
 
 FROM=$NAME:$TAG
