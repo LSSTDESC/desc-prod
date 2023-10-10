@@ -58,8 +58,7 @@ ARGS="$*"
 # Actions to carry out before starting the service.
 if [ $# -gt 0 ]; then
   if [ $OPT = update ]; then
-     OPT=update-parsl
-     ARGS="update-desc-wfmon update-desc-prod $ARGS"
+     OPT=update-desc-prod
   fi
   # Prevent git dubious ownership errors.
   if [ $OPT = 'git-safedir' ]; then
@@ -183,7 +182,7 @@ if [ ! -r $JUPCFGDIR ]; then
 fi
 copyit $SRCDIR/jupyter_notebook_config.py $JUPCFGDIR
 
-# start the parsltest server
+# start the descprod server
 if [ $OPT = server ]; then
   # Mount and configure local disk.
   EXTMNT02=/mnt/dpvol02

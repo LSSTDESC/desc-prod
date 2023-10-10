@@ -1,8 +1,9 @@
 #!/bin/bash
-
+#
 # Read flags.
 HELP=
-DOPTS=
+UOPTS=
+TAG=10
 while [ $# -gt 0 ]; do
   ARG=$1
   if [ ${ARG:0:2} = -- ]; then
@@ -15,8 +16,13 @@ while [ $# -gt 0 ]; do
     shift
     if [ $FLG == 'h' ]; then
       HELP=true
+    elif [ $FLG == 'v' ]; then
+      TAG=$1
+      shift
     elif [ $FLG == 'root' ]; then
-      DOPTS="$DOPTS --user root"
+      UOPTS="--user root"
+    elif [ $FLG == 'descprod' ]; then
+      UOPTS="--user descprod"
     else
       echo Invalid flag $ARG
       exit 1
@@ -29,18 +35,18 @@ done
 NAME=$(basename $(pwd))
 
 if [ -n "$HELP" ]; then
-  echo Usage: $0 [-h] [-root] TAG COPTS
+  echo Usage: $0 [-h] [-v TAG] [-root] [-descprod] COPTS
   echo "  TAG is the $NAME image version."
   echo "  -root to run container as root"
   echo "  COPTS are the arguments passed to the container"
   exit 0
 fi
 
-TAG=$1
-shift
 # Remaining arguments are passed to the container.
 COPTS="$*"
-
+if [ -z "$COPTS" ]; then
+  COPTS="update-desc-prod server"
+fi
 
 FROM=$NAME:$TAG
 CNAME=$NAME
@@ -57,12 +63,18 @@ MOUNT_MYSQL="-v mysql:/var/lib/mysql"
 MOUNT_LOCAL=
 for ARG in $COPTS; do
   if [ $ARG = server ]; then
-    MOUNT_LOCAL="$MOUNT_LOCAL -v $LOCDIR:/mnt/dpvol02"
+    MOUNT_LOCAL="-v $LOCDIR:/mnt/dpvol02"
   fi
 done
 
-echo Starting $CNAME with $FROM
-COM="docker run --name $CNAME --rm -p 88:5000 -p 8888:8888 $MOUNT_DATA $MOUNT_LOCAL $MOUNT_MYSQL $DOPTS -it $FROM $COPTS"
+echo "*************************************************************************************************"
+echo Starting container $CNAME with image $FROM
+echo "    User opts: $UOPTS"
+echo "  Local mount: $MOUNT_LOCAL"
+echo "  MySQL mount: $MOUNT_MYSQL"
+echo "  Server opts: $COPTS"
+echo "*************************************************************************************************"
+COM="docker run --name $CNAME --rm -p 88:5000 -p 8888:8888 $MOUNT_DATA $MOUNT_LOCAL $MOUNT_MYSQL $UOPTS -it $FROM $COPTS"
 echo "Command: $COM"
 echo
 echo
