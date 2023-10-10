@@ -110,7 +110,6 @@ if [ $# -gt 0 ]; then
       CNFFILE=/etc/mysql/conf.d/noaio.cnf
       echo '[mysqld]' >$CNFFILE
       echo 'innodb_use_native_aio = 0' >> $CNFFILE
-      echo 'innodb_lock_wait_timetout = 120' >> $CNFFILE
     elif [ "$REM" = minup ]; then
       echo start: Configuring mysql with minimal upgrade.
       echo "ExecStart=/usr/sbin/mysqld --upgrade=MINIMAL" >> /usr/lib/systemd/system/mysql.service
