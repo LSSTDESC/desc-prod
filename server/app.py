@@ -287,7 +287,7 @@ def home():
         msg += '</script>\n'
     if have_user and Refresh.period():
         msg += '<script>\n'
-        msg += f'setTimeout(() => {location.reload()}, {1000*Refresh.period()});\n'
+        msg += f'setTimeout(() => location.reload(), {1000*Refresh.period()});\n'
         msg += '</script>\n'
     if have_user or True:
         if len(sdat.msg):
