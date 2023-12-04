@@ -54,6 +54,7 @@ from descprod import UserData
 from descprod import JobData
 from descprod import JobTable
 
+# Move this to session.
 class Refresh:
     focus = True
     periods = [60, 3600, 0, 5]
@@ -68,7 +69,7 @@ class Refresh:
         return Refresh.period_labels[Refresh.iperiod]
     def increment_period():
         Refresh.iperiod = ++Refresh.iperiod % len(Refresh.periods)
-    
+        print(f"Set refresh period to index {Refresh.iperiod}: {Refresh.period_label()} [{Refresh.period()} sec]")
 
 class SessionData:
     """
@@ -286,7 +287,7 @@ def home():
         msg += '</script>\n'
     if have_user and Refresh.period():
         msg += '<script>\n'
-        msg += 'setTimeout(() => {location.reload()}, 1000*Refresh.period());\n'
+        msg += f'setTimeout(() => {location.reload()}, {1000*Refresh.period()});\n'
         msg += '</script>\n'
     if have_user or True:
         if len(sdat.msg):
