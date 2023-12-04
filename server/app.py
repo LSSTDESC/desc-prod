@@ -63,6 +63,10 @@ class Refresh:
     def focus_button_label():
         if Refresh.focus: return "Disable focus refresh"
         return "Enable focus refresh"
+    def change_focus():
+        Refresh.focus = not Refresh.focus
+        sfoc = 'True' if Refresh.focus else 'False'
+        print(f"Refresh on focus set to {sfoc}")
     def period():
         return Refresh.periods[Refresh.iperiod]
     def period_label():
@@ -530,7 +534,7 @@ def versions():
 
 @app.route("/refresh_focus")
 def refresh_focus():
-    Refresh.focus = not Refresh.focus
+    Refresh.change_focus()
     return redirect(url_for('home'))
 
 @app.route("/refresh_period")
