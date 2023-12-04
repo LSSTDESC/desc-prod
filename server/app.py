@@ -359,7 +359,7 @@ def home():
         msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>\n'
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>\n'
         msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>\n'
-        msg += '<form action="/refresh_focus" method="get"><input type="submit" value=Refresh.focus_button_label()></form>\n'
+        msg += f'''<form action="/refresh_focus" method="get"><input type="submit" value={Refresh.focus_button_label()}></form>\n'''
         #msg += '<form action="/session" method="get"><input type="submit" value="Show session"></form>'
         msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>\n'
         if udat.is_admin(): msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>\n'
@@ -518,6 +518,7 @@ def versions():
 @app.route("/refresh_focus")
 def refresh_focus():
     Refresh.focus = not Refresh.focus
+    return redirect(url_for('home'))
 
 @app.route("/pmstatus")
 def pmstatus():
