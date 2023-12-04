@@ -1,9 +1,10 @@
 #!/bin/bash
-#
+
 # Read flags.
 HELP=
-UOPTS=descprod
+UOPTS="--user descprod"
 TAG=10
+
 while [ $# -gt 0 ]; do
   ARG=$1
   if [ ${ARG:0:2} = -- ]; then

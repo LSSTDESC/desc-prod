@@ -54,6 +54,10 @@ from descprod import UserData
 from descprod import JobData
 from descprod import JobTable
 
+class Refresh:
+    focus = True
+    period = 60
+
 class SessionData:
     """
     The SessionData class holds global data for the service and its sessions.
@@ -259,7 +263,7 @@ def home():
     udat = sdat.user()
     if SessionData.dbg: print(f"home: User is {sdat.user()} [{sdat.sesskey}]")
     have_user = sdat.sesskey is not None
-    if have_user and True:
+    if have_user and Refresh.focus:
         # Refresh page each time listener selects browser tab.
         msg += '<script>\n'
         msg += 'document.addEventListener("visibilitychange", () => {\n'
@@ -267,11 +271,11 @@ def home():
         msg += '        location.reload()\n'
         msg += '    }\n'
         msg += '});\n'
-        # Refresh page every 60 sec.
-        msg += 'setTimeout(() => {location.reload()}, 60000);\n'
         msg += '</script>\n'
-        # Refresh page every 60 sec.
-        #msg += '<meta http-equiv="refresh", content="60">\n'
+    if have_user and Refresh.period:
+        msg += '<script>\n'
+        msg += 'setTimeout(() => {location.reload()}, 1000*Refresh.period);\n'
+        msg += '</script>\n'
     if have_user or True:
         if len(sdat.msg):
             if isinstance(sdat.msg, list):
