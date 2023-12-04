@@ -72,7 +72,7 @@ class Refresh:
     def period_label():
         return Refresh.period_labels[Refresh.iperiod]
     def increment_period():
-        Refresh.iperiod = (Refresh.iperiodi + 1) % len(Refresh.periods)
+        Refresh.iperiod = (Refresh.iperiod + 1) % len(Refresh.periods)
         print(f"Set refresh period to index {Refresh.iperiod}: {Refresh.period_label()} [{Refresh.period()} sec]")
 
 class SessionData:
