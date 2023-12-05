@@ -98,7 +98,6 @@ class SessionData:
     com = None
     ret = None
     force_https = False
-    refresh = Refresh()
     @classmethod
     def nologin_session(cls):
         """Fetch the data for the no-login session."""
@@ -140,6 +139,7 @@ class SessionData:
         self.session_id = 0 if sesskey is None else get_sessionid()
         self.msg = []               # Error message shown once on home page.
         self._user = None
+        iself.refresh = Refresh()
         assert sesskey not in SessionData.sessions
         SessionData.sessions[sesskey] = self
         print(f"SessionData.init: Updated active user count is {len(SessionData.sessions)}")
@@ -374,7 +374,7 @@ def home():
         msg += f'''<input type="text" name="howfig"  value="{udat.howfig}"  style="width: 300px;" />'''
         msg += f'<input type="submit" value="Submit"/></form>'''
         msg += sep
-        msg += '<form action="/" method="get"><input type="submit" value="sdat.refresh"></form>\n'
+        msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>\n'
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>\n'
         msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>\n'
         msg += f'''<form action="/refresh_focus" method="get"><input type="submit" value="{sdat.refresh.focus_button_label()}"></form>\n'''
