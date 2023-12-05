@@ -57,10 +57,10 @@ from descprod import JobTable
 # Move this to session.
 class Refresh:
     def __init__(self):
-        focus = True
-        periods = [60, 3600, 0, 5]
-        period_labels = ["1 minute", "1 hour", "Off", "5 sec"]
-        iperiod = 0
+        self.focus = True
+        self.periods = [60, 3600, 0, 5]
+        self.period_labels = ["1 minute", "1 hour", "Off", "5 sec"]
+        self.iperiod = 0
     def focus_button_label(self):
         if self.focus: return "Disable focus refresh"
         return "Enable focus refresh"
