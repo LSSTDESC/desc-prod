@@ -139,7 +139,7 @@ class SessionData:
         self.session_id = 0 if sesskey is None else get_sessionid()
         self.msg = []               # Error message shown once on home page.
         self._user = None
-        iself.refresh = Refresh()
+        self.refresh = Refresh()
         assert sesskey not in SessionData.sessions
         SessionData.sessions[sesskey] = self
         print(f"SessionData.init: Updated active user count is {len(SessionData.sessions)}")
