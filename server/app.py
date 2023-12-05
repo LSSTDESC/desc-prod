@@ -56,24 +56,25 @@ from descprod import JobTable
 
 # Move this to session.
 class Refresh:
-    focus = True
-    periods = [60, 3600, 0, 5]
-    period_labels = ["1 minute", "1 hour", "Off", "5 sec"]
-    iperiod = 0
-    def focus_button_label():
-        if Refresh.focus: return "Disable focus refresh"
+    def __init__(self):
+        focus = True
+        periods = [60, 3600, 0, 5]
+        period_labels = ["1 minute", "1 hour", "Off", "5 sec"]
+        iperiod = 0
+    def focus_button_label(self):
+        if self.focus: return "Disable focus refresh"
         return "Enable focus refresh"
-    def change_focus():
-        Refresh.focus = not Refresh.focus
-        sfoc = 'True' if Refresh.focus else 'False'
-        print(f"Refresh on focus set to {sfoc}")
-    def period():
-        return Refresh.periods[Refresh.iperiod]
-    def period_label():
-        return Refresh.period_labels[Refresh.iperiod]
-    def increment_period():
-        Refresh.iperiod = (Refresh.iperiod + 1) % len(Refresh.periods)
-        print(f"Set refresh period to index {Refresh.iperiod}: {Refresh.period_label()} [{Refresh.period()} sec]")
+    def change_focus(self):
+        self.focus = not self.focus
+        sfoc = 'True' if self.focus else 'False'
+        print(f"Refresh on focus set to {sfoc} for sdat.user()")
+    def period(self):
+        return self.periods[self.iperiod]
+    def period_label(self):
+        return self.period_labels[self.iperiod]
+    def increment_period(self):
+        self.iperiod = (self.iperiod + 1) % len(self.periods)
+        print(f"Set refresh period to index {self.iperiod}: {self.period_label()} [{self.period()} sec]")
 
 class SessionData:
     """
@@ -97,6 +98,7 @@ class SessionData:
     com = None
     ret = None
     force_https = False
+    refresh = Refresh()
     @classmethod
     def nologin_session(cls):
         """Fetch the data for the no-login session."""
@@ -280,7 +282,7 @@ def home():
     udat = sdat.user()
     if SessionData.dbg: print(f"home: User is {sdat.user()} [{sdat.sesskey}]")
     have_user = sdat.sesskey is not None
-    if have_user and Refresh.focus:
+    if have_user and sdat.refresh.focus:
         # Refresh page each time listener selects browser tab.
         msg += '<script>\n'
         msg += 'document.addEventListener("visibilitychange", () => {\n'
@@ -289,9 +291,9 @@ def home():
         msg += '    }\n'
         msg += '});\n'
         msg += '</script>\n'
-    if have_user and Refresh.period():
+    if have_user and sdat.refresh.period():
         msg += '<script>\n'
-        msg += f'setTimeout(() => location.reload(), {1000*Refresh.period()});\n'
+        msg += f'setTimeout(() => location.reload(), {1000*sdat.refresh.period()});\n'
         msg += '</script>\n'
     if have_user or True:
         if len(sdat.msg):
@@ -322,7 +324,7 @@ def home():
         msg += f"UTC time: {sdate()}"
         #msg += f" [{sdat.sesskey}]"
         msg += sep
-        msg += f"Refresh period: {Refresh.period_label()}"
+        msg += f"Refresh period: {sdat.refresh.period_label()}"
         msg += sep
         msg += sep
         jtab = JobTable(udat.descname)
@@ -372,10 +374,10 @@ def home():
         msg += f'''<input type="text" name="howfig"  value="{udat.howfig}"  style="width: 300px;" />'''
         msg += f'<input type="submit" value="Submit"/></form>'''
         msg += sep
-        msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>\n'
+        msg += '<form action="/" method="get"><input type="submit" value="sdat.refresh"></form>\n'
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>\n'
         msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>\n'
-        msg += f'''<form action="/refresh_focus" method="get"><input type="submit" value="{Refresh.focus_button_label()}"></form>\n'''
+        msg += f'''<form action="/refresh_focus" method="get"><input type="submit" value="{sdat.refresh.focus_button_label()}"></form>\n'''
         msg += f'''<form action="/refresh_period" method="get"><input type="submit" value="Change refresh period"></form>\n'''
         #msg += '<form action="/session" method="get"><input type="submit" value="Show session"></form>'
         msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>\n'
@@ -534,12 +536,14 @@ def versions():
 
 @app.route("/refresh_focus")
 def refresh_focus():
-    Refresh.change_focus()
+    sdat = SessionData.get()
+    sdat.refresh.change_focus()
     return redirect(url_for('home'))
 
 @app.route("/refresh_period")
 def refresh_period():
-    Refresh.increment_period()
+    sdat = SessionData.get()
+    sdat.refresh.increment_period()
     return redirect(url_for('home'))
 
 @app.route("/pmstatus")
