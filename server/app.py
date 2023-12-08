@@ -85,7 +85,6 @@ class SessionData:
     use_cookie_key = True       # If true session key is obtained from cookie.
     cookie_key_lifetime = 3600  # Lifetime [sec] to set for cookie keys.
     sessions = {}               # Map of active sessions indexed by session key
-    current = None              # Cache the current session
     site = subprocess.getoutput('cat /home/descprod/local/etc/site.txt')
     google_ids = get_google_ids()  # [descname, fullname] indexed by google ID
     lognam = None      # Job log file
@@ -111,7 +110,7 @@ class SessionData:
         If a user is logged in, then sesskey, descname, fullname, login_info etc. will be set.
         If not, sesskey is None and name is 'nologin'.
         """
-        if SessionData.current is not None: return SessionData.current
+        sdat = None
         if SessionData.use_cookie_key:
             sesskey = request.cookies.get('sesskey')
             if sesskey is None:
@@ -123,13 +122,13 @@ class SessionData:
                 if SessionData.dbg: print('SessionData.get: Session does not have a key')
                 sesskey = None
         if sesskey in cls.sessions:
-            SessionData.current = cls.sessions[sesskey]
+            sdat = cls.sessions[sesskey]
         else:
             if sesskey is not None:
                 print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
-                print(f"SessionData.get: ERROR: Known keys: {cls.sessions.keys()}")
-            SessionData.current = SessionData.nologin_session()
-        return SessionData.current
+                print(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
+            sdat = SessionData.nologin_session()
+        return sdat
     def __init__(self, sesskey, descname, fullname=None, login_info={}):
         """Add an active user."""
         self.sesskey = sesskey
