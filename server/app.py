@@ -1,4 +1,4 @@
-from time import time
+import time
 from datetime import datetime
 from datetime import timedelta
 from flask import Flask, render_template, redirect, url_for
@@ -426,12 +426,15 @@ def login():
         time.sleep(2)
         iloop += 1
     if nloop >= maxloop:
-        if SessionData.dbg: print(f"login: Authorization timed out.")
+        emsg = f"login: Authorization timed out."
     elif auth_response == auth_challenge:
         threadLocal.sskey = auth_sskey
-        if SessionData.dbg: print(f"login: Authorization granted.")
+        emsg = f"login: Authorization granted."
     else:
-        if SessionData.dbg: print(f"login: Authorization rejected: {auth_response} != {auth_challenge}.")
+        emsg = f"login: Authorization rejected: {auth_response} != {auth_challenge}."
+    if SessionData.dbg: print(emsg)
+    sdat = SessionData.get()
+    sdat.emsg = emsg
     return redirect(url_for('home'))
 
 @app.route("/logout")
