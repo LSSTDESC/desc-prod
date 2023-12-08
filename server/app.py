@@ -526,7 +526,7 @@ def callback():
         SessionData.current = sdat
         threadLocal.sesskey = sesskey
         print(f"callback: Set session key {sesskey} = {getattr(threadLocal, 'sesskey', None)}")
-        resp.set_cookie('sesskey', sesskey, expires=0)
+        resp.set_cookie('sesskey', sesskey, expires=100)
     return resp
     #return home()
     #return redirect(url_for('home'))
