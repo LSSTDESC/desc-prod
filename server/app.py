@@ -164,7 +164,7 @@ class SessionData:
         if SessionData.use_cookie_key is true, then create a new sesskey cookie with
         the value SessionData.cookie_key and lifetime SessionData.cookie_key_lifetime.
         """
-        resp = make_response(rdat)
+        resp = make_response('index.html', rdat)
         if SessionData.use_cookie_key:
             if self.sesskey is None:
                 resp.set_cookie('sesskey', '', expires=0)
