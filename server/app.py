@@ -22,7 +22,7 @@ import threading
 threadLocal = threading.local()
 
 auth_challenge = 'my-secret-string'
-auth_reponse = ''
+auth_response = ''
 auth_sskey = ''
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
@@ -419,6 +419,7 @@ def login():
     if SessionData.dbg: print(f"login: Request: {request_uri}")
     res = redirect(request_uri)
     if SessionData.dbg: print(f"login: Result: {res}")
+    # Wait for callback.
     maxloop = 20
     nloop = 0
     while nloop < maxloop and len(auth_response) == 0 or len(auth_sskey) == 0:
