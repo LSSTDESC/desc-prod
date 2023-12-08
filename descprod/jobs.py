@@ -100,7 +100,7 @@ class JobData:
             if idx in cls.ujobs[descname]:
                 return cls.ujobs[descname][idx]
         if usedb:
-            cur = cls.db_query_where(f"id={idx} AND descname='{descname}'")
+            cur, con = cls.db_query_where(f"id={idx} AND descname='{descname}'")
             if cur is None: return None
             rows = cur.fetchall()
             nrow = len(rows)
@@ -143,7 +143,7 @@ class JobData:
         msg = ''   # Blank for success
         if descname not in cls.ujobs:
             cls.ujobs[descname] = {}
-        cur = cls.db_query_where(f"descname='{descname}'", cols='id')
+        cur, con = cls.db_query_where(f"descname='{descname}'", cols='id')
         myjobs = cls.ujobs[descname]
         if cur is None:
             msg = "Job DB query failed."
@@ -328,6 +328,7 @@ class JobData:
           display - Display the rows and return the count
         """
         myname = 'JobData.db_query'
+        con = None
         com = query
         if verbose > 1: print(f"{myname}: {com}")
         con = cls.connect_db(cname ='query')
@@ -348,7 +349,7 @@ class JobData:
                 count += 1
             if count == 0: print('***** No matches found *****')
             return None
-        return cur
+        return cur, con
 
     @classmethod
     def db_query_where(cls, where='*', *, table_name=None, cols='*', verbose=0, display=False):
@@ -371,8 +372,7 @@ class JobData:
             return None
         com = f"SELECT {cols} FROM {tnam}"
         if len(where): com += f" WHERE {where}"
-        cur = JobData.db_query(com, verbose=verbose, display=display)
-        return cur
+        return JobData.db_query(com, verbose=verbose, display=display)
 
     @classmethod
     def db_count_where(cls, where='*', *, table_name=None, verbose=0):
@@ -392,7 +392,7 @@ class JobData:
             return 0
         com = f"SELECT COUNT(*) FROM {tnam}"
         if len(where): com += f" WHERE {where}"
-        cur = JobData.db_query(com, verbose=verbose)
+        cur, con = JobData.db_query(com, verbose=verbose)
         if cur is None: return None
         return cur.fetchone()[0]
 
@@ -413,7 +413,7 @@ class JobData:
             return 0
         com = f"DELETE FROM {tnam}"
         if len(where): com += f" WHERE {where}"
-        cur = JobData.db_query(com, verbose=verbose)
+        cur, con = JobData.db_query(com, verbose=verbose)
         if cur is None: return None
         ndel = cur.rowcount
         con = JobData.connections['query']
@@ -459,7 +459,7 @@ class JobData:
         if not cls.db_table():
             print(f"{myname}: Table not found: {tnam}")
             return []
-        cur = cls.db_query(f"SELECT * FROM {tnam} WHERE id = {job_id}")
+        cur, con = cls.db_query(f"SELECT * FROM {tnam} WHERE id = {job_id}")
         if cur is None: return None
         return cur.fetchone()
 
@@ -715,7 +715,7 @@ class JobData:
                 self.do_error(myname, f"DB entry already exists for id {idx}")
         elif source == 'db':
             dbinsert = False
-            cur = self.db_query_where(f"id={idx} AND descname='{descname}'")
+            cur, con = self.db_query_where(f"id={idx} AND descname='{descname}'")
             if cur is None:
                 self.do_error(myname, f"DB query for ID {idx} user {descname}' failed.")
             else:
