@@ -525,7 +525,8 @@ def callback():
         SessionData.current = sdat
         threadLocal.sesskey = sesskey
         print(f"callback: Set session key {sesskey} = {getattr(threadLocal, 'sesskey', None)}")
-    return redirect(url_for('home'))
+    return home()
+    #return redirect(url_for('home'))
 
 @app.route("/versions")
 def versions():
