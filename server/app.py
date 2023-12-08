@@ -5,6 +5,7 @@ from flask import Flask, render_template, redirect, url_for
 from flask import request
 from flask import session
 from flask import make_response
+from flask import render_template
 from markupsafe import escape
 import sys
 import os
@@ -164,7 +165,8 @@ class SessionData:
         if SessionData.use_cookie_key is true, then create a new sesskey cookie with
         the value SessionData.cookie_key and lifetime SessionData.cookie_key_lifetime.
         """
-        resp = make_response(rdat)
+        #resp = make_response(rdat)
+        resp = make_response(render_template('index.html'), rdat)
         if SessionData.use_cookie_key:
             if self.sesskey is None:
                 resp.set_cookie('sesskey', '', expires=0)
