@@ -424,7 +424,8 @@ def login():
     nloop = 0
     while nloop < maxloop and len(auth_response) == 0 or len(auth_sskey) == 0:
         time.sleep(2)
-        iloop += 1
+        nloop += 1
+        if SessionData.dbg: print(f"login: Waiting for callback.")
     if nloop >= maxloop:
         emsg = f"login: Authorization timed out."
     elif auth_response == auth_challenge:
