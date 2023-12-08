@@ -115,6 +115,7 @@ class SessionData:
         """
         sdat = None
         sesskey = getattr(threadLocal, 'sesskey', None)
+        print(f"SesionData::call: Get session key {sesskey} = {getattr(threadLocal, 'sesskey', None)}")
         if sesskey is not None:
             pass
         elif SessionData.use_cookie_key:
