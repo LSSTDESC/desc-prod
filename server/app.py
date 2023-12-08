@@ -419,10 +419,18 @@ def login():
     if SessionData.dbg: print(f"login: Request: {request_uri}")
     res = redirect(request_uri)
     if SessionData.dbg: print(f"login: Result: {res}")
-    while len(auth_response) == 0 or auth_sskey = 0:
+    maxloop = 20
+    nloop = 0
+    while nloop < maxloop and len(auth_response) == 0 or len(auth_sskey) == 0:
         time.sleep(2)
-    if auth_response == auth_key:
+        iloop += 1
+    if nloop >= maxloop:
+        if SessionData.dbg: print(f"login: Authorization timed out.")
+    elif auth_response == auth_challenge:
         threadLocal.sskey = auth_sskey
+        if SessionData.dbg: print(f"login: Authorization granted.")
+    else:
+        if SessionData.dbg: print(f"login: Authorization rejected: {auth_response} != {auth_challenge}.")
     return redirect(url_for('home'))
 
 @app.route("/logout")
