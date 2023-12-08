@@ -114,16 +114,16 @@ class SessionData:
         if SessionData.use_cookie_key:
             sesskey = request.cookies.get('sesskey')
             if sesskey is None:
-                if SessionData.dbg: print('SessionData.get: Cookie with user key not found.')
+                print('SessionData.get: Cookie with user key not found.')
         else:
             if 'sesskey' in session:
                 sesskey = session['sesskey']
             else:
-                if SessionData.dbg: print('SessionData.get: Session does not have a key')
+                print('SessionData.get: Session does not have a key')
                 sesskey = None
         if sesskey in cls.sessions:
             sdat = cls.sessions[sesskey]
-            print(f"SessionData.get: Estaplished session {sdat.sesskey} for user {sdat.descname}.")
+            print(f"SessionData.get: Servicing session {sdat.sesskey} for user {sdat.descname}.")
         else:
             if sesskey is not None:
                 print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
