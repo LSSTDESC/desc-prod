@@ -21,6 +21,10 @@ import threading
 
 threadLocal = threading.local()
 
+auth_challenge = 'my-secret-string'
+auth_reponse = ''
+auth_sskey = ''
+
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = ("https://accounts.google.com/.well-known/openid-configuration")
@@ -408,13 +412,18 @@ def login():
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=redirect_uri,
-        scope=scope
+        scope=scope,
+        challenge_string=auth_challenge
     )
     if SessionData.dbg: print(f"login: Auth: {authorization_endpoint}")
     if SessionData.dbg: print(f"login: Request: {request_uri}")
     res = redirect(request_uri)
     if SessionData.dbg: print(f"login: Result: {res}")
-    return res
+    while len(auth_response) == 0 or auth_sskey = 0:
+        time.sleep(2)
+    if auth_response == auth_key:
+        threadLocal.sskey = auth_sskey
+    return redirect(url_for('home'))
 
 @app.route("/logout")
 def logout():
@@ -445,6 +454,7 @@ def callback():
     if SessionData.dbg: print('callback: Handling google callback')
     # Fetch tokens.
     code = request.args.get("code")
+    auth_reponse = request.args['challenge_string']
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     token_endpoint = google_provider_cfg["token_endpoint"]
     if request.is_secure:
@@ -524,12 +534,8 @@ def callback():
         if not SessionData.use_cookie_key:
             session['session_id'] = sdat.session_id
         SessionData.current = sdat
-        threadLocal.sesskey = sesskey
-        print(f"callback: Set session key {sesskey} = {getattr(threadLocal, 'sesskey', None)}")
-        resp.set_cookie('sesskey', sesskey, expires=100)
-    return resp
-    #return home()
-    #return redirect(url_for('home'))
+        auth_sskey = sskey
+    return {}
 
 @app.route("/versions")
 def versions():
