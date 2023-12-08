@@ -165,8 +165,7 @@ class SessionData:
         if SessionData.use_cookie_key is true, then create a new sesskey cookie with
         the value SessionData.cookie_key and lifetime SessionData.cookie_key_lifetime.
         """
-        #resp = make_response(rdat)
-        resp = make_response(render_template('index.html'), rdat)
+        resp = make_response(rdat)
         if SessionData.use_cookie_key:
             if self.sesskey is None:
                 resp.set_cookie('sesskey', '', expires=0)
@@ -175,7 +174,6 @@ class SessionData:
                 resp.set_cookie('sesskey', str(self.sesskey), expires=texp)
         else:
             session.modified = True
-        SessionData.current = None
         return resp
 
 # Get the base url from a flask request.
@@ -520,6 +518,7 @@ def callback():
         print(f"callback: Denying unverified user {user_label} [{email}]")
         if not email_verified: sdat.msg.append(f"User has not verified email with google: {fullname} [{email}]")
         if not have_email: sdat.msg.append(f"User does not have email with google: {fullname} [{google_id}]")
+    resp = url_for('home')
     if sesskey is not None:
         sdat = SessionData(sesskey, descname, fullname, login_info)
         if not SessionData.use_cookie_key:
@@ -527,7 +526,9 @@ def callback():
         SessionData.current = sdat
         threadLocal.sesskey = sesskey
         print(f"callback: Set session key {sesskey} = {getattr(threadLocal, 'sesskey', None)}")
-    return home()
+        resp.set_cookie('sesskey', sesskey, expires=0)
+    return resp
+    #return home()
     #return redirect(url_for('home'))
 
 @app.route("/versions")
