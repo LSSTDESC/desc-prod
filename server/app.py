@@ -16,6 +16,9 @@ from oauthlib.oauth2 import WebApplicationClient
 import requests
 import secrets
 import string
+import threading
+
+threadLocal = threading.local()
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
@@ -111,7 +114,10 @@ class SessionData:
         If not, sesskey is None and name is 'nologin'.
         """
         sdat = None
-        if SessionData.use_cookie_key:
+        sesskey = getattr(threadLocal, 'sesskey', None)
+        if sesskey is not None:
+            pass
+        elif SessionData.use_cookie_key:
             sesskey = request.cookies.get('sesskey')
             if sesskey is None:
                 print('SessionData.get: Cookie with user key not found.')
@@ -516,6 +522,7 @@ def callback():
         if not SessionData.use_cookie_key:
             session['session_id'] = sdat.session_id
         SessionData.current = sdat
+        threadLocal.sesskey = sesskey
     return redirect(url_for('home'))
 
 @app.route("/versions")
