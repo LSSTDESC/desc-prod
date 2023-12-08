@@ -85,7 +85,7 @@ class SessionData:
     The SessionData class holds global data for the service and its sessions.
     SessionData objects describe sessions.
     """
-    dbg = False                 # Log is noisy if true.
+    dbg = True                  # Log is noisy if true.
     use_cookie_key = True       # If true session key is obtained from cookie.
     cookie_key_lifetime = 3600  # Lifetime [sec] to set for cookie keys.
     sessions = {}               # Map of active sessions indexed by session key
