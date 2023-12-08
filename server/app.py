@@ -123,6 +123,7 @@ class SessionData:
                 sesskey = None
         if sesskey in cls.sessions:
             sdat = cls.sessions[sesskey]
+            print(f"SessionData.get: Estaplished session {sdat.sesskey} for user {sdat.descname}.")
         else:
             if sesskey is not None:
                 print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
