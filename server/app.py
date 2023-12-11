@@ -140,8 +140,7 @@ class SessionData:
     def user(self):
         if self._user is None:
             self._user = UserData.get(self.descname)
-            sdat = SessionData.get()
-            rstat, sdat.msg = self._user.check_dirs()
+            rstat, self.msg = self._user.check_dirs()
         return self._user
     def make_response(self, rdat):
         """
