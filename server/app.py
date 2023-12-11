@@ -1,4 +1,4 @@
-from time import time
+import time
 from datetime import datetime
 from datetime import timedelta
 from flask import Flask, render_template, redirect, url_for
@@ -25,6 +25,8 @@ if 0:
     print(f"  GOOGLE_CLIENT_SECRET: {GOOGLE_CLIENT_SECRET}")
     print(f"  GOOGLE_DISCOVERY_URL: {GOOGLE_DISCOVERY_URL}")
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
+
+auth_delay = 30
 
 # Return map of [username, googlename] indexed by authorized google IDs.
 # File lines are:
@@ -436,6 +438,7 @@ def bye():
 @app.route("/login/callback")
 def callback():
     if SessionData.dbg: print('callback: Handling google callback')
+    if auth_delay: time.sleep(auth_delay)
     # Fetch tokens.
     code = request.args.get("code")
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
