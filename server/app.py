@@ -131,6 +131,7 @@ class SessionData:
         self.session_id = 0 if sesskey is None else get_sessionid()
         self.msg = []               # Error message shown once on home page.
         self._user = None
+        self.user()
         self.refresh = Refresh()
         assert sesskey not in SessionData.sessions
         SessionData.sessions[sesskey] = self
