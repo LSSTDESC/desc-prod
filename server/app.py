@@ -26,8 +26,6 @@ if 0:
     print(f"  GOOGLE_DISCOVERY_URL: {GOOGLE_DISCOVERY_URL}")
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
-auth_delay = 30
-
 # Return map of [username, googlename] indexed by authorized google IDs.
 # File lines are:
 #  username google-id google-name
@@ -87,7 +85,6 @@ class SessionData:
     use_cookie_key = True       # If true session key is obtained from cookie.
     cookie_key_lifetime = 3600  # Lifetime [sec] to set for cookie keys.
     sessions = {}               # Map of active sessions indexed by session key
-    current = None              # Cache the current session
     site = subprocess.getoutput('cat /home/descprod/local/etc/site.txt')
     google_ids = get_google_ids()  # [descname, fullname] indexed by google ID
     lognam = None      # Job log file
@@ -109,29 +106,21 @@ class SessionData:
     @classmethod
     def get(cls):
         """
-        Return the data for the current session.
+        Return the data for the current session using the sesskey cookie.
         If a user is logged in, then sesskey, descname, fullname, login_info etc. will be set.
         If not, sesskey is None and name is 'nologin'.
         """
-        if SessionData.current is not None: return SessionData.current
-        if SessionData.use_cookie_key:
-            sesskey = request.cookies.get('sesskey')
-            if sesskey is None:
-                if SessionData.dbg: print('SessionData.get: Cookie with user key not found.')
+        sesskey = request.cookies.get('sesskey')
+        if sesskey is None:
+            if SessionData.dbg: print('SessionData.get: Cookie with user key not found.')
         else:
-            if 'sesskey' in session:
-                sesskey = session['sesskey']
+            if sesskey in cls.sessions:
+                return cls.sessions[sesskey]
             else:
-                if SessionData.dbg: print('SessionData.get: Session does not have a key')
-                sesskey = None
-        if sesskey in cls.sessions:
-            SessionData.current = cls.sessions[sesskey]
-        else:
-            if sesskey is not None:
-                print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
-                print(f"SessionData.get: ERROR: Known keys: {cls.sessions.keys()}")
-            SessionData.current = SessionData.nologin_session()
-        return SessionData.current
+                if sesskey is not None:
+                    print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
+                    print(f"SessionData.get: ERROR: Known keys: {cls.sessions.keys()}")
+        return SessionData.nologin_session()
     def __init__(self, sesskey, descname, fullname=None, login_info={}):
         """Add an active user."""
         self.sesskey = sesskey
@@ -168,7 +157,6 @@ class SessionData:
                 resp.set_cookie('sesskey', str(self.sesskey), expires=texp)
         else:
             session.modified = True
-        SessionData.current = None
         return resp
 
 # Get the base url from a flask request.
@@ -419,7 +407,6 @@ def logout():
     else:
         del SessionData.sessions[sdat.sesskey]
     session['sesskey'] = None
-    SessionData.current = SessionData.nologin_session()
     return redirect(url_for('home'))
 
 @app.route("/help")
@@ -438,7 +425,6 @@ def bye():
 @app.route("/login/callback")
 def callback():
     if SessionData.dbg: print('callback: Handling google callback')
-    if auth_delay: time.sleep(auth_delay)
     # Fetch tokens.
     code = request.args.get("code")
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -518,7 +504,6 @@ def callback():
         sdat = SessionData(sesskey, descname, fullname, login_info)
         if not SessionData.use_cookie_key:
             session['session_id'] = sdat.session_id
-        SessionData.current = sdat
     return redirect(url_for('home'))
 
 @app.route("/versions")
