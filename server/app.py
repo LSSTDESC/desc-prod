@@ -269,8 +269,8 @@ def home():
     sdat = SessionData.get(req_sesskey)
     msg = 'home: Constructing home page for '
     if req_sesskey is not None: msg += 'new '
-    if sesskey is None: msg += 'unauthenticated '
-    msg += "session {sesskey}."
+    if req_sesskey is None: msg += 'unauthenticated '
+    msg += "session {sdat.session_id}."
     if SessionData.dbg: print(msg)
     sep = '<br>\n'
     msg = html_head()
