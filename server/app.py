@@ -1,11 +1,10 @@
-import time
+from time import time
 from datetime import datetime
 from datetime import timedelta
 from flask import Flask, render_template, redirect, url_for
 from flask import request
 from flask import session
 from flask import make_response
-from flask import render_template
 from markupsafe import escape
 import sys
 import os
@@ -17,13 +16,6 @@ from oauthlib.oauth2 import WebApplicationClient
 import requests
 import secrets
 import string
-import threading
-
-threadLocal = threading.local()
-
-auth_challenge = 'my-secret-string'
-auth_response = ''
-auth_sskey = ''
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
@@ -89,10 +81,11 @@ class SessionData:
     The SessionData class holds global data for the service and its sessions.
     SessionData objects describe sessions.
     """
-    dbg = True                  # Log is noisy if true.
+    dbg = False                 # Log is noisy if true.
     use_cookie_key = True       # If true session key is obtained from cookie.
     cookie_key_lifetime = 3600  # Lifetime [sec] to set for cookie keys.
     sessions = {}               # Map of active sessions indexed by session key
+    current = None              # Cache the current session
     site = subprocess.getoutput('cat /home/descprod/local/etc/site.txt')
     google_ids = get_google_ids()  # [descname, fullname] indexed by google ID
     lognam = None      # Job log file
@@ -118,30 +111,25 @@ class SessionData:
         If a user is logged in, then sesskey, descname, fullname, login_info etc. will be set.
         If not, sesskey is None and name is 'nologin'.
         """
-        sdat = None
-        sesskey = getattr(threadLocal, 'sesskey', None)
-        print(f"SesionData::call: Get session key {sesskey} = {getattr(threadLocal, 'sesskey', None)}")
-        if sesskey is not None:
-            pass
-        elif SessionData.use_cookie_key:
+        if SessionData.current is not None: return SessionData.current
+        if SessionData.use_cookie_key:
             sesskey = request.cookies.get('sesskey')
             if sesskey is None:
-                print('SessionData.get: Cookie with user key not found.')
+                if SessionData.dbg: print('SessionData.get: Cookie with user key not found.')
         else:
             if 'sesskey' in session:
                 sesskey = session['sesskey']
             else:
-                print('SessionData.get: Session does not have a key')
+                if SessionData.dbg: print('SessionData.get: Session does not have a key')
                 sesskey = None
         if sesskey in cls.sessions:
-            sdat = cls.sessions[sesskey]
-            print(f"SessionData.get: Servicing session {sdat.sesskey} for user {sdat.descname}.")
+            SessionData.current = cls.sessions[sesskey]
         else:
             if sesskey is not None:
                 print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
-                print(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
-            sdat = SessionData.nologin_session()
-        return sdat
+                print(f"SessionData.get: ERROR: Known keys: {cls.sessions.keys()}")
+            SessionData.current = SessionData.nologin_session()
+        return SessionData.current
     def __init__(self, sesskey, descname, fullname=None, login_info={}):
         """Add an active user."""
         self.sesskey = sesskey
@@ -178,6 +166,7 @@ class SessionData:
                 resp.set_cookie('sesskey', str(self.sesskey), expires=texp)
         else:
             session.modified = True
+        SessionData.current = None
         return resp
 
 # Get the base url from a flask request.
@@ -412,31 +401,13 @@ def login():
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=redirect_uri,
-        scope=scope,
-        challenge_string=auth_challenge
+        scope=scope
     )
     if SessionData.dbg: print(f"login: Auth: {authorization_endpoint}")
     if SessionData.dbg: print(f"login: Request: {request_uri}")
     res = redirect(request_uri)
     if SessionData.dbg: print(f"login: Result: {res}")
-    # Wait for callback.
-    maxloop = 20
-    nloop = 0
-    while nloop < maxloop and len(auth_response) == 0 or len(auth_sskey) == 0:
-        time.sleep(2)
-        nloop += 1
-        if SessionData.dbg: print(f"login: Waiting for callback ({nloop}/{maxloop}).")
-    if nloop >= maxloop:
-        emsg = f"login: Authorization timed out."
-    elif auth_response == auth_challenge:
-        threadLocal.sskey = auth_sskey
-        emsg = f"login: Authorization granted."
-    else:
-        emsg = f"login: Authorization rejected: {auth_response} != {auth_challenge}."
-    if SessionData.dbg: print(emsg)
-    sdat = SessionData.get()
-    sdat.emsg = emsg
-    return redirect(url_for('home'))
+    return res
 
 @app.route("/logout")
 def logout():
@@ -467,7 +438,6 @@ def callback():
     if SessionData.dbg: print('callback: Handling google callback')
     # Fetch tokens.
     code = request.args.get("code")
-    auth_reponse = request.args['challenge_string']
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     token_endpoint = google_provider_cfg["token_endpoint"]
     if request.is_secure:
@@ -541,14 +511,12 @@ def callback():
         print(f"callback: Denying unverified user {user_label} [{email}]")
         if not email_verified: sdat.msg.append(f"User has not verified email with google: {fullname} [{email}]")
         if not have_email: sdat.msg.append(f"User does not have email with google: {fullname} [{google_id}]")
-    resp = redirect(url_for('home'))
     if sesskey is not None:
         sdat = SessionData(sesskey, descname, fullname, login_info)
         if not SessionData.use_cookie_key:
             session['session_id'] = sdat.session_id
         SessionData.current = sdat
-        auth_sskey = sskey
-    return {}
+    return redirect(url_for('home'))
 
 @app.route("/versions")
 def versions():
