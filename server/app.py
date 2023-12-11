@@ -506,13 +506,13 @@ def callback():
         print(f"callback: Denying unverified user {user_label} [{email}]")
         if not email_verified: sdat.msg.append(f"User has not verified email with google: {fullname} [{email}]")
         if not have_email: sdat.msg.append(f"User does not have email with google: {fullname} [{google_id}]")
-    unam = 'home'
+    unam = url_for('home')
     if sesskey is not None:
         sdat = SessionData(sesskey, descname, fullname, login_info)
         if not SessionData.use_cookie_key:
             session['session_id'] = sdat.session_id
         unam += f"?sesskey={sesskey}"
-    return redirect(url_for(unam))
+    return redirect(unam)
 
 @app.route("/versions")
 def versions():
