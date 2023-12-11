@@ -97,6 +97,7 @@ class SessionData:
     com = None
     ret = None
     force_https = False
+    secret = None
     @classmethod
     def nologin_session(cls):
         """Fetch the data for the no-login session."""
@@ -104,13 +105,13 @@ class SessionData:
             SessionData.sessions[None] = SessionData(None, 'nologin', {})
         return SessionData.sessions[None]
     @classmethod
-    def get(cls):
+    def get(cls, inkey =None):
         """
         Return the data for the current session using the sesskey cookie.
         If a user is logged in, then sesskey, descname, fullname, login_info etc. will be set.
         If not, sesskey is None and name is 'nologin'.
         """
-        sesskey = request.cookies.get('sesskey')
+        sesskey = request.cookies.get('sesskey') if inkey is None else inkey
         if sesskey is None:
             if SessionData.dbg: print('SessionData.get: Cookie with user key not found.')
         else:
@@ -264,11 +265,16 @@ def home():
     The lifetime of the session or cookie  user key is refreshed.
     """
     #return render_template('index.html')
-    if SessionData.dbg: print('home: Constructing home page.')
+    req_sesskey = int(request.args['sesskey'])
+    sdat = SessionData.get(req_sesskey)
+    msg = 'home: Constructing home page for '
+    if req_sesskey is not None: msg += 'new '
+    if sesskey is None: msg += 'unauthenticated '
+    msg += "session {sesskey}."
+    if SessionData.dbg: print(msg)
     sep = '<br>\n'
     msg = html_head()
     msg += '<h2>DESCprod</h2>\n'
-    sdat = SessionData.get()
     udat = sdat.user()
     if SessionData.dbg: print(f"home: User is {sdat.user()} [{sdat.sesskey}]")
     have_user = sdat.sesskey is not None
@@ -500,11 +506,13 @@ def callback():
         print(f"callback: Denying unverified user {user_label} [{email}]")
         if not email_verified: sdat.msg.append(f"User has not verified email with google: {fullname} [{email}]")
         if not have_email: sdat.msg.append(f"User does not have email with google: {fullname} [{google_id}]")
+    unam = 'home'
     if sesskey is not None:
         sdat = SessionData(sesskey, descname, fullname, login_info)
         if not SessionData.use_cookie_key:
             session['session_id'] = sdat.session_id
-    return redirect(url_for('home'))
+        unam += f"?sesskey={sesskey}"
+    return redirect(url_for(unam))
 
 @app.route("/versions")
 def versions():
