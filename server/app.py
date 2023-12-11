@@ -265,7 +265,7 @@ def home():
     The lifetime of the session or cookie  user key is refreshed.
     """
     #return render_template('index.html')
-    req_sesskey = int(request.args['sesskey'])
+    req_sesskey = request.args.get('sesskey')
     sdat = SessionData.get(req_sesskey)
     msg = 'home: Constructing home page for '
     if req_sesskey is not None: msg += 'new '
