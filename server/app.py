@@ -17,13 +17,16 @@ import requests
 import secrets
 import string
 
+def fprint(txt):
+    print(txt, flush=True)
+
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = ("https://accounts.google.com/.well-known/openid-configuration")
 if 0:
     print(f"      GOOGLE_CLIENT_ID: {GOOGLE_CLIENT_ID}")
     print(f"  GOOGLE_CLIENT_SECRET: {GOOGLE_CLIENT_SECRET}")
-    print(f"  GOOGLE_DISCOVERY_URL: {GOOGLE_DISCOVERY_URL}")
+    fprint(f"  GOOGLE_DISCOVERY_URL: {GOOGLE_DISCOVERY_URL}")
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
 # Return map of [username, googlename] indexed by authorized google IDs.
@@ -44,7 +47,7 @@ def get_google_ids():
                 gids[gid] = [unam, gnam]
         fids.close()
     except FileNotFoundError:
-        print(f"get_google_ids: ERROR: Google ID list not found: {fnam}")
+        fprint(f"get_google_ids: ERROR: Google ID list not found: {fnam}")
     return gids
 
 app = Flask(__name__, static_url_path='/home/descprod/static')
@@ -67,14 +70,14 @@ class Refresh:
     def change_focus(self):
         self.focus = not self.focus
         sfoc = 'True' if self.focus else 'False'
-        print(f"Refresh on focus set to {sfoc} for sdat.user()")
+        fprint(f"Refresh on focus set to {sfoc} for sdat.user()")
     def period(self):
         return self.periods[self.iperiod]
     def period_label(self):
         return self.period_labels[self.iperiod]
     def increment_period(self):
         self.iperiod = (self.iperiod + 1) % len(self.periods)
-        print(f"Set refresh period to index {self.iperiod}: {self.period_label()} [{self.period()} sec]")
+        fprint(f"Set refresh period to index {self.iperiod}: {self.period_label()} [{self.period()} sec]")
 
 class SessionData:
     """
@@ -115,15 +118,15 @@ class SessionData:
         if inkey == 'nologin': return cls.nologin_session()
         sesskey = request.cookies.get('sesskey') if inkey is None else inkey
         if sesskey is None:
-            if SessionData.dbg: print('SessionData.get: Cookie with user key is not present.')
+            if SessionData.dbg: fprint('SessionData.get: Cookie with user key is not present.')
         elif sesskey in cls.sessions:
-            if SessionData.dbg: print(f"SessionData.get: Session ID is {cls.sessions[sesskey].session_id} (key {sesskey}).")
+            if SessionData.dbg: fprint(f"SessionData.get: Session ID is {cls.sessions[sesskey].session_id} (key {sesskey}).")
             return cls.sessions[sesskey]
         elif sesskey in cls.old_sessions:
-            if SessionData.dbg: print(f"SessionData.get: Session ID {cls.old_sessions[sesskey]} (key {sesskey}) was terminated.")
+            if SessionData.dbg: fprint(f"SessionData.get: Session ID {cls.old_sessions[sesskey]} (key {sesskey}) was terminated.")
         else:
-            print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
-            print(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
+            fprint(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
+            fprint(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
         return SessionData.nologin_session()
     def __init__(self, sesskey, descname, fullname=None, login_info={}):
         """Add an active user."""
@@ -138,7 +141,7 @@ class SessionData:
         self.refresh = Refresh()
         assert sesskey not in SessionData.sessions
         SessionData.sessions[sesskey] = self
-        print(f"SessionData.init: Updated active user count is {len(SessionData.sessions)}")
+        fprint(f"SessionData.init: Updated active user count is {len(SessionData.sessions)}")
         assert sesskey in SessionData.sessions
     def user(self):
         if self._user is None:
@@ -229,13 +232,13 @@ app.permanent_session_lifetime = timedelta(minutes=5)
 if 'SERVER_OPTS' in os.environ:
     opts=os.environ['SERVER_OPTS'].split()
     for opt in opts:
-        print(f"Processing server option {opt}")
+        fprint(f"Processing server option {opt}")
         if opt == 'debug':
             SessionData.dbg = True
         elif opt == 'force-https':
             SessionData.force_https = True
         else:
-            print(f"Ignoring invalid option {opt}")
+            fprint(f"Ignoring invalid option {opt}")
 
 def get_jobid():
     fnam  = '/home/descprod/local/etc/jobid.txt'
@@ -246,8 +249,8 @@ def get_sessionid():
     lines = subprocess.getoutput(f"descprod-next-sessionid").splitlines()
     sesid = int(lines[-1])
     for line in lines[0:-1]:
-        print(f"get_sessionid: {line}")
-    if SessionData.dbg: print(f"get-sessionid: Session ID is {sesid}")
+        fprint(f"get_sessionid: {line}")
+    if SessionData.dbg: fprint(f"get-sessionid: Session ID is {sesid}")
     return sesid
 
 @app.route("/")
@@ -274,12 +277,12 @@ def home():
     if req_sesskey is not None: msg += 'new '
     if req_sesskey is None: msg += 'existing '
     msg += f"session {sdat.session_id}."
-    if SessionData.dbg: print(msg)
+    if SessionData.dbg: fprint(msg)
     sep = '<br>\n'
     msg = html_head()
     msg += '<h2>DESCprod</h2>\n'
     udat = sdat.user()
-    if SessionData.dbg: print(f"home: User is {sdat.user()} [id: {sdat.session_id}, key: {sdat.sesskey}]")
+    if SessionData.dbg: fprint(f"home: User is {sdat.user()} [id: {sdat.session_id}, key: {sdat.sesskey}]")
     have_user = sdat.sesskey is not None
     if have_user and sdat.refresh.focus:
         # Refresh page each time listener selects browser tab.
@@ -395,26 +398,26 @@ def login():
     # For anything but local host, make sure redirect is https.
     if redirect_uri[0:5] == 'http:' and redirect_uri.find('localhost') < 0 and redirect_uri.find('127.0.0.1') < 0:
         redirect_uri = redirect_uri.replace('http:', 'https:')
-    if SessionData.dbg: print(f"login: URI: {redirect_uri}")
+    if SessionData.dbg: fprint(f"login: URI: {redirect_uri}")
     scope=["openid", "email", "profile"]
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=redirect_uri,
         scope=scope
     )
-    if SessionData.dbg: print(f"login: Auth: {authorization_endpoint}")
-    if SessionData.dbg: print(f"login: Request: {request_uri}")
+    if SessionData.dbg: fprint(f"login: Auth: {authorization_endpoint}")
+    if SessionData.dbg: fprint(f"login: Request: {request_uri}")
     res = redirect(request_uri)
-    if SessionData.dbg: print(f"login: Result: {res}")
+    if SessionData.dbg: fprint(f"login: Result: {res}")
     return res
 
 @app.route("/logout")
 def logout():
     sdat = SessionData.get()
     if sdat is None:
-        print('logout: Logout requested without login. Might be expired.')
+        fprint('logout: Logout requested without login. Might be expired.')
     else:
-        print(f"logout: Logging out user {sdat.user().descname}.")
+        fprint(f"logout: Logging out user {sdat.user().descname}.")
         del SessionData.sessions[sdat.sesskey]
     session['sesskey'] = None
     sdat = SessionData.get('nologin')
@@ -426,7 +429,7 @@ def help():
 
 @app.route("/bye")
 def bye():
-    print("bye: Shutting down.")
+    fprint("bye: Shutting down.")
     com = f"sleep 3; kill -9 {os.getpid()}"
     subprocess.Popen(com, shell=True)
     sdat = SessionData.get()
@@ -435,7 +438,7 @@ def bye():
 
 @app.route("/login/callback")
 def callback():
-    if SessionData.dbg: print('callback: Handling google callback')
+    if SessionData.dbg: fprint('callback: Handling google callback')
     # Fetch tokens.
     code = request.args.get("code")
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -444,7 +447,7 @@ def callback():
         authresp = fixurl(request.url)
     else:
         authresp = None
-    print(f"callback: **************** authresp: {authresp}")
+    fprint(f"callback: **************** authresp: {authresp}")
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response = authresp,
@@ -458,7 +461,7 @@ def callback():
         print(f"callback: token_url: {token_url}")
         print(f"callback: data: {body}")
         print(f"callback: auth: {GOOGLE_CLIENT_ID}, *****")
-        print('callback: --------- END Token response')
+        fprint('callback: --------- END Token response')
     token_response = requests.post(
         token_url,
         headers=headers,
@@ -470,7 +473,7 @@ def callback():
         print('callback: --------- BEGIN Token response')
         for key in resp:
             print(f"callback: {key}: {resp[key]}")
-        print('callback: --------- END Token response')
+        fprint('callback: --------- END Token response')
     # Parse tokens and fetch user profile.
     client.parse_request_body_response(json.dumps(resp))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
@@ -480,7 +483,7 @@ def callback():
     google_id      = login_info["sub"]
     fullname    = login_info["name"]
     user_label = f"{fullname} ({google_id})"
-    #print(f"callback: User info: {login_info")
+    #fprint(f"callback: User info: {login_info")
     resp = redirect(url_for('home'))
     sdat = SessionData.nologin_session()
     sesskey = None
@@ -491,7 +494,7 @@ def callback():
     verified = email_verified or have_email
     if verified:
         if google_id in SessionData.google_ids:
-            print(f"callback: Authorizing  {user_label}")
+            fprint(f"callback: Authorizing  {user_label}")
             login_info    = userinfo_response.json()
             if SessionData.use_cookie_key:
                 # The cookie is created in sdat.make_response
@@ -504,11 +507,11 @@ def callback():
                 session.permanent = True   # This enables the session to expire
             descname = SessionData.google_ids[google_id][0]
         else:
-            print(f"callback: Denying unauthorized user {user_label} [{email}]")
+            fprint(f"callback: Denying unauthorized user {user_label} [{email}]")
             sdat.msg.append(f"User not authorized: {google_id} {fullname}")
             sdat.msg.append(f"\n<br>Send the above line and your NERSC user name to admin@descprod.org to request authorization.")
     else:
-        print(f"callback: Denying unverified user {user_label} [{email}]")
+        fprint(f"callback: Denying unverified user {user_label} [{email}]")
         if not email_verified: sdat.msg.append(f"User has not verified email with google: {fullname} [{email}]")
         if not have_email: sdat.msg.append(f"User does not have email with google: {fullname} [{google_id}]")
     unam = url_for('home')
@@ -580,7 +583,7 @@ def run_form_create_job():
     #    return redirect(url_for('home'))
     cfg = request.form['config'].strip()
     hfg = request.form['howfig'].strip()
-    print(f"form_create_job: {jty} {cfg} {hfg}")
+    fprint(f"form_create_job: {jty} {cfg} {hfg}")
     return do_create_job(jty, cfg, hfg)
 
 def do_create_job(jty, cfg, hfg):
@@ -705,11 +708,11 @@ def status():
 
 @app.route('/session')
 def show_session():
-    print(session)
+    fprint(session)
     msg = 'Session data:\n'
     for key in session.keys():
         msg += f"<br>{key}: {session[key]}\n"
-    print(msg)
+    fprint(msg)
     SessionData.get().msg = msg
     return redirect(url_for('home'))
 
@@ -718,7 +721,7 @@ def show_session():
 def req(path):
     sdat = SessionData.get()
     sdat.msg.append(f"Invalid command: {request.url}")
-    print(f"req: Ignoring request {request.url}")
+    fprint(f"req: Ignoring request {request.url}")
     return redirect(url_for('home'))
     msg = ''
     msg += f"      url: {request.url}<br><br>"
@@ -738,7 +741,7 @@ def req(path):
 
 @app.route('/favicon.ico')
 def got_favicon():
-    print(f"got_favicon: Ignoring request {request.url}")
+    fprint(f"got_favicon: Ignoring request {request.url}")
     return {}
 
 @app.route('/get_job', methods=['POST'])
@@ -780,7 +783,7 @@ def update_job():
         otim = job.update_time()
         if otim is None:
             otim = 0
-            print(f"update_job: WARNING: Handling job {descname}/{jid} with missing update time.")
+            fprint(f"update_job: WARNING: Handling job {descname}/{jid} with missing update time.")
     utim = jmap['update_time']
     try:
         dtim = utim - otim
@@ -815,5 +818,5 @@ def add_child_job():
     jdat = JobData(jid, descname)
     if jdat.configure(jobtype, cfg, hfg, sid, parent):
         return {'status':4, 'message':jdat.errmsgs[-1]}
-    print(f"add_child_job: Added and configured child job {descname}/{jid}: {jobtype} {cfg}")
+    fprint(f"add_child_job: Added and configured child job {descname}/{jid}: {jobtype} {cfg}")
     return {'status':0, 'job':jdat.jmap()}
