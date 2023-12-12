@@ -422,7 +422,7 @@ def logout():
         del SessionData.sessions[sdat.sesskey]
     #session['sesskey'] = None
     sdat = SessionData.get('nologin')
-    resp redirect(url_for('home'))
+    resp = redirect(url_for('home'))
     resp.set_cookie('sesskey', '', expires=0)
     return resp
 
