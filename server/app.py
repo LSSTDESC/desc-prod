@@ -81,10 +81,11 @@ class SessionData:
     The SessionData class holds global data for the service and its sessions.
     SessionData objects describe sessions.
     """
-    dbg = True                  # Log is noisy if true.
+    dbg = False                 # Log is noisy if true. Set with server option debug.
     use_cookie_key = True       # If true session key is obtained from cookie.
     cookie_key_lifetime = 3600  # Lifetime [sec] to set for cookie keys.
     sessions = {}               # Map of active sessions indexed by session key
+    old_sessions = {}           # Map of old and now invalid sessions.
     site = subprocess.getoutput('cat /home/descprod/local/etc/site.txt')
     google_ids = get_google_ids()  # [descname, fullname] indexed by google ID
     lognam = None      # Job log file
@@ -113,14 +114,15 @@ class SessionData:
         """
         sesskey = request.cookies.get('sesskey') if inkey is None else inkey
         if sesskey is None:
-            if SessionData.dbg: print('SessionData.get: Cookie with user key not found.')
+            if SessionData.dbg: print('SessionData.get: Cookie with user key is not present.')
+        elif sesskey in cls.sessions:
+            if SessionData.dbg: print(f"SessionData.get: Session is {cls.old_sessions[sesskey]} (key {sesskey}).")
+            return cls.sessions[sesskey]
+        elif sesskey in cls.old_sessions:
+            if SessionData.dbg: print(f"SessionData.get: Session {cls.old_sessions[sesskey]} (key {sesskey}) is terminated.")
         else:
-            if sesskey in cls.sessions:
-                return cls.sessions[sesskey]
-            else:
-                if sesskey is not None:
-                    print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
-                    print(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
+            print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
+            print(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
         return SessionData.nologin_session()
     def __init__(self, sesskey, descname, fullname=None, login_info={}):
         """Add an active user."""

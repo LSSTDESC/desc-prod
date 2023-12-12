@@ -4,6 +4,7 @@
 HELP=
 UOPTS="--user descprod"
 TAG=10
+DBG=0
 
 while [ $# -gt 0 ]; do
   ARG=$1
@@ -19,7 +20,8 @@ while [ $# -gt 0 ]; do
       HELP=true
     elif [ $FLG == 'v' ]; then
       TAG=$1
-      shift
+    elif [ $FLG == 'd' ]; then
+      DBG=1
     elif [ $FLG == 'root' ]; then
       UOPTS="--user root"
     elif [ $FLG == 'descprod' ]; then
@@ -46,7 +48,11 @@ fi
 # Remaining arguments are passed to the container.
 COPTS="$*"
 if [ -z "$COPTS" ]; then
-  COPTS="git-safedir update-desc-prod mysql:noaio server"
+  COPTS="git-safedir update-desc-prod server"
+  #COPTS="git-safedir update-desc-prod mysql:noaio server"
+  if [ $DBG -eq 1 ]; then
+    COPTS="$COPTS -d"
+  fi
 fi
 
 FROM=$NAME:$TAG
