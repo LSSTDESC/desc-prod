@@ -120,7 +120,7 @@ class SessionData:
             else:
                 if sesskey is not None:
                     print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
-                    print(f"SessionData.get: ERROR: Known keys: {cls.sessions.keys()}")
+                    print(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
         return SessionData.nologin_session()
     def __init__(self, sesskey, descname, fullname=None, login_info={}):
         """Add an active user."""
