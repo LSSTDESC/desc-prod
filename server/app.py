@@ -271,7 +271,7 @@ def home():
     sdat = SessionData.get(req_sesskey)
     msg = 'home: Constructing home page for '
     if req_sesskey is not None: msg += 'new '
-    if req_sesskey is None: msg += 'unauthenticated '
+    if req_sesskey is None: msg += 'existing '
     msg += f"session {sdat.session_id}."
     if SessionData.dbg: print(msg)
     sep = '<br>\n'
@@ -413,10 +413,10 @@ def logout():
     if sdat is None:
         print('logout: Logout requested without login. Might be expired.')
     else:
-        print('logout: Logging out user {sdat.user().descname}.')
+        print(f"logout: Logging out user {sdat.user().descname}.")
         del SessionData.sessions[sdat.sesskey]
     session['sesskey'] = None
-    sdat = SessionData.get()
+    sdat = SessionData.get('nologin')
     return redirect(url_for('home'))
 
 @app.route("/help")
