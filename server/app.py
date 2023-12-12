@@ -420,9 +420,11 @@ def logout():
     else:
         fprint(f"logout: Logging out user {sdat.user().descname}.")
         del SessionData.sessions[sdat.sesskey]
-    session['sesskey'] = None
+    #session['sesskey'] = None
     sdat = SessionData.get('nologin')
-    return redirect(url_for('home'))
+    resp redirect(url_for('home'))
+    resp.set_cookie('sesskey', '', expires=0)
+    return resp
 
 @app.route("/help")
 def help():
