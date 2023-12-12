@@ -410,7 +410,6 @@ def login():
 
 @app.route("/logout")
 def logout():
-    app.logging.flush()
     sdat = SessionData.get()
     if sdat is None:
         print('logout: Logout requested without login. Might be expired.')
