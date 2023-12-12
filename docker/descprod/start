@@ -48,8 +48,7 @@ fi
 # Remaining arguments are passed to the container.
 COPTS="$*"
 if [ -z "$COPTS" ]; then
-  COPTS="git-safedir update-desc-prod server"
-  #COPTS="git-safedir update-desc-prod mysql:noaio server"
+  COPTS="git-safedir update-desc-prod mysql:noaio server"
   if [ $DBG -eq 1 ]; then
     COPTS="$COPTS -d"
   fi
