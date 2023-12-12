@@ -116,7 +116,7 @@ class SessionData:
         if sesskey is None:
             if SessionData.dbg: print('SessionData.get: Cookie with user key is not present.')
         elif sesskey in cls.sessions:
-            if SessionData.dbg: print(f"SessionData.get: Session is {cls.old_sessions[sesskey]} (key {sesskey}).")
+            if SessionData.dbg: print(f"SessionData.get: Session is {cls.sessions[sesskey]} (key {sesskey}).")
             return cls.sessions[sesskey]
         elif sesskey in cls.old_sessions:
             if SessionData.dbg: print(f"SessionData.get: Session {cls.old_sessions[sesskey]} (key {sesskey}) is terminated.")

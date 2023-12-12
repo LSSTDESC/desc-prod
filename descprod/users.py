@@ -31,7 +31,7 @@ class UserData:
         self.config = ''
         self.howfig = ''
 
-    def __repr__(self):
+    def __str__(self):
         if self.descname is None:
             return '<Unauthenticated>'
         return self.descname
