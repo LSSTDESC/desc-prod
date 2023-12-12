@@ -413,6 +413,7 @@ def logout():
     if sdat is None:
         print('logout: Logout requested without login. Might be expired.')
     else:
+        print('logout: Logging out user {sdat.user().descname}.')
         del SessionData.sessions[sdat.sesskey]
     session['sesskey'] = None
     sdat = SessionData.get()
