@@ -270,13 +270,13 @@ def home():
     msg = 'home: Constructing home page for '
     if req_sesskey is not None: msg += 'new '
     if req_sesskey is None: msg += 'unauthenticated '
-    msg += "session {sdat.session_id}."
+    msg += f"session {sdat.session_id}."
     if SessionData.dbg: print(msg)
     sep = '<br>\n'
     msg = html_head()
     msg += '<h2>DESCprod</h2>\n'
     udat = sdat.user()
-    if SessionData.dbg: print(f"home: User is {sdat.user()} [{sdat.sesskey}]")
+    if SessionData.dbg: print(f"home: User is {sdat.user()} [id: {sdat.session_id}, key: {sdat.sesskey}]")
     have_user = sdat.sesskey is not None
     if have_user and sdat.refresh.focus:
         # Refresh page each time listener selects browser tab.

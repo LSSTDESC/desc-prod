@@ -31,6 +31,11 @@ class UserData:
         self.config = ''
         self.howfig = ''
 
+    def to_string(self):
+        if self.descname is None:
+            return '<Unauthenticated>'
+        return self.descname
+
     def is_admin(self):
         return self.descname in UserData.admins
 
