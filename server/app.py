@@ -255,7 +255,8 @@ def get_sessionid():
 
 @app.route("/")
 def top():
-    return redirect(url_for('home'))
+    return home();
+    #return redirect(url_for('home'))
 
 @app.route("/home")
 def home():
