@@ -116,10 +116,10 @@ class SessionData:
         if sesskey is None:
             if SessionData.dbg: print('SessionData.get: Cookie with user key is not present.')
         elif sesskey in cls.sessions:
-            if SessionData.dbg: print(f"SessionData.get: Session is {cls.sessions[sesskey].session_id} (key {sesskey}).")
+            if SessionData.dbg: print(f"SessionData.get: Session ID is {cls.sessions[sesskey].session_id} (key {sesskey}).")
             return cls.sessions[sesskey]
         elif sesskey in cls.old_sessions:
-            if SessionData.dbg: print(f"SessionData.get: Session {cls.old_sessions[sesskey]} (key {sesskey}) is terminated.")
+            if SessionData.dbg: print(f"SessionData.get: Session ID {cls.old_sessions[sesskey]} (key {sesskey}) was terminated.")
         else:
             print(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
             print(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
@@ -415,6 +415,7 @@ def logout():
     else:
         del SessionData.sessions[sdat.sesskey]
     session['sesskey'] = None
+    sdat = SessionData.get()
     return redirect(url_for('home'))
 
 @app.route("/help")
