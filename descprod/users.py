@@ -7,7 +7,7 @@ class UserData:
     """
     Holds the data for each user.
     """
-    users = {} # Dictonary of active users indexed by descname.
+    users = {} # Dictionary of active users indexed by descname.
     admins = ['dladams']
     jindent = 2
     jsep = (',', ': ')
@@ -31,7 +31,7 @@ class UserData:
         self.config = ''
         self.howfig = ''
 
-    def to_string(self):
+    def __repr__(self):
         if self.descname is None:
             return '<Unauthenticated>'
         return self.descname
