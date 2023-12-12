@@ -112,6 +112,7 @@ class SessionData:
         If a user is logged in, then sesskey, descname, fullname, login_info etc. will be set.
         If not, sesskey is None and name is 'nologin'.
         """
+        if inkey == 'nologin': return cls.nologin_session()
         sesskey = request.cookies.get('sesskey') if inkey is None else inkey
         if sesskey is None:
             if SessionData.dbg: print('SessionData.get: Cookie with user key is not present.')
