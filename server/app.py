@@ -177,7 +177,7 @@ class SessionData:
         if remove_sesskey_arg and request.args.get('sesskey') is not None:
             resp = make_response(request.base_urli)
             resp.set_data(rdat)
-        else
+        else:
             resp = make_response(rdat)
         if SessionData.use_cookie_key:
             if self.sesskey is None:
