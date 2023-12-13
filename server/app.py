@@ -20,6 +20,9 @@ import string
 def fprint(txt):
     print(txt, flush=True)
 
+def make_session_key():
+    return ''.join(secrets.choice(string.ascii_letters+string.digits) for i in range(24))
+
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = ("https://accounts.google.com/.well-known/openid-configuration")
@@ -89,6 +92,7 @@ class SessionData:
     cookie_key_lifetime = 3600  # Lifetime [sec] to set for cookie keys.
     sessions = {}               # Map of active sessions indexed by session key
     old_sessions = {}           # Map of old and now invalid sessions.
+    arg_session_dict = {}       # Map of argument session key to actual (cookie) sesskey
     site = subprocess.getoutput('cat /home/descprod/local/etc/site.txt')
     google_ids = get_google_ids()  # [descname, fullname] indexed by google ID
     lognam = None      # Job log file
@@ -109,14 +113,22 @@ class SessionData:
             SessionData.sessions[None] = SessionData(None, 'nologin', {})
         return SessionData.sessions[None]
     @classmethod
-    def get(cls, inkey =None):
+    def get(cls):
         """
         Return the data for the current session using the sesskey cookie.
         If a user is logged in, then sesskey, descname, fullname, login_info etc. will be set.
         If not, sesskey is None and name is 'nologin'.
         """
-        if inkey == 'nologin': return cls.nologin_session()
+        arg_sesskey = request.args.get('sesskey')
         sesskey = request.cookies.get('sesskey') if inkey is None else inkey
+        if arg_sesskey is not None:
+            if sskey is not None:
+                fprint("Ignoring request to change user")
+            elif arg_sesskey in SessionData.arg_session_dict:
+                sesskey = arg_sesskey
+                fprint("SessionData.get: Using argument session ID.")
+            else:
+                fprint("SessionData.get: Ignoring unknown argument session ID.")
         if sesskey is None:
             if SessionData.dbg: fprint('SessionData.get: Cookie with user key is not present.')
         elif sesskey in cls.sessions:
@@ -137,6 +149,7 @@ class SessionData:
         self.session_id = 0 if sesskey is None else get_sessionid()
         self.msg = []               # Error message shown once on home page.
         self._user = None
+        self.logged_out = False
         self.user()
         self.refresh = Refresh()
         assert sesskey not in SessionData.sessions
@@ -148,6 +161,11 @@ class SessionData:
             self._user = UserData.get(self.descname)
             rstat, self.msg = self._user.check_dirs()
         return self._user
+    def logout():
+        sdat.logged_out = True
+        SessionData.old_sessions[sdat.sesskey] = sdat
+        del(SessionData.sessions[sdat.sesskey])
+        return cls.nologin_session()
     def make_response(self, rdat):
         """
         Make an HTML response from the provided response data.
@@ -426,10 +444,10 @@ def logout():
         fprint(f"logout: Logging out user {sdat.user().descname}.")
         del SessionData.sessions[sdat.sesskey]
     #session['sesskey'] = None
-    sdat = SessionData.get('nologin')
-    resp = redirect(url_for('home'))
-    resp.set_cookie('sesskey', '', expires=0)
-    return resp
+    sdat = sdat.logout()
+    #resp = redirect(url_for('home'))
+    #resp.set_cookie('sesskey', '', expires=0)
+    return sdat.make_reponse()
 
 @app.route("/help")
 def help():
@@ -507,7 +525,7 @@ def callback():
             if SessionData.use_cookie_key:
                 # The cookie is created in sdat.make_response
                 # We need a string key.
-                sesskey = ''.join(secrets.choice(string.ascii_letters+string.digits) for i in range(24))
+                sesskey = make_session_key()
             else:
                 sesskey = app.secret_key = os.urandom(16)
                 session['sesskey'] = sesskey
@@ -524,10 +542,12 @@ def callback():
         if not have_email: sdat.msg.append(f"User does not have email with google: {fullname} [{google_id}]")
     unam = url_for('home')
     if sesskey is not None:
+        arg_sesskey = make_session_key()
         sdat = SessionData(sesskey, descname, fullname, login_info)
+        SessionData.arg_session_dict[arg_sesskey] = sesskey
         if not SessionData.use_cookie_key:
             session['session_id'] = sdat.session_id
-        unam += f"?sesskey={sesskey}"
+        unam += f"?sesskey={arg_sesskey}"
     return redirect(unam)
 
 @app.route("/versions")
