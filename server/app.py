@@ -177,10 +177,14 @@ class SessionData:
         if remove_sesskey_arg and request.args.get('sesskey') is not None:
             fprint('XXXX: Return response with base url')
             resp = make_response(redirect(request.base_url))
-            resp.set_data(rdat)
+            if rdat is not None:
+                resp.set_data(rdat)
         else:
             fprint('XXXX: Return response with full url')
-            resp = make_response(rdat)
+            if rdat is None:
+                resp = make_response()
+            else:
+                resp = make_response(rdat)
         if SessionData.use_cookie_key:
             if self.sesskey is None:
                 resp.set_cookie('sesskey', '', expires=0)
