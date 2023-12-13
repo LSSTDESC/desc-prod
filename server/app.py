@@ -166,7 +166,7 @@ class SessionData:
         self.logged_out = True
         SessionData.old_sessions[self.sesskey] = self
         del(SessionData.sessions[self.sesskey])
-        return cls.nologin_session()
+        return SesionData.nologin_session()
     def make_response(self, rdat, remove_sesskey_arg=True):
         """
         Make an HTML response from the provided response data.
