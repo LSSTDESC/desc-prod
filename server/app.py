@@ -176,7 +176,8 @@ class SessionData:
         """
         if remove_sesskey_arg and request.args.get('sesskey') is not None:
             fprint('XXXX: Return reponse with base url')
-            resp = make_response(request.base_url)
+            #resp = make_response(request.base_url)
+            resp = make_response(redirect(request.base_url))
             resp.set_data(rdat)
         else:
             fprint('XXXX: Return reponse with full url')
