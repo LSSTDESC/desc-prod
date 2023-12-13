@@ -104,7 +104,7 @@ class SessionData:
     #rundir = None
     #com = None
     #ret = None
-    #force_https = False
+    force_https = False
     #secret = None
     @classmethod
     def nologin_session(cls):
