@@ -175,7 +175,7 @@ class SessionData:
         the value SessionData.cookie_key and lifetime SessionData.cookie_key_lifetime.
         """
         if remove_sesskey_arg and request.args.get('sesskey') is not None:
-            resp = make_response(request.base_urli)
+            resp = make_response(request.base_url)
             resp.set_data(rdat)
         else:
             resp = make_response(rdat)
