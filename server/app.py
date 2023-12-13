@@ -167,7 +167,7 @@ class SessionData:
         SessionData.old_sessions[self.sesskey] = self
         del(SessionData.sessions[self.sesskey])
         return SessionData.nologin_session()
-    def make_response(self, rdat, remove_sesskey_arg=True):
+    def make_response(self, rdat=None, remove_sesskey_arg=True):
         """
         Make an HTML response from the provided response data.
         Typically called from home().
