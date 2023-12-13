@@ -445,7 +445,7 @@ def logout():
     else:
         fprint(f"logout: Logging out user {sdat.user().descname}.")
         sdat = sdat.logout()
-    return sdat.make_response()
+    return redirect(url_for('home'))
 
 @app.route("/help")
 def help():
