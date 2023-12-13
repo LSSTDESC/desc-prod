@@ -162,9 +162,9 @@ class SessionData:
             self._user = UserData.get(self.descname)
             rstat, self.msg = self._user.check_dirs()
         return self._user
-    def logout():
-        sdat.logged_out = True
-        SessionData.old_sessions[sdat.sesskey] = sdat
+    def logout(self):
+        self.logged_out = True
+        SessionData.old_sessions[sdat.sesskey] = self
         del(SessionData.sessions[sdat.sesskey])
         return cls.nologin_session()
     def make_response(self, rdat, remove_sesskey_arg=True):
