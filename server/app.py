@@ -164,8 +164,8 @@ class SessionData:
         return self._user
     def logout(self):
         self.logged_out = True
-        SessionData.old_sessions[sdat.sesskey] = self
-        del(SessionData.sessions[sdat.sesskey])
+        SessionData.old_sessions[self.sesskey] = self
+        del(SessionData.sessions[self.sesskey])
         return cls.nologin_session()
     def make_response(self, rdat, remove_sesskey_arg=True):
         """
@@ -176,7 +176,6 @@ class SessionData:
         """
         if remove_sesskey_arg and request.args.get('sesskey') is not None:
             fprint('XXXX: Return reponse with base url')
-            #resp = make_response(request.base_url)
             resp = make_response(redirect(request.base_url))
             resp.set_data(rdat)
         else:
