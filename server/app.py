@@ -278,7 +278,7 @@ def home():
     if req_sesskey is not None:
         sdat = SessionData.get(req_sesskey)
         # Strip sesskey from the URL.
-        resp = sdat.make_reponse(redirect(request.base_url))
+        resp = sdat.make_response(redirect(request.base_url))
     msg = 'home: Constructing home page for '
     if req_sesskey is not None: msg += 'new '
     if req_sesskey is None: msg += 'existing '
