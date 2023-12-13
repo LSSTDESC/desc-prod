@@ -440,11 +440,7 @@ def logout():
         fprint('logout: Logout requested without login. Might be expired.')
     else:
         fprint(f"logout: Logging out user {sdat.user().descname}.")
-        del SessionData.sessions[sdat.sesskey]
-    #session['sesskey'] = None
-    sdat = sdat.logout()
-    #resp = redirect(url_for('home'))
-    #resp.set_cookie('sesskey', '', expires=0)
+        sdat = sdat.logout()
     return sdat.make_reponse()
 
 @app.route("/help")
