@@ -162,7 +162,8 @@ class SessionData:
             else:
                 texp = datetime.timestamp(datetime.now()) + SessionData.cookie_key_lifetime
                 resp.set_cookie('sesskey', str(self.sesskey), expires=texp)
-                print(f"XXXXX: {type(resp)}: {resp}")
+                rdat = resp.get_data()
+                print(f"XXXXX: {type(rdat)}: {rdat}")
         else:
             session.modified = True
         return resp
