@@ -175,11 +175,11 @@ class SessionData:
         the value SessionData.cookie_key and lifetime SessionData.cookie_key_lifetime.
         """
         if remove_sesskey_arg and request.args.get('sesskey') is not None:
-            fprint('XXXX: Return reponse with base url')
+            fprint('XXXX: Return response with base url')
             resp = make_response(redirect(request.base_url))
             resp.set_data(rdat)
         else:
-            fprint('XXXX: Return reponse with full url')
+            fprint('XXXX: Return response with full url')
             resp = make_response(rdat)
         if SessionData.use_cookie_key:
             if self.sesskey is None:
@@ -441,7 +441,7 @@ def logout():
     else:
         fprint(f"logout: Logging out user {sdat.user().descname}.")
         sdat = sdat.logout()
-    return sdat.make_reponse()
+    return sdat.make_response()
 
 @app.route("/help")
 def help():
