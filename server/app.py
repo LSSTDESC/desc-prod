@@ -294,7 +294,7 @@ def home():
     It can be either a string or a list of strings.
     The lifetime of the session or cookie  user key is refreshed.
     """
-    sdat = SessionData.get(req_sesskey)
+    sdat = SessionData.get()
     msg = 'home: Constructing home page for '
     if req_sesskey is not None: msg += 'new '
     if req_sesskey is None: msg += 'existing '
