@@ -95,17 +95,17 @@ class SessionData:
     arg_session_dict = {}       # Map of argument session key to actual (cookie) sesskey
     site = subprocess.getoutput('cat /home/descprod/local/etc/site.txt')
     google_ids = get_google_ids()  # [descname, fullname] indexed by google ID
-    lognam = None      # Job log file
-    stanam = None      # Last line is status or processing
-    cfgnam = 'config.txt'   # Name for config file describing ther job
-    logfil = None
-    fout = None
-    sjob = None
-    rundir = None
-    com = None
-    ret = None
-    force_https = False
-    secret = None
+    #lognam = None      # Job log file
+    #stanam = None      # Last line is status or processing
+    #cfgnam = 'config.txt'   # Name for config file describing ther job
+    #logfil = None
+    #fout = None
+    #sjob = None
+    #rundir = None
+    #com = None
+    #ret = None
+    #force_https = False
+    #secret = None
     @classmethod
     def nologin_session(cls):
         """Fetch the data for the no-login session."""
@@ -120,7 +120,7 @@ class SessionData:
         If not, sesskey is None and name is 'nologin'.
         """
         arg_sesskey = request.args.get('sesskey')
-        sesskey = request.cookies.get('sesskey') if inkey is None else inkey
+        sesskey = request.cookies.get('sesskey')
         if arg_sesskey is not None:
             if sskey is not None:
                 fprint("Ignoring request to change user")
@@ -129,6 +129,16 @@ class SessionData:
                 fprint("SessionData.get: Using argument session ID.")
             else:
                 fprint("SessionData.get: Ignoring unknown argument session ID.")
+        arg_sesskey = request.args.get('sesskey')
+        if arg_sesskey is not None:
+            # Strip sesskey argument from the URL.
+            # For now, we strip all arguments.
+                if req_sesskey is not None:
+                    sdat = SessionData.get(req_sesskey)
+                    # Strip sesskey from the URL.
+                    resp = sdat.make_response(redirect(request.base_url))
+            fprint(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
+            fprint(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
         if sesskey is None:
             if SessionData.dbg: fprint('SessionData.get: Cookie with user key is not present.')
         elif sesskey in cls.sessions:
@@ -137,8 +147,6 @@ class SessionData:
         elif sesskey in cls.old_sessions:
             if SessionData.dbg: fprint(f"SessionData.get: Session ID {cls.old_sessions[sesskey]} (key {sesskey}) was terminated.")
         else:
-            fprint(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
-            fprint(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
         return SessionData.nologin_session()
     def __init__(self, sesskey, descname, fullname=None, login_info={}):
         """Add an active user."""
@@ -166,14 +174,18 @@ class SessionData:
         SessionData.old_sessions[sdat.sesskey] = sdat
         del(SessionData.sessions[sdat.sesskey])
         return cls.nologin_session()
-    def make_response(self, rdat):
+    def make_response(self, rdat, remove_sesskey_arg=True):
         """
         Make an HTML response from the provided response data.
         Typically called from home().
         if SessionData.use_cookie_key is true, then create a new sesskey cookie with
         the value SessionData.cookie_key and lifetime SessionData.cookie_key_lifetime.
         """
-        resp = make_response(rdat)
+        if remove_sesskey_arg and request.args.get('sesskey') is not None:
+            resp = make_response(request.base_urli)
+            resp.set_data(rdat)
+        else
+            resp = make_response(rdat)
         if SessionData.use_cookie_key:
             if self.sesskey is None:
                 resp.set_cookie('sesskey', '', expires=0)
@@ -289,13 +301,6 @@ def home():
     It can be either a string or a list of strings.
     The lifetime of the session or cookie  user key is refreshed.
     """
-    #return render_template('index.html')
-    req_sesskey = request.args.get('sesskey')
-    if req_sesskey is not None:
-        sdat = SessionData.get(req_sesskey)
-        # Strip sesskey from the URL.
-        resp = sdat.make_response(redirect(request.base_url))
-        return resp
     sdat = SessionData.get(req_sesskey)
     msg = 'home: Constructing home page for '
     if req_sesskey is not None: msg += 'new '
