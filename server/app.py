@@ -296,8 +296,6 @@ def home():
     """
     sdat = SessionData.get()
     msg = 'home: Constructing home page for '
-    if req_sesskey is not None: msg += 'new '
-    if req_sesskey is None: msg += 'existing '
     msg += f"session {sdat.session_id}."
     if SessionData.dbg: fprint(msg)
     sep = '<br>\n'
