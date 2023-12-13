@@ -122,7 +122,7 @@ class SessionData:
         arg_sesskey = request.args.get('sesskey')
         sesskey = request.cookies.get('sesskey')
         if arg_sesskey is not None:
-            if sskey is not None:
+            if sesskey is not None:
                 fprint("Ignoring request to change user")
             elif arg_sesskey in SessionData.arg_session_dict:
                 sesskey = SessionData.arg_session_dict[arg_sesskey]
