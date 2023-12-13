@@ -130,9 +130,6 @@ class SessionData:
                 fprint("SessionData.get: Using argument session ID.")
             else:
                 fprint("SessionData.get: Ignoring unknown argument session ID.")
-        if arg_sesskey is not None:
-            fprint(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
-            fprint(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
         if sesskey is None:
             if SessionData.dbg: fprint('SessionData.get: Cookie with user key is not present.')
         elif sesskey in cls.sessions:
@@ -141,6 +138,8 @@ class SessionData:
         elif sesskey in cls.old_sessions:
             if SessionData.dbg: fprint(f"SessionData.get: Session ID {cls.old_sessions[sesskey]} (key {sesskey}) was terminated.")
         else:
+            fprint(f"SessionData.get: ERROR: Uknown session key: {sesskey}")
+            fprint(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
         return SessionData.nologin_session()
     def __init__(self, sesskey, descname, fullname=None, login_info={}):
         """Add an active user."""
