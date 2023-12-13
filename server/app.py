@@ -125,18 +125,12 @@ class SessionData:
             if sskey is not None:
                 fprint("Ignoring request to change user")
             elif arg_sesskey in SessionData.arg_session_dict:
-                sesskey = arg_sesskey
+                sesskey = SessionData.arg_session_dict[arg_sesskey]
+                del(SessionData.arg_session_dict[arg_sesskey])
                 fprint("SessionData.get: Using argument session ID.")
             else:
                 fprint("SessionData.get: Ignoring unknown argument session ID.")
-        arg_sesskey = request.args.get('sesskey')
         if arg_sesskey is not None:
-            # Strip sesskey argument from the URL.
-            # For now, we strip all arguments.
-                if req_sesskey is not None:
-                    sdat = SessionData.get(req_sesskey)
-                    # Strip sesskey from the URL.
-                    resp = sdat.make_response(redirect(request.base_url))
             fprint(f"SessionData.get: ERROR: Unexpected session key: {sesskey}")
             fprint(f"SessionData.get: ERROR: Known keys: {list(cls.sessions.keys())}")
         if sesskey is None:
