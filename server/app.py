@@ -16,6 +16,7 @@ from oauthlib.oauth2 import WebApplicationClient
 import requests
 import secrets
 import string
+import threading
 
 def fprint(txt):
     print(txt, flush=True)
@@ -269,15 +270,22 @@ if 'SERVER_OPTS' in os.environ:
 
 def get_jobid():
     fnam  = '/home/descprod/local/etc/jobid.txt'
+    lock = threading.Lock()
+    lock.lock()
     jobid = int(subprocess.getoutput(f"descprod-next-jobid"))
+    lock.release()
+    fprint(f"get-jobid: Acquired job ID {jobid}")
     return jobid
 
 def get_sessionid():
+    lock = threading.Lock()
+    lock.lock()
     lines = subprocess.getoutput(f"descprod-next-sessionid").splitlines()
+    lock.release()
     sesid = int(lines[-1])
     for line in lines[0:-1]:
         fprint(f"get_sessionid: {line}")
-    if SessionData.dbg: fprint(f"get-sessionid: Session ID is {sesid}")
+    fprint(f"get-sessionid: Acquired session ID {sesid}")
     return sesid
 
 @app.route("/")
