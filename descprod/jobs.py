@@ -155,7 +155,8 @@ class JobData:
             if idx not in myjobs:
                 jdat = JobData(idx, descname, 'db')
                 jdats.append(jdat)
-        print(f"{myname}: Fetched {len(jdats)} new jobs for user {descname} from DB")
+        if len(jdats):
+            print(f"{myname}: Fetched {len(jdats)} new jobs for user {descname} from DB")
         return myjobs, msg
 
     @classmethod
