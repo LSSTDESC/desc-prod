@@ -175,12 +175,10 @@ class SessionData:
         the value SessionData.cookie_key and lifetime SessionData.cookie_key_lifetime.
         """
         if remove_sesskey_arg and request.args.get('sesskey') is not None:
-            fprint('XXXX: Return response with base url')
             resp = make_response(redirect(request.base_url))
             if rdat is not None:
                 resp.set_data(rdat)
         else:
-            fprint('XXXX: Return response with full url')
             if rdat is None:
                 resp = make_response()
             else:
