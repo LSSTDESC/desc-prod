@@ -65,6 +65,7 @@ class JobData:
     connections = {}   # Pool of named mysql connectors
     _default_table_name = None # Current table name (set to descprod if None)
     _db_name = None    # Current db name (set to jobdata if None)
+    flush = True       # Whether to flush all print statements
     class runopts:     # parameters for lcoal job submission
         use_shell = True                 # Submit jobs in a new shell
         use_sudo = False                 # Sudo to current user to launch jobs
@@ -116,22 +117,22 @@ class JobData:
         myname = 'JobData.get_jobs_from_disk'
         if descname is None: return cls.jobs
         usr = UserData(descname)
-        if cls.dbg: print(f"{myname}: Fetching jobs for user {descname}.")
+        if cls.dbg: print(f"{myname}: Fetching jobs for user {descname}.", flush=cls.flush)
         if descname not in cls.ujobs:
             cls.ujobs[descname] = {}
         if descname not in cls.have_oldjobs:
             topdir = f"{usr.run_dir}"
-            if cls.dbg: print(f"{myname}: Looking for old jobs in {topdir}.")
+            if cls.dbg: print(f"{myname}: Looking for old jobs in {topdir}.", flush=cls.flush)
             if os.path.isdir(topdir):
                 for jobnam in os.listdir(topdir):
                     jobid = cls.id_from_name(jobnam)
                     if jobid < 0:
-                        if cls.dbg: print(f"{myname}:   Skipping bad name {jobnam}.")
+                        if cls.dbg: print(f"{myname}:   Skipping bad name {jobnam}.", flush=cls.flush)
                         continue
                     if jobid in cls.jobs:
-                        if dbg: print(f"{myname}:   Skipping bad name {jobnam}.")
+                        if dbg: print(f"{myname}:   Skipping bad name {jobnam}.", flush=cls.flush)
                         continue
-                    print(f"{myname}:   Fetching job {jobnam}.")
+                    print(f"{myname}:   Fetching job {jobnam}.", flush=cls.flush)
                     jdat = JobData(jobid, descname, "disk")
             cls.have_oldjobs.append(descname)
         return cls.ujobs[descname]
@@ -147,7 +148,7 @@ class JobData:
         myjobs = cls.ujobs[descname]
         if cur is None:
             msg = "Job DB query failed."
-            print(f"{myname}: {msg}")
+            print(f"{myname}: {msg}", flush=cls.flush)
             return {}, msg
         jdats = []
         for row in cur.fetchall():
@@ -156,7 +157,7 @@ class JobData:
                 jdat = JobData(idx, descname, 'db')
                 jdats.append(jdat)
         if len(jdats):
-            print(f"{myname}: Fetched {len(jdats)} new jobs for user {descname} from DB")
+            print(f"{myname}: Fetched {len(jdats)} new jobs for user {descname} from DB", flush=cls.flush)
         return myjobs, msg
 
     @classmethod
@@ -197,7 +198,7 @@ class JobData:
         try:
             conmy = mysql.connector.connect(port=3306)
         except Exception as e:
-            print(f"{myname}: Unable to access mysql server: {e}")
+            print(f"{myname}: Unable to access mysql server: {e}", flush=cls.flush)
             return None
         curmy = conmy.cursor()
         con = None
@@ -205,17 +206,17 @@ class JobData:
             con = mysql.connector.connect(database=db_name)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                print(f"{myname}: Unable to access mysql DB {db_name}.")
+                print(f"{myname}: Unable to access mysql DB {db_name}.", flush=cls.flush)
             elif err.errno == errorcode.ER_BAD_DB_ERROR:
                 if create_db:
-                    print(f"{myname}: Creating DB {db_name}")
+                    print(f"{myname}: Creating DB {db_name}", flush=cls.flush)
                     com = f"CREATE DATABASE {db_name}"
                     cur = conmy.cursor()
                     cur.execute(com)
                     conmy.commit()
                     con = mysql.connector.connect(database=db_name)
                 else:
-                    print(f"{myname}: Database not found: {db_name}")
+                    print(f"{myname}: Database not found: {db_name}", flush=cls.flush)
             else:
                 print(err)
         if cname is not None and con is not None: cls.connections[cname] = con
@@ -240,7 +241,7 @@ class JobData:
         dbnam = cls.db_name(db_name)
         con = cls.connect_db(create_db=create_db)
         if con is None:
-            print(f"{myname}: Unable to connect to DB {dbnam}")
+            print(f"{myname}: Unable to connect to DB {dbnam}", flush=cls.flush)
             #raise Exception(f"{myname}: Unable to connect to DB {dbnam}")
             return None
         cur = con.cursor()
@@ -248,15 +249,15 @@ class JobData:
         cur.execute(check_query)
         haveit = bool(len(cur.fetchall()))
         if drop_table and haveit:
-            print(f"{myname}: Dropping table {tnam}")
+            print(f"{myname}: Dropping table {tnam}", flush=cls.flush)
             cls.connections.clear()
             com = f"DROP TABLE {tnam}"
             cur.execute(com)
             con.commit()
             haveit = cls.db_table()
-            print(f"{myname}: Drop was successful.")
+            print(f"{myname}: Drop was successful.", flush=cls.flush)
         if create_table and not haveit:
-            print(f"{myname}: Creating table {tnam}")
+            print(f"{myname}: Creating table {tnam}", flush=cls.flush)
             cls.connections.clear()
             com = f"CREATE TABLE {tnam} ("
             for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
@@ -272,13 +273,13 @@ class JobData:
                 com += f" {nam} {typ}{flen} {fcon},"
             com += 'PRIMARY KEY (id) )'
             if verbose:
-                print(f"{myname}: {com}")
+                print(f"{myname}: {com}", flush=cls.flush)
             cur.execute(com)
             con.commit()
             haveit = cls.db_table()
-            print(f"{myname}: Create was successful.")
+            print(f"{myname}: Create was successful.", flush=cls.flush)
         if (check_schema or add_schema) and haveit:
-            print(f"{myname}: Checking schema in {tnam}")
+            print(f"{myname}: Checking schema in {tnam}", flush=cls.flush)
             cls.connections.clear()
             com = f"DESCRIBE {tnam}"
             cur.execute(com)
@@ -314,7 +315,7 @@ class JobData:
                 else:
                     dbdesc = "***** NOT FOUND *****"
                     if check_schema: haveit = False
-                print(f"{jdesc:>30}: {dbdesc}")
+                print(f"{jdesc:>30}: {dbdesc}", flush=cls.flush)
                 where = f"AFTER {nam}"
         return haveit
 
@@ -331,24 +332,24 @@ class JobData:
         myname = 'JobData.db_query'
         con = None
         com = query
-        if verbose > 1: print(f"{myname}: {com}")
+        if verbose > 1: print(f"{myname}: {com}", flush=cls.flush)
         con = cls.connect_db(cname ='query')
         if con is None:
-            print(f"{myname}: Unable to connect to DB.")
+            print(f"{myname}: Unable to connect to DB.", flush=cls.flush)
             return None
         cur = con.cursor()
         try:
             cur.execute(com)
         except mysql.connector.errors.ProgrammingError:
-            print(f"{myname}: SQL syntax error in: {com}")
+            print(f"{myname}: SQL syntax error in: {com}", flush=cls.flush)
             display = False
             return None
         if display:
             count = 0
             for row in [cur.fetchall()]:
-                print(row)
+                print(row, flush=cls.flush)
                 count += 1
-            if count == 0: print('***** No matches found *****')
+            if count == 0: print('***** No matches found *****', flush=cls.flush)
             return None
         return cur, con
 
@@ -369,7 +370,7 @@ class JobData:
         tnam = cls.current_table_name(table_name)
         haveit = cls.db_table(tnam)
         if haveit is None or not haveit:
-            print(f"{myname}: Job table not found: {tnam}")
+            print(f"{myname}: Job table not found: {tnam}", flush=cls.flush)
             return None
         com = f"SELECT {cols} FROM {tnam}"
         if len(where): com += f" WHERE {where}"
@@ -436,7 +437,7 @@ class JobData:
         myname = 'JobData.get_db_table_schema'
         tnam = cls.current_table_name(table_name)
         if not cls.db_table():
-            print(f"{myname}: Table not found: {tnam}")
+            print(f"{myname}: Table not found: {tnam}", flush=cls.flush)
             return []
         con = cls.connect_db()
         cur = con.cursor()
@@ -444,11 +445,11 @@ class JobData:
         vals = []
         fmap = {'Field':0, 'Type':1, 'Null':2, 'Key':3, 'Default':4, 'Extra':5}
         if field not in fmap:
-            print(f"{myname}: Invalid field name: {field}")
+            print(f"{myname}: Invalid field name: {field}", flush=cls.flush)
         fidx = fmap[field]
         for col in cur.fetchall():
             val = col[fidx]
-            if verbose > 1: print(f"{myname}: {col}")
+            if verbose > 1: print(f"{myname}: {col}", flush=cls.flush)
             vals.append(val)
         return vals
 
@@ -458,7 +459,7 @@ class JobData:
         myname = 'JobData.db_row'
         tnam = cls.current_table_name(table_name)
         if not cls.db_table():
-            print(f"{myname}: Table not found: {tnam}")
+            print(f"{myname}: Table not found: {tnam}", flush=cls.flush)
             return []
         cur, con = cls.db_query(f"SELECT * FROM {tnam} WHERE id = {job_id}")
         if cur is None: return None
@@ -470,18 +471,18 @@ class JobData:
         if not self.usedb: return 0
         tnam = self.current_table_name(table_name)
         if not self.db_table():
-            print(f"{myname}: Table not found: {tnam}")
+            print(f"{myname}: Table not found: {tnam}", flush=cls.flush)
             return 1
         idx = self.index()
         oldrow = self.db_row(idx)
         if oldrow is not None:
-            print(f"{myname}: Job {idx} is already in table {tnam}:")
-            print(f"{myname}: {oldrow}")
+            print(f"{myname}: Job {idx} is already in table {tnam}:", flush=cls.flush)
+            print(f"{myname}: {oldrow}", flush=cls.flush)
             return 2
         cnams = self.get_db_table_schema()
         ctyps = self.get_db_table_schema(field='Type')
         if len(cnams) < 5:
-            print(f"{myname}: Unable to find schema for table {tnam}")
+            print(f"{myname}: Unable to find schema for table {tnam}", flush=cls.flush)
             return 3
         cvals = []
         scnams = ''
@@ -507,7 +508,7 @@ class JobData:
         con = self.connect_db()
         cur = con.cursor()
         com = f"INSERT INTO {tnam} ({scnams}) VALUES ({scvals})"
-        if verbose > 1: print(f"{myname}: {com}")
+        if verbose > 1: print(f"{myname}: {com}", flush=cls.flush)
         cur.execute(com)
         con.commit()
         self.job_table_name = tnam
@@ -520,13 +521,13 @@ class JobData:
         if not self.usedb: return 0
         tnam = self.job_table_name
         if not self.db_table(table_name=tnam):
-            print(f"{myname}: Table not found: {tnam}")
+            print(f"{myname}: Table not found: {tnam}", flush=self.flush)
             return 1
         idx = self.index()
         cnams = self.get_db_table_schema()
         ctyps = self.get_db_table_schema(field='Type')
         if len(cnams) < 5:
-            print(f"{myname}: Unable to find schema for table {tnam}")
+            print(f"{myname}: Unable to find schema for table {tnam}", flush=self.flush)
             return 3
         coms = []
         upcnams = set()
@@ -546,7 +547,7 @@ class JobData:
         con = self.connect_db()
         cur = con.cursor()
         for com in coms:
-            if verbose > 1: print(f"{myname}: {com}")
+            if verbose > 1: print(f"{myname}: {com}", flush=self.flush)
             cur.execute(com)
         con.commit()
         self.nset_db = 0
@@ -556,7 +557,7 @@ class JobData:
         """Record an error."""
         errmsg = f"{myname}: ERROR: {msg}"
         self.errmsgs += [errmsg]
-        if JobData.dbg: print(errmsg)
+        if JobData.dbg: print(errmsg, flush=self.flush)
         return rstat
 
     def idname(self):
@@ -602,7 +603,7 @@ class JobData:
         """Set a job property."""
         myname = 'JobData.set_data'
         if nam not in self.data_names:
-            print(f"{myname}: ERROR: Invalid data name: {nam}")
+            print(f"{myname}: ERROR: Invalid data name: {nam}", flush=self.flush)
             return 1
         oldval = self.data(nam)
         if val != oldval:
@@ -753,7 +754,7 @@ class JobData:
                                     emsgs.append(f"Map contents:")
                                     for key, val in jmap.items(): emsgs.append(f":   {key}: {val}")
                                 else:
-                                    print(f"{myname}: Loaded job data from {fnam}")
+                                    print(f"{myname}: Loaded job data from {fnam}", flush=self.flush)
                                     ok = True
                         except json.decoder.JSONDecodeError:
                             error_prefix = "JSON file decode error"
@@ -762,14 +763,14 @@ class JobData:
                     if len(error_prefix):
                         self.do_error(myname, f"{error_prefix}: {fnam}")
                         for msg in emsgs:
-                            print(f"{myname}: {msg}")
+                            print(f"{myname}: {msg}", flush=self.flush)
                 if not ok:
                     self.do_error(myname, f"Unable to read any of the json config files:")
-                    for fnam in fnams: print(f"{myname}:  {fnam}")
+                    for fnam in fnams: print(f"{myname}:  {fnam}", flush=self.flush)
         else:
              self.do_error(myname, f"Invalid source option: {source}")
         JobData.jobs[idx] = self
-        print(f"{myname}: Inserting job {idx} for user {descname}")
+        print(f"{myname}: Inserting job {idx} for user {descname}", flush=self.flush)
         if descname not in JobData.ujobs:
             JobData.ujobs[descname] = {}
         JobData.ujobs[descname][idx] = self
@@ -875,7 +876,7 @@ class JobData:
             self.do_error(myname, [e, f"Unable to copy wrapper: {fwrapsrc} to {fwrapdst}"], 4)
             return 5
         self.set_rundir(rundir)
-        #print(self.jmap())
+        #print(self.jmap(), flush=self.flush)
         jnam = self.job_config_file()
         with open(jnam, 'w') as jfil:
             json.dump(self.jmap(), jfil, separators=JobData.jsep, indent=JobData.jindent)
@@ -902,7 +903,7 @@ class JobData:
             com += ['{fwrapdst}', scom, self.rundir(), self.log_file(), self.wrapper_config_file(), self.index(), self.descname()]
             if server is not None: com += ["{server}"]
         #logfil = open(self.wrapper_log_file(), 'w')
-        #print(shwcom, logfil)
+        #print(shwcom, logfil, flush=self.flush)
         rundir = self.rundir()
         #self._popen = subprocess.Popen(com, cwd=rundir, stdout=logfil, stderr=logfil)
         self._popen = subprocess.Popen(com, cwd=rundir)
@@ -912,7 +913,7 @@ class JobData:
             print(f"JobData.run:    Command: {com}")
             print(f"JobData.run:    Run dir: {rundir}")
             print(f"JobData.run:   Log file: {lognam}")
-        self.set_data('progress', 'Running.')
+        self.set_data('progress', 'Running.', flush=self.flush)
         self.db_update()
         wmap = self.get_wrapper_info()
         return 0
@@ -938,7 +939,7 @@ class JobData:
             try:
                 jmap = json.load(jfil)
             except:
-                print(f"{myname}: Unable to read {jnam}")
+                print(f"{myname}: Unable to read {jnam}", flush=self.flush)
         self.jmap_update(jmap)
         # If we have the pid for the first time, record it and the start time
         # in the job data and config file.
@@ -951,7 +952,7 @@ class JobData:
                 try:
                     jmap = json.load(jfil)
                 except json.JSONDecodeError as e:
-                    print(f"{myname}: ERROR: Json decode error reading {jnam}.")
+                    print(f"{myname}: ERROR: Json decode error reading {jnam}.", flush=self.flush)
                     return None
             jmap.update({'pid':self.pid()})
             jmap.update({'start_time':self.start_time()})
@@ -1004,7 +1005,7 @@ class JobData:
         ts2 = self.stop_time()
         if ts2 is None: ts2 = timestamp()
         dur = ts2 - ts1
-        #print(f"Duration: {dur} = {ts2} - {ts1}")
+        #print(f"Duration: {dur} = {ts2} - {ts1}", flush=self.flush)
         return dur
 
     def dropdown_content(self, baseurl):
@@ -1039,11 +1040,11 @@ class JobData:
         uid = self.usr.descname
         sid = f"{uid}/{jid}"
         if self.index() in JobData.jobs:
-            print(f"{myname}: Removing {sid} from JobData.jobs")
+            print(f"{myname}: Removing {sid} from JobData.jobs", flush=self.flush)
             del JobData.jobs[jid]
         if uid in JobData.ujobs:
             if jid in JobData.ujobs[uid]:
-                print(f"{myname}: Removing {sid} from JobData.ujobs")
+                print(f"{myname}: Removing {sid} from JobData.ujobs", flush=self.flush)
                 del JobData.ujobs[uid][jid]
 
     def archive(self, force=False, if_present=False):
@@ -1097,25 +1098,25 @@ class JobData:
         rundir = self.rundir()
         ret = None
         if rundir is not None and os.path.exists(rundir):
-            print(f"{myname}: Deleting run directory for job {sid}")
+            print(f"{myname}: Deleting run directory for job {sid}", flush=self.flush)
             arcfil = self.archive()
             delfil = self.delete_file()
             if os.path.exists(rundir):
-                if dbg: print(f"Removing dir {rundir}")
+                if dbg: print(f"Removing dir {rundir}", flush=self.flush)
                 shutil.rmtree(rundir)
             if arcfil is not None:
                 if os.path.exists(arcfil) and not os.path.exists(delfil):
-                    if dbg: print(f"Renaming archive {arcfil}")
+                    if dbg: print(f"Renaming archive {arcfil}", flush=self.flush)
                     os.rename(arcfil, delfil)
                     ret = delfil
                 else:
-                    if dbg: print(f"Removing archive {arcfil}")
+                    if dbg: print(f"Removing archive {arcfil}", flush=self.flush)
                     os.remove(arcfil)
         if self.db_count_where(f"id={jid}"):
-            print(f"{myname}: Deleting DB entry for job {sid}")
+            print(f"{myname}: Deleting DB entry for job {sid}", flush=self.flush)
             ndel = self.db_delete_where(f"id={jid}")
             if ndel != 1:
-                print(f"{myname}: ERROR: Deleted row count {ndel} != one")
+                print(f"{myname}: ERROR: Deleted row count {ndel} != one", flush=self.flush)
         self.deactivate()
         return ret
         return 0
