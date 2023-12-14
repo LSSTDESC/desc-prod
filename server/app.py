@@ -271,7 +271,7 @@ if 'SERVER_OPTS' in os.environ:
 def get_jobid():
     fnam  = '/home/descprod/local/etc/jobid.txt'
     lock = threading.Lock()
-    lock.lock()
+    lock.acquire()
     jobid = int(subprocess.getoutput(f"descprod-next-jobid"))
     lock.release()
     fprint(f"get-jobid: Acquired job ID {jobid}")
@@ -279,7 +279,7 @@ def get_jobid():
 
 def get_sessionid():
     lock = threading.Lock()
-    lock.lock()
+    lock.acquire()
     lines = subprocess.getoutput(f"descprod-next-sessionid").splitlines()
     lock.release()
     sesid = int(lines[-1])
@@ -408,7 +408,7 @@ def home():
         msg += f'''<input type="text" name="howfig"  value="{udat.howfig}"  style="width: 300px;" />'''
         msg += f'<input type="submit" value="Submit"/></form>'''
         msg += sep
-        msg += '<form action="/" method="get"><input type="submit" value="Refresh"></form>\n'
+        msg += '<form action="/home" method="get"><input type="submit" value="Refresh"></form>\n'
         msg += '<form action="/logout" method="get"><input type="submit" value="Log out"></form>\n'
         msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>\n'
         msg += f'''<form action="/refresh_focus" method="get"><input type="submit" value="{sdat.refresh.focus_button_label()}"></form>\n'''
