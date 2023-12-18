@@ -855,7 +855,7 @@ def add_child_job():
 
 @app.route('/.well-known/pki-validation')
 def pkivalidation():
-    txt = '-----BEGIN CERTIFICATE REQUEST-----
+    txt = """-----BEGIN CERTIFICATE REQUEST-----
 MIIDOjCCAiICAQAwgY8xGTAXBgNVBAMMEHd3dy5kZXNjcHJvZC5vcmcxETAPBgNV
 BAcMCEJlcmtlbGV5MRMwEQYDVQQIDApDYWxpZm9ybmlhMQ4wDAYDVQQKDAVORVJT
 QzENMAsGA1UECwwEU1BJTjEeMBwGCSqGSIb3DQEJARYPZGxhZGFtc0BibmwuZ292
@@ -874,5 +874,5 @@ yPn5El1my32ejRjMHecn6OUc/fozdOvY/qjUekWoiKhptcrQHR9IfLsGyV0DGhEa
 vd3FTIXLB4IbopQrEEkiudUDxDsPhZuZsNnFUGokyTSf6esDrSJqqBai4UU4HTbE
 UppqL7wL2ubq9MdxFPjkLc0rTiPUqZPKNG2rkeVReDvU3Anjmft+8p3TgOXDb18y
 BWUISkFQkIN3XNKrwWA=
------END CERTIFICATE REQUEST-----'`
+-----END CERTIFICATE REQUEST-----'"""
     return make_reponse(txt)
