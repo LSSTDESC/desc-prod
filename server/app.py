@@ -853,7 +853,7 @@ def add_child_job():
     fprint(f"add_child_job: Added and configured child job {descname}/{jid}: {jobtype} {cfg}")
     return {'status':0, 'job':jdat.jmap()}
 
-@app.route('/.well-known')
+@app.route('/.well-known/xxx')
 def wellknown():
     txt = """-----BEGIN CERTIFICATE REQUEST-----
 MIIDOjCCAiICAQAwgY8xGTAXBgNVBAMMEHd3dy5kZXNjcHJvZC5vcmcxETAPBgNV
@@ -875,4 +875,4 @@ vd3FTIXLB4IbopQrEEkiudUDxDsPhZuZsNnFUGokyTSf6esDrSJqqBai4UU4HTbE
 UppqL7wL2ubq9MdxFPjkLc0rTiPUqZPKNG2rkeVReDvU3Anjmft+8p3TgOXDb18y
 BWUISkFQkIN3XNKrwWA=
 -----END CERTIFICATE REQUEST-----'"""
-    return make_reponse(txt)
+    return make_response(txt)
