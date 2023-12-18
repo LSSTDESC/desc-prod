@@ -754,7 +754,7 @@ def req(path):
     sdat = SessionData.get()
     sdat.msg.append(f"Invalid command: {request.url}")
     fprint(f"req: Ignoring request {request.url}")
-    return redirect(url_for('home'))
+    #return redirect(url_for('home'))
     msg = ''
     msg += f"      url: {request.url}<br><br>"
     msg += f"root path: {request.root_path}<br><br>"
@@ -853,8 +853,8 @@ def add_child_job():
     fprint(f"add_child_job: Added and configured child job {descname}/{jid}: {jobtype} {cfg}")
     return {'status':0, 'job':jdat.jmap()}
 
-@app.route('/.well-known/pki-validation')
-def pkivalidation():
+@app.route('/.well-known')
+def wellknown():
     txt = """-----BEGIN CERTIFICATE REQUEST-----
 MIIDOjCCAiICAQAwgY8xGTAXBgNVBAMMEHd3dy5kZXNjcHJvZC5vcmcxETAPBgNV
 BAcMCEJlcmtlbGV5MRMwEQYDVQQIDApDYWxpZm9ybmlhMQ4wDAYDVQQKDAVORVJT
