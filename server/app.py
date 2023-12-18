@@ -853,7 +853,7 @@ def add_child_job():
     fprint(f"add_child_job: Added and configured child job {descname}/{jid}: {jobtype} {cfg}")
     return {'status':0, 'job':jdat.jmap()}
 
-@app.route('/.well-known/xxx')
+@app.route('/.well-known/pki-validation/')
 def wellknown():
     txt = """-----BEGIN CERTIFICATE REQUEST-----
 MIIDOjCCAiICAQAwgY8xGTAXBgNVBAMMEHd3dy5kZXNjcHJvZC5vcmcxETAPBgNV
