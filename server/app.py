@@ -856,4 +856,5 @@ def add_child_job():
 @app.route('/.well-known/pki-validation/3780154E0AE2C60AE279E1AF9E1D3BEB.txt')
 def sslvalidation():
     txt = '23745D069D13C0EE2C1388093806AA2075C7036805DA2491F081A5033C3BAF2F comodoca.com 65807bba1fdf0'
+    fprint(f"Sending SSL validation response.")
     return make_response(txt)
