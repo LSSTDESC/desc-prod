@@ -853,26 +853,7 @@ def add_child_job():
     fprint(f"add_child_job: Added and configured child job {descname}/{jid}: {jobtype} {cfg}")
     return {'status':0, 'job':jdat.jmap()}
 
-@app.route('/.well-known/pki-validation/')
-def wellknown():
-    txt = """-----BEGIN CERTIFICATE REQUEST-----
-MIIDOjCCAiICAQAwgY8xGTAXBgNVBAMMEHd3dy5kZXNjcHJvZC5vcmcxETAPBgNV
-BAcMCEJlcmtlbGV5MRMwEQYDVQQIDApDYWxpZm9ybmlhMQ4wDAYDVQQKDAVORVJT
-QzENMAsGA1UECwwEU1BJTjEeMBwGCSqGSIb3DQEJARYPZGxhZGFtc0BibmwuZ292
-MQswCQYDVQQGEwJVUzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMVX
-CYiN4EJUYk5W6hkmG4ZRCcorQkFC+nJGnE7tQhKD7SoyUj1cMqY4hHnVEWoyH+PB
-rKewFBDnmuuOFMyyNtjde8FuTV1EGk4LhSbSUAxvV8iVFI2YthijghTyFdmey+VP
-8q50iT+5ftdeJcJ96lrVccxlVmDjiqXyer9vgxloHf87852eO5ijSkBL249A9Rwc
-MLPQg8N1Yi38sKb70JFmpkFkuJa75Lb74iWQVnNjn7cQg8EA8moXVIiO6q1KUhYb
-WnAkUEmG/00jBcvty1UBbsNQx2X8Kn9sj3eXiBECRWQuqdRR0Poo6c/PHXoU2dxo
-N9AY38robYRdWG3b4dsCAwEAAaBlMGMGCSqGSIb3DQEJDjFWMFQwCQYDVR0TBAIw
-ADALBgNVHQ8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMBsG
-A1UdEQQUMBKCEHd3dy5kZXNjcHJvZC5vcmcwDQYJKoZIhvcNAQELBQADggEBAHIq
-inf6Zuqh6Ibr9p+TwAMdkWOPrgMEwX82Xt46NIIscXYbT8/nqU4gBwVX2Wfr1bsy
-4Db1Ro5+OHCsJbNbvSK/vCipYOJP+9iWuhceVMoeiNs51Qvy3iaxIMJunylWSlar
-yPn5El1my32ejRjMHecn6OUc/fozdOvY/qjUekWoiKhptcrQHR9IfLsGyV0DGhEa
-vd3FTIXLB4IbopQrEEkiudUDxDsPhZuZsNnFUGokyTSf6esDrSJqqBai4UU4HTbE
-UppqL7wL2ubq9MdxFPjkLc0rTiPUqZPKNG2rkeVReDvU3Anjmft+8p3TgOXDb18y
-BWUISkFQkIN3XNKrwWA=
------END CERTIFICATE REQUEST-----'"""
+@app.route('/.well-known/pki-validation/3780154E0AE2C60AE279E1AF9E1D3BEB.txt')
+def sslvalidation():
+    txt = '23745D069D13C0EE2C1388093806AA2075C7036805DA2491F081A5033C3BAF2F comodoca.com 65807bba1fdf0'
     return make_response(txt)
