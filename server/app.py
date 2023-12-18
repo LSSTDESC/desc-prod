@@ -754,7 +754,7 @@ def req(path):
     sdat = SessionData.get()
     sdat.msg.append(f"Invalid command: {request.url}")
     fprint(f"req: Ignoring request {request.url}")
-    #return redirect(url_for('home'))
+    return redirect(url_for('home'))
     msg = ''
     msg += f"      url: {request.url}<br><br>"
     msg += f"root path: {request.root_path}<br><br>"
