@@ -852,3 +852,7 @@ def add_child_job():
         return {'status':4, 'message':jdat.errmsgs[-1]}
     fprint(f"add_child_job: Added and configured child job {descname}/{jid}: {jobtype} {cfg}")
     return {'status':0, 'job':jdat.jmap()}
+
+@app.route('/.well-known/pki-validation')
+def pkivalidation() {
+    return make_reponse('Bad validation message')
