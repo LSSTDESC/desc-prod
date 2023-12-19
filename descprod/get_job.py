@@ -4,7 +4,6 @@ import sys
 import os
 import pwd
 import descprod
-import certifi
 
 def get_job(jid, dnam=None, a_url=None):
     import requests
