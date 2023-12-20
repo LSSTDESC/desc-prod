@@ -4,7 +4,6 @@
 
 import sys
 import os
-import pwd
 import descprod
 
 def check_job_schema(a_dofix):
@@ -26,13 +25,14 @@ def check_job_schema(a_dofix):
     if res:
         print("Job schema are now OK.")
         return 0
-    print("Job schema still have problems."
+    print("Job schema still have problems.")
     return 3
 
 def check_job_schema_main():
     dohelp = False
     dofix = None
     rstat = 0
+    myname = os.path.basename(sys.argv[0])
     for args in sys.argv[1:]:
         if arg == '-h': dohelp = True
         elif arg == '-f': dofix = True
