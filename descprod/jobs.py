@@ -50,6 +50,9 @@ class JobData:
       _popen - Popen object. E.g. use poll to see if job has completed.
       port_errors - Error messages retrieving the port.
     """
+    # If any data fields are added, call
+    #   descprod-check-job-schema -y
+    # at each site to add them to the DB.
     data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config',  'howfig', 'session', 'dbstat']
     data_dbtypes = ['int',    'int',  'varchar', 'varchar', 'varchar', 'varchar',     'int',    'int']
     data_names +=   [   'host',  'rundir', 'pid', 'create_time', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
@@ -139,7 +142,7 @@ class JobData:
         return cls.ujobs[descname]
 
     @classmethod
-    def get_jobs_from_db(cls, descname=None):
+    def get_jobs_from_db(cls, descname=None, arcs=[0]):
         """"Retrieve a user's jobs from the job DB."""
         myname = 'JobData.get_jobs_from_db'
         msg = ''   # Blank for success

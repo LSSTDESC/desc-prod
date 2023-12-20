@@ -15,6 +15,7 @@ class JobTable:
     def refresh(self):
         self.jobs, self.error_message = JobData.get_jobs_from_db(self.descname)
         if len(self.error_message): return
+        self.archives = []
         self.jobids = []
         self.parents = []
         self.jobtypes = []
@@ -31,6 +32,7 @@ class JobTable:
         self.stamsgs = []
         self.ports = []
         for job in self.jobs.values():
+            self.archives.append(job.archive())
             self.jobids.append(job.index())
             self.parents.append(job.parent())
             self.jobtypes.append(job.jobtype())
@@ -63,6 +65,7 @@ class JobTable:
             self.durations.append(job.duration())
             self.ports.append(job.port())
         self.map = {}
+        self.map['archive'] = self.archives
         self.map['id'] = self.jobids
         self.map['parent'] = self.parents
         self.map['jobtype'] = self.jobtypes
@@ -87,6 +90,7 @@ class JobTable:
         txt = '<table border ="0" class="dataframe">\n'
         txt += '<thead>\n'
         txt += '  <tr style="text-align:right;">\n'
+        txt += '    <th>Archive</th>\n'
         txt += '    <th>ID</th>\n'
         txt += '    <th>Parent</th>\n'
         txt += '    <th>Type</th>\n'
@@ -105,6 +109,7 @@ class JobTable:
         txt += '<tbody>\n'
         usemenu = baseurl is not None
         for row in range(len(self.jobs)):
+            archive = slf.archives[row]
             jid = self.jobids[row]
             job = self.jobs[jid]
             sjid = str(jid)
@@ -134,6 +139,7 @@ class JobTable:
             stamsg = self.stamsgs[row]
             errmsg = self.errmsgs[row]
             msg = stamsg if len(stamsg) else errmsg if len(errmsg) else ''
+            txt += f"    <td>{archive}</td>{eol}"
             txt += f"    <td{clsarg}>{sjid}</td>{eol}"
             txt += f"    <td>{sparent}</td>{eol}"
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"

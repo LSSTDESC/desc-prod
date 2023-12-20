@@ -1,6 +1,9 @@
 # check_job_schema.py
 
 # Script to check the schema in the descprod job table.
+# It also provides the option to add missing schema.
+# Call this after adding schema in the code (jobs.py)
+# to add those fields to the DB at each site.
 
 import sys
 import os
