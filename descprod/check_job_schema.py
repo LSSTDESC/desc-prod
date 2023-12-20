@@ -13,8 +13,7 @@ def check_job_schema(a_dofix):
         return 0
     dofox = a_dofix
     if dofix is None:
-        print("Problem found with job schema. Do you want to fix?> ")
-        line = sys.stdin
+        line = input("Problem found with job schema. Do you want to fix?> ")
         dofix = line[0] in ['y', 'Y']
     if not dofix:
         print("Not attempting to fix bad schema.")
