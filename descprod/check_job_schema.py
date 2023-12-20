@@ -32,7 +32,7 @@ def check_job_schema_main():
     dofix = None
     rstat = 0
     myname = os.path.basename(sys.argv[0])
-    for args in sys.argv[1:]:
+    for arg in sys.argv[1:]:
         if arg == '-h': dohelp = True
         elif arg == '-f': dofix = True
         else:
