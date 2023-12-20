@@ -11,7 +11,7 @@ def check_job_schema(a_dofix):
     if res:
         print("Job schema are OK.")
         return 0
-    dofox = a_dofix
+    dofix = a_dofix
     if dofix is None:
         line = input("Problem found with job schema. Do you want to fix?> ")
         dofix = line[0] in ['y', 'Y']
