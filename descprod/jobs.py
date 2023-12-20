@@ -53,7 +53,7 @@ class JobData:
     # If any data fields are added, call
     #   descprod-check-job-schema -y
     # at each site to add them to the DB.
-    data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config',  'howfig', 'session', 'dbstat']
+    data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config',  'howfig', 'session', 'archive']
     data_dbtypes = ['int',    'int',  'varchar', 'varchar', 'varchar', 'varchar',     'int',    'int']
     data_names +=   [   'host',  'rundir', 'pid', 'create_time', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
     data_dbtypes += ['varchar', 'varchar', 'int',         'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
