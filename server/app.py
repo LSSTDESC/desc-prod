@@ -154,6 +154,7 @@ class SessionData:
         self.logged_out = False
         self.user()
         self.refresh = Refresh()
+        self.table_archives = [0]  # Which sessions are displayed.
         assert sesskey not in SessionData.sessions
         SessionData.sessions[sesskey] = self
         fprint(f"SessionData.init: Updated active user count is {len(SessionData.sessions)}")
@@ -361,7 +362,7 @@ def home():
         msg += f"Refresh period: {sdat.refresh.period_label()}"
         msg += sep
         msg += sep
-        jtab = JobTable(udat.descname)
+        jtab = JobTable(udat.descname, sdat.table_archives)
         if (jtab.error_message):
               msg += f"ERROR: {jtab.error_message}"
               return sdat.make_response(msg)

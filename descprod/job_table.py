@@ -12,8 +12,8 @@ class JobTable:
         self.descname = descname
         self.refresh()
 
-    def refresh(self):
-        self.jobs, self.error_message = JobData.get_jobs_from_db(self.descname)
+    def refresh(self, arcs=[0]):
+        self.jobs, self.error_message = JobData.get_jobs_from_db(self.descname, arcs)
         if len(self.error_message): return
         self.archives = []
         self.jobids = []
