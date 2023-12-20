@@ -35,6 +35,7 @@ class JobData:
                config - config string for the job
                howfig - how config string for the job
               session - sessiin where job was created
+              archive - Archive index, 0 if not archived
                   pid - process ID
           create_time - job creation timestamp
            start_time - start timestamp
@@ -49,8 +50,8 @@ class JobData:
       _popen - Popen object. E.g. use poll to see if job has completed.
       port_errors - Error messages retrieving the port.
     """
-    data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config',  'howfig', 'session']
-    data_dbtypes = ['int',    'int',  'varchar', 'varchar', 'varchar', 'varchar',     'int']
+    data_names =   [ 'id', 'parent', 'descname', 'jobtype',  'config',  'howfig', 'session', 'dbstat']
+    data_dbtypes = ['int',    'int',  'varchar', 'varchar', 'varchar', 'varchar',     'int',    'int']
     data_names +=   [   'host',  'rundir', 'pid', 'create_time', 'start_time', 'update_time', 'stop_time', 'return_status', 'port', 'progress']
     data_dbtypes += ['varchar', 'varchar', 'int',         'int',        'int',         'int',       'int',           'int',  'int',  'varchar']
     data_nchars = {'descname':64, 'jobtype':128, 'config':512, 'howfig':512, 'host':128, 'rundir':256, 'progress':256}
@@ -633,6 +634,7 @@ class JobData:
     def config(self):        return self.data('config')
     def howfig(self):        return self.data('howfig')
     def session(self):       return self.data('session')
+    def archive(self):       return self.data('archive')
     def host(self):          return self.data('host')
     def rundir(self):        return self.data('rundir')
     def pid(self):           return self.data('pid')
@@ -797,6 +799,7 @@ class JobData:
         self.set_data('config', config)
         self.set_data('howfig', howfig)
         self.set_data('session', sid)
+        self.set_data('archive', sid)
         if parent is not None:
             self.set_data('parent', parent)
         self.set_data('progress', 'Ready.')
