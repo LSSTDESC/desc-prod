@@ -34,7 +34,8 @@ def check_job_schema_main():
     myname = os.path.basename(sys.argv[0])
     for arg in sys.argv[1:]:
         if arg == '-h': dohelp = True
-        elif arg == '-f': dofix = True
+        elif arg == '-y': dofix = True
+        elif arg == '-n': dofix = False
         else:
             print(f"{myname}: Invalid argument: {arg}")
             dohelp = True
