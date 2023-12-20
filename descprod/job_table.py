@@ -109,7 +109,7 @@ class JobTable:
         txt += '<tbody>\n'
         usemenu = baseurl is not None
         for row in range(len(self.jobs)):
-            archive = slf.archives[row]
+            archive = self.archives[row]
             jid = self.jobids[row]
             job = self.jobs[jid]
             sjid = str(jid)
