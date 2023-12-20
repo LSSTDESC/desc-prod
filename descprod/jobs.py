@@ -1053,7 +1053,7 @@ class JobData:
                 print(f"{myname}: Removing {sid} from JobData.ujobs", flush=self.flush)
                 del JobData.ujobs[uid][jid]
 
-    def archive(self, force=False, if_present=False):
+    def set_archive(self, force=False, if_present=False):
         """
         Archive this job.
         Returns the archive file name if successful.
