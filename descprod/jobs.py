@@ -1053,12 +1053,20 @@ class JobData:
                 print(f"{myname}: Removing {sid} from JobData.ujobs", flush=self.flush)
                 del JobData.ujobs[uid][jid]
 
-    def set_archive(self, force=False, if_present=False):
+    def set_archive(self, aval=1):
+        """
+        Archive this job.
+        """
+        self.set_data('archive', aval)
+        self.db_update()
+        return 0
+
+    def old_archive(self, force=False, if_present=False):
         """
         Archive this job.
         Returns the archive file name if successful.
         Otherwise returns None.
-          force - Remake the arcive if it already exists
+          force - Remake the archive if it already exists
           if_present - No error if rundir is missing
         """
         myname = 'JobData.archive'
@@ -1105,7 +1113,7 @@ class JobData:
         ret = None
         if rundir is not None and os.path.exists(rundir):
             print(f"{myname}: Deleting run directory for job {sid}", flush=self.flush)
-            arcfil = self.archive()
+            arcfil = self.set_archive()
             delfil = self.delete_file()
             if os.path.exists(rundir):
                 if dbg: print(f"Removing dir {rundir}", flush=self.flush)

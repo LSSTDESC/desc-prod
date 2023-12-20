@@ -677,11 +677,12 @@ def archive_job():
     if job is None:
         sdat.msg.append(f"Job {jobid} not found for user {udat.descname}")
     else:
-        arcfil = job.archive()
-        if arcfil is None:
+        archive = 1
+        rstat = job.set_archive()
+        if rstat:
             sdat.msg.append(f"Unable to archive Job {jobid} for user {udat.descname}")
         else:
-            sdat.msg.append(f"Job archived at {arcfil}")
+            sdat.msg.append(f"Job archived at {job.archive()}")
     return redirect(url_for('home'))
 
 @app.route('/deletejob')
