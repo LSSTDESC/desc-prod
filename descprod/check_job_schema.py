@@ -24,7 +24,7 @@ def check_job_schema(a_dofix):
     res = descprod.JobData.db_table(add_schema=True)
     res = descprod.JobData.db_table(check_schema=True)
     if res:
-        print("Job schema are now OK."
+        print("Job schema are now OK.")
         return 0
     print("Job schema still have problems."
     return 3
