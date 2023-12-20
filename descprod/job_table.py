@@ -8,12 +8,13 @@ class JobTable:
     Class to hold an format a TABLE of jobs.
     """
 
-    def __init__(self, descname=None, arcs):
+    def __init__(self, descname, arcs):
         self.descname = descname
-        self.refresh(arcs)
+        self.archives = ars
+        self.refresh()
 
-    def refresh(self, arcs):
-        self.jobs, self.error_message = JobData.get_jobs_from_db(self.descname, arcs)
+    def refresh(self):
+        self.jobs, self.error_message = JobData.get_jobs_from_db(self.descname, self.archives)
         if len(self.error_message): return
         self.archives = []
         self.jobids = []
