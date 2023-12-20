@@ -10,7 +10,7 @@ class JobTable:
 
     def __init__(self, descname, arcs):
         self.descname = descname
-        self.archives = ars
+        self.archives = arcs
         self.refresh()
 
     def refresh(self):
