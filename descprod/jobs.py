@@ -238,7 +238,8 @@ class JobData:
         return con
 
     @classmethod
-    def db_table(cls, table_name=None, *, create_table=False, drop_table=False, db_name=None, create_db=False, check_schema=False, add_schema=False, verbose=0):
+    def db_table(cls, table_name=None, *, create_table=False, drop_table=False, db_name=None,
+                 create_db=False, check_schema=False, add_schema=False, drop_column='', verbose=0):
         """
         Manipulate a job table in the DB.
           db_name - Database name [descprod]
@@ -249,6 +250,7 @@ class JobData:
              create_db - if True, creates the database
           check_schema - If True, check that all expected fields are present
             add_schema - If True, add any missing fields
+           drop_column - if not blank, delete column drop_column
         Returns if the table exists.
         """
         myname = 'JobData.db_table'
@@ -271,6 +273,16 @@ class JobData:
             con.commit()
             haveit = cls.db_table()
             print(f"{myname}: Drop was successful.", flush=cls.flush)
+        if len(drop_column) and haveit:
+            print(f"{myname}: Dropping table {tnam}", flush=cls.flush)
+            cls.connections.clear()
+            com = f"ALTER TABLE {tnam}"
+            cur.execute(com)
+            com = f"DROP {drop_column}"
+            cur.execute(com)
+            con.commit()
+            haveit = cls.db_table()
+            print(f"{myname}: Drop of column {drop_column} was successful.", flush=cls.flush)
         if create_table and not haveit:
             print(f"{myname}: Creating table {tnam}", flush=cls.flush)
             cls.connections.clear()
