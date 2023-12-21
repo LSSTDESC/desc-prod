@@ -608,7 +608,7 @@ def refresh_period():
 @app.route("/archive_list")
 def archive_list():
     sdat = SessionData.get()
-    sdat.archive_list.change_list()
+    sdat.archive_list.increment_list()
     return redirect(url_for('home'))
 
 @app.route("/pmstatus")
