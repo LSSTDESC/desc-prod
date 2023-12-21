@@ -683,7 +683,7 @@ def archive_job():
         if rstat:
             sdat.msg.append(f"Unable to archive Job {jobid} for user {udat.descname}")
         else:
-            sdat.msg.append(f"Job archived at {job.archive()}")
+            sdat.msg.append(f"Job {jobid} archived at {job.archive()}")
     return redirect(url_for('home'))
 
 @app.route('/deletejob')

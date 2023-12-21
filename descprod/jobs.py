@@ -142,16 +142,20 @@ class JobData:
         return cls.ujobs[descname]
 
     @classmethod
-    def get_jobs_from_db(cls, descname=None, arcs=[0]):
+    def get_jobs_from_db(cls, descname=None, arcs=None):
         """"Retrieve a user's jobs from the job DB."""
         myname = 'JobData.get_jobs_from_db'
         msg = ''   # Blank for success
         if descname not in cls.ujobs:
             cls.ujobs[descname] = {}
-        cur, con = cls.db_query_where(f"descname='{descname}'", cols='id')
+        sqry = f"descname='{descname}'"
+        if type(arcs) is list:
+            saqry = str(arcs).replace('[', '(').replace(']', ')')
+            sqry += f" AND archive IN {sarcs}"
+        cur, con = cls.db_query_where(sqry, cols='id')
         myjobs = cls.ujobs[descname]
         if cur is None:
-            msg = "Job DB query failed."
+            msg = f"Job DB query failed: {sqry}"
             print(f"{myname}: {msg}", flush=cls.flush)
             return {}, msg
         jdats = []
