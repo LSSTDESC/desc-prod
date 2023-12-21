@@ -92,16 +92,16 @@ class ArchiveList:
         self.lists = [[0], []]
         self.list_labels = ["unarchived jobs", "all jobs"]
     def next_index(self):
-        return (self.ilist+1)%len(self.button_labels)
+        return (self.ilist+1)%nlist)
     def list(self):
         return self.lists[self.ilist]
     def list_label(self):
-        return self.period_labels[self.iperiod]
+        return self.list_labels[self.ilist]
     def list_button_label(self):
         return f"Show {self.list_labels[self.next_index()]}"
     def increment_list(self):
         self.ilist = self.next_index()
-        fprint(f"Archive display set to {self.list()} for sdat.user()")
+        fprint(f"Archive display set to {self.list_label()} for {sdat.user()}")
 
 class SessionData:
     """
