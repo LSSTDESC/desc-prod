@@ -10,11 +10,11 @@ class JobTable:
 
     def __init__(self, descname, arcs):
         self.descname = descname
-        self.show_archives = arcs
+        self.archives_selected = arcs
         self.refresh()
 
     def refresh(self):
-        self.jobs, self.error_message = JobData.get_jobs_from_db(self.descname, self.show_archives)
+        self.jobs, self.error_message = JobData.get_jobs_from_db(self.descname, self.archives_selected)
         if len(self.error_message): return
         self.archives = []
         self.jobids = []
@@ -88,10 +88,12 @@ class JobTable:
         """
         #return self.df.to_html(index=False, border=0, classes=['dropdown'])
         eol = '\n'
+        show_archive = self.archives_selected is None or len(self.archives_selected) > 1
         txt = '<table border ="0" class="dataframe">\n'
         txt += '<thead>\n'
         txt += '  <tr style="text-align:right;">\n'
-        txt += '    <th>Archive</th>\n'
+        if show_archive:
+            txt += '    <th>Archive</th>\n'
         txt += '    <th>ID</th>\n'
         txt += '    <th>Parent</th>\n'
         txt += '    <th>Type</th>\n'
@@ -140,7 +142,8 @@ class JobTable:
             stamsg = self.stamsgs[row]
             errmsg = self.errmsgs[row]
             msg = stamsg if len(stamsg) else errmsg if len(errmsg) else ''
-            txt += f"    <td>{archive}</td>{eol}"
+            if show_archive:
+                txt += f"    <td>{archive}</td>{eol}"
             txt += f"    <td{clsarg}>{sjid}</td>{eol}"
             txt += f"    <td>{sparent}</td>{eol}"
             txt += f"    <td>{self.jobtypes[row]}</td>{eol}"
