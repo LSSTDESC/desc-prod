@@ -99,7 +99,7 @@ class ArchiveList:
         return self.list_labels[self.ilist]
     def list_button_label(self):
         next = ArchiveList(self.next_index())
-        return f"Show {next.list_label()}"
+        return f"Show {next.list_label()} jobs"
     def increment_list(self):
         self.ilist = self.next_index()
 
