@@ -99,7 +99,7 @@ class JobTable:
         """
         #return self.df.to_html(index=False, border=0, classes=['dropdown'])
         eol = '\n'
-        show_archive = self.archives_selected is None or len(self.archives_selected) > 1
+        show_archive = self.archives_selected is None or len(self.archives_selected) != 1
         txt = '<table border ="0" class="dataframe">\n'
         txt += '<thead>\n'
         txt += '  <tr style="text-align:right;">\n'
