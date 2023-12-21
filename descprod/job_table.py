@@ -10,12 +10,13 @@ class JobTable:
 
     def __init__(self, descname, arcs):
         self.descname = descname
-        self.archives = arcs
+        self.show_archives = arcs
         self.refresh()
 
     def refresh(self):
-        self.jobs, self.error_message = JobData.get_jobs_from_db(self.descname, self.archives)
+        self.jobs, self.error_message = JobData.get_jobs_from_db(self.descname, self.show_archives)
         if len(self.error_message): return
+        self.archives = []
         self.jobids = []
         self.parents = []
         self.jobtypes = []
