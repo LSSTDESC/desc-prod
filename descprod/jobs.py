@@ -151,7 +151,10 @@ class JobData:
         sqry = f"descname='{descname}'"
         if type(arcs) is list:
             sarcs = str(arcs).replace('[', '(').replace(']', ')')
-            sqry += f" AND archive IN {sarcs}"
+            sqry += f" AND ( archive IN {sarcs}"
+            if 0 in arcs:
+                sqry += f" OR archive IS NULL}"
+            sqry += " )"
         cur, con = cls.db_query_where(sqry, cols='id')
         myjobs = cls.ujobs[descname]
         if cur is None:
