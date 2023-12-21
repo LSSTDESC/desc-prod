@@ -313,7 +313,10 @@ class JobData:
             schema = {}
             for ent in cur.fetchall():
                 nam = ent[0]
-                schema[nam] = ent
+                if nam in cls.data_names:
+                    schema[nam] = ent
+                else:
+                    print("WARNING: DB column {name} is not part of JobData.")
             where = "FIRST"
             for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
                 nchar = cls.data_nchars.get(nam, 0)
