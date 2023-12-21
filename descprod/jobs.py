@@ -729,6 +729,7 @@ class JobData:
         self.set_data('id', a_idx)
         self.set_data('descname', a_descname)
         self.set_data('progress', 'Created.')
+        self.set_data('archive', 0)
         now = int(time.time())
         self.set_data('create_time', now)
         self.set_data('update_time', now)
@@ -828,7 +829,6 @@ class JobData:
         self.set_data('config', config)
         self.set_data('howfig', howfig)
         self.set_data('session', sid)
-        self.set_data('archive', sid)
         if parent is not None:
             self.set_data('parent', parent)
         self.set_data('progress', 'Ready.')
