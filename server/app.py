@@ -85,12 +85,12 @@ class Refresh:
 
 # Class to hold and change list of archives to display.
 class ArchiveList:
-    def __init__(self):
+    def __init__(self, ilist=0):
         self.focus = True
         self.nlist = 2
-        self.ilist = 0
+        self.ilist = ilist % nlist
         self.lists = [[0], []]
-        self.list_labels = ["unarchived jobs", "all jobs"]
+        self.list_labels = ["active", "all"]
     def next_index(self):
         return (self.ilist+1)%self.nlist
     def list(self):
@@ -98,7 +98,8 @@ class ArchiveList:
     def list_label(self):
         return self.list_labels[self.ilist]
     def list_button_label(self):
-        return f"Show {self.list_labels[self.next_index()]}"
+        next = ArchiveList(self.next_index())
+        return f"Show {next.list_label()}"
     def increment_list(self):
         self.ilist = self.next_index()
 
@@ -395,13 +396,16 @@ def home():
                 udat.jobtype = job_last.jobtype()
                 udat.config = job_last.config()
                 udat.howfig = job_last.howfig()
-        njob = len(jtab.jobs)
-        msg += f"User {udat.descname} has {njob} active job"
+        hjobs, njob = jtab.to_html(fixurl(request.base_url)[0:-5])
+        slist = sdat.archive_list.list_label()
+        msg += f"User {udat.descname} has {njob}"
+        if slist != 'all': msg += f" {slist}"
+        msg += f" job"
         if njob != 1: msg += 's'
         if njob:
             msg += ':'
             msg += sep
-            msg += table_wrap(jtab.to_html(fixurl(request.base_url)[0:-5]))
+            msg += table_wrap(hjobs)
         msg += sep
         #msg += f"{status()}"
         #if SessionData.stanam is not None:

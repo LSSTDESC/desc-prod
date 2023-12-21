@@ -122,6 +122,7 @@ class JobTable:
         txt += '  </tr>\n'
         txt += '<tbody>\n'
         usemenu = baseurl is not None
+        nrow = 0
         for row in range(len(self.jobs)):
             archive = self.archives[row]
             if not self.show_row(archive): continue
@@ -171,6 +172,7 @@ class JobTable:
             txt += f"    <td>{srstat}</td>{eol}"
             txt += f"""    <td style="text-align:left">{msg}</td>{eol}"""
             txt +=  '  </tr>\n'
+            nrow += 1
         txt += '</tbody>\n'
         txt += '</table>\n'
-        return txt
+        return txt, nrow
