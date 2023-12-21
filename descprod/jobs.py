@@ -150,7 +150,7 @@ class JobData:
             cls.ujobs[descname] = {}
         sqry = f"descname='{descname}'"
         if type(arcs) is list:
-            saqry = str(arcs).replace('[', '(').replace(']', ')')
+            sarcs = str(arcs).replace('[', '(').replace(']', ')')
             sqry += f" AND archive IN {sarcs}"
         cur, con = cls.db_query_where(sqry, cols='id')
         myjobs = cls.ujobs[descname]
