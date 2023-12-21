@@ -8,13 +8,13 @@ class JobTable:
     Class to hold an format a TABLE of jobs.
     """
 
-    def __init__(self, descname, arcs):
+    def __init__(self, descname, archives_selected):
         """
         descname - User name
         archives_selected - Archives to display. None or empty means all.
         """
         self.descname = descname
-        self.archives_selected = arcs
+        self.archives_selected = archives_selected
         self.refresh()
 
     def refresh(self):
@@ -85,7 +85,7 @@ class JobTable:
         self.df = DataFrame(self.map)
         
     def show_row(self, archive):
-        if not type(archives_selected) is list: return True
+        if not type(self.archives_selected) is list: return True
         if len(self.archives_selected) == 0: return True
         if archive is None and 0 in self.archives_selected: return True
         if archive in self.archives_selected: return True
