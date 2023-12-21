@@ -159,13 +159,17 @@ class JobData:
             print(f"{myname}: {msg}", flush=cls.flush)
             return {}, msg
         jdats = []
+        njobsel = 0
         for row in cur.fetchall():
             idx = row[0]
+            njobsel += 1
             if idx not in myjobs:
                 jdat = JobData(idx, descname, 'db')
                 jdats.append(jdat)
         if len(jdats):
             print(f"{myname}: Fetched {len(jdats)} new jobs for user {descname} from DB", flush=cls.flush)
+        if njobsel == 0:
+            print(f"{myname}: WARNING: No jobs matched query {sqry}")
         return myjobs, msg
 
     @classmethod
