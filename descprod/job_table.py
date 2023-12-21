@@ -9,6 +9,10 @@ class JobTable:
     """
 
     def __init__(self, descname, arcs):
+        """
+        descname - User name
+        archives_selected - Archives to display. None or empty means all.
+        """
         self.descname = descname
         self.archives_selected = arcs
         self.refresh()
@@ -80,6 +84,13 @@ class JobTable:
         self.map['msg'] = self.errmsgs
         self.df = DataFrame(self.map)
         
+    def show_row(self, archive):
+        if not type(archives_selected) is list: return True
+        if len(self.archives_selected) == 0: return True
+        if archive is None and 0 in self.archives_selected: return True
+        if archive in self.archives_selected: return True
+        return False
+
     def to_html(self, baseurl=None):
         """
         Return the table in html.
@@ -113,6 +124,7 @@ class JobTable:
         usemenu = baseurl is not None
         for row in range(len(self.jobs)):
             archive = self.archives[row]
+            if not self.show_row(archive): continue
             jid = self.jobids[row]
             job = self.jobs[jid]
             sjid = str(jid)
