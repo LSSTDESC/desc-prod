@@ -278,7 +278,7 @@ class JobData:
             cls.connections.clear()
             com = f"ALTER TABLE {tnam}"
             cur.execute(com)
-            com = f"DROP {drop_column}"
+            com = f"DROP '{drop_column}'"
             cur.execute(com)
             con.commit()
             haveit = cls.db_table()
