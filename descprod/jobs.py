@@ -149,7 +149,7 @@ class JobData:
         if descname not in cls.ujobs:
             cls.ujobs[descname] = {}
         sqry = f"descname='{descname}'"
-        if type(arcs) is list:
+        if type(arcs) is list and len(arcs):
             sarcs = str(arcs).replace('[', '(').replace(']', ')')
             sqry += f" AND ( archive IN {sarcs}"
             if 0 in arcs:
