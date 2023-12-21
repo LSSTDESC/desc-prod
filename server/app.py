@@ -61,7 +61,7 @@ from descprod import UserData
 from descprod import JobData
 from descprod import JobTable
 
-# Move this to session.
+# Class to hold an change refresh period.
 class Refresh:
     def __init__(self):
         self.focus = True
@@ -82,6 +82,27 @@ class Refresh:
     def increment_period(self):
         self.iperiod = (self.iperiod + 1) % len(self.periods)
         fprint(f"Set refresh period to index {self.iperiod}: {self.period_label()} [{self.period()} sec]")
+
+# Class to hold and change list of archives to display.
+class ArchiveList:
+    def __init__(self):
+        self.focus = True
+        self.nlist = 2
+        self.ilist = 0
+        self.lists = [[0], []]
+        self.list_labels = ["unarchived jobs", "all jobs"]
+        self.button_labels = ["Show unarchived jobs", "Show all jobs"]
+    def list(self):
+        return self.lists[self.ilist]
+    def list_label(self):
+        return self.period_labels[self.iperiod]
+    def list_button_label(self):
+        return self.button_labels[(self.ilist+1)%len(self.button_labels)
+    def next_index():
+        return (self.ilist+1)%len(self.button_labels)
+    def increment_list(self):
+        self.ilist = self.next_index()
+        fprint(f"Archive display set to {self.list()} for sdat.user()")
 
 class SessionData:
     """
@@ -154,6 +175,7 @@ class SessionData:
         self.logged_out = False
         self.user()
         self.refresh = Refresh()
+        self.archive_list = ArchiveList()
         self.table_archives = [0]  # Which sessions are displayed.
         assert sesskey not in SessionData.sessions
         SessionData.sessions[sesskey] = self
@@ -414,6 +436,7 @@ def home():
         msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>\n'
         msg += f'''<form action="/refresh_focus" method="get"><input type="submit" value="{sdat.refresh.focus_button_label()}"></form>\n'''
         msg += f'''<form action="/refresh_period" method="get"><input type="submit" value="Change refresh period"></form>\n'''
+        msg += f'''<form action="/archive_list" method="get"><input type="submit" value="{sdat.archive_list.focus_button_label()}"></form>\n'''
         #msg += '<form action="/session" method="get"><input type="submit" value="Show session"></form>'
         msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>\n'
         if udat.is_admin(): msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>\n'
@@ -581,6 +604,12 @@ def refresh_focus():
 def refresh_period():
     sdat = SessionData.get()
     sdat.refresh.increment_period()
+    return redirect(url_for('home'))
+
+@app.route("/archive_list")
+def archive_list():
+    sdat = SessionData.get()
+    sdat.archive_list.change_list()
     return redirect(url_for('home'))
 
 @app.route("/pmstatus")

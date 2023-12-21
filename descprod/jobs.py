@@ -244,7 +244,7 @@ class JobData:
         Manipulate a job table in the DB.
           db_name - Database name [descprod]
             table_name - Job table name [descprod]
-             create_db - if True, creates the database
+          create_table - if True, creates the table
             drop_table - if True, deletes the table
           create_table - if True, creates the table
              create_db - if True, creates the database
