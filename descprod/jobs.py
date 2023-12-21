@@ -316,7 +316,7 @@ class JobData:
                 if nam in cls.data_names:
                     schema[nam] = ent
                 else:
-                    print("WARNING: DB column {name} is not part of JobData.")
+                    print(f"WARNING: DB column {nam} is not part of JobData.")
             where = "FIRST"
             for (nam, typ) in zip(cls.data_names, cls.data_dbtypes):
                 nchar = cls.data_nchars.get(nam, 0)
