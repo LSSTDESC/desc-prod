@@ -88,7 +88,7 @@ class ArchiveList:
     def __init__(self, ilist=0):
         self.focus = True
         self.nlist = 2
-        self.ilist = ilist % nlist
+        self.ilist = ilist % self.nlist
         self.lists = [[0], []]
         self.list_labels = ["active", "all"]
     def next_index(self):
