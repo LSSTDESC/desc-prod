@@ -91,15 +91,14 @@ class ArchiveList:
         self.ilist = 0
         self.lists = [[0], []]
         self.list_labels = ["unarchived jobs", "all jobs"]
-        self.button_labels = ["Show unarchived jobs", "Show all jobs"]
+    def next_index():
+        return (self.ilist+1)%len(self.button_labels)
     def list(self):
         return self.lists[self.ilist]
     def list_label(self):
         return self.period_labels[self.iperiod]
     def list_button_label(self):
-        return self.button_labels[(self.ilist+1)%len(self.button_labels)
-    def next_index():
-        return (self.ilist+1)%len(self.button_labels)
+        return f"Show {self.list_labels[self.next_index()]}"
     def increment_list(self):
         self.ilist = self.next_index()
         fprint(f"Archive display set to {self.list()} for sdat.user()")
@@ -436,7 +435,7 @@ def home():
         msg += '<form action="/versions" method="get"><input type="submit" value="Versions"></form>\n'
         msg += f'''<form action="/refresh_focus" method="get"><input type="submit" value="{sdat.refresh.focus_button_label()}"></form>\n'''
         msg += f'''<form action="/refresh_period" method="get"><input type="submit" value="Change refresh period"></form>\n'''
-        msg += f'''<form action="/archive_list" method="get"><input type="submit" value="{sdat.archive_list.focus_button_label()}"></form>\n'''
+        msg += f'''<form action="/archive_list" method="get"><input type="submit" value="{sdat.archive_list.list_button_label()}"></form>\n'''
         #msg += '<form action="/session" method="get"><input type="submit" value="Show session"></form>'
         msg += '<form action="/pmstatus" method="get"><input type="submit" value="Perlmutter status"></form>\n'
         if udat.is_admin(): msg += '<form action="/bye" method="get"><input type="submit" value="Restart server"></form>\n'
