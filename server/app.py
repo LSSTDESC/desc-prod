@@ -101,7 +101,6 @@ class ArchiveList:
         return f"Show {self.list_labels[self.next_index()]}"
     def increment_list(self):
         self.ilist = self.next_index()
-        fprint(f"Archive display set to {self.list_label()} for {sdat.user()}")
 
 class SessionData:
     """
@@ -609,6 +608,7 @@ def refresh_period():
 def archive_list():
     sdat = SessionData.get()
     sdat.archive_list.increment_list()
+    fprint(f"Archive display set to {sdat.archive_list.list_label()} for {sdat.user()}")
     return redirect(url_for('home'))
 
 @app.route("/pmstatus")
