@@ -92,7 +92,7 @@ class ArchiveList:
         self.lists = [[0], []]
         self.list_labels = ["unarchived jobs", "all jobs"]
     def next_index(self):
-        return (self.ilist+1)%nlist)
+        return (self.ilist+1)%self.nlist)
     def list(self):
         return self.lists[self.ilist]
     def list_label(self):
