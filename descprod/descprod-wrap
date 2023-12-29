@@ -6,7 +6,7 @@
 # January 2023
 #
 
-wver = 18
+wver = 19
 
 import sys
 import os
@@ -150,7 +150,10 @@ while rc is None or sc != 200:
             print(f"Unable to reach server at {surl}: {str(e)}")
             sc = 999
         sys.stdout.flush()
-    time.sleep(wait_time)
+    try:
+        time.sleep(wait_time)
+    except Exception as exc:
+        print(f"Ignoring exception {exc.__class__.__name__}: {exc}")
 # Finally run the closeout script if it exists.
 # We pass it the return code from the main script.
 conam = './descprod-closeout'
