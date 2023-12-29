@@ -4,7 +4,7 @@
 #
 # Build this package locally and commit and push any changes.
 
-DEFISS=5
+DEFISS=4
 ISS=${1}
 
 if [ "$ISS" = "-h" ]; then
