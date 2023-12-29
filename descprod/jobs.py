@@ -944,8 +944,8 @@ class JobData:
             print(f"JobData.run: Started subprocess.")
             print(f"JobData.run:    Command: {com}")
             print(f"JobData.run:    Run dir: {rundir}")
-            print(f"JobData.run:   Log file: {lognam}")
-        self.set_data('progress', 'Running.', flush=self.flush)
+            print(f"JobData.run:   Log file: {lognam}", flush=self.flush)
+        self.set_data('progress', 'Running.')
         self.db_update()
         wmap = self.get_wrapper_info()
         return 0
