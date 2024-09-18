@@ -1,0 +1,7 @@
+18 Sep 2024
+
+David Adams left DESC in March 2024.  There are no current plans to continue developing desc-prod.  The workload had been running on NERSC Spin.
+NERSC requested we update the workloads to address potential vulnerability. Rather than address that, we decided to take down the workloads 
+and store the final YAMLs for the three workloads here:  desc-prod, desc-prod-jupyter, and dptest.
+
+

@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: '2'
+    field.cattle.io/creatorId: u-6e2kljvwfb
+    nersc.gov/collab_uids: ''
+    nersc.gov/gid: '96594'
+    nersc.gov/gids: 60152,57177,96414,96594
+    nersc.gov/roles: user
+    nersc.gov/uid: '96594'
+    nersc.gov/username: dladams
+  creationTimestamp: '2023-01-17T22:08:45Z'
+  generation: 4
+  labels:
+    cattle.io/creator: norman
+    workload.user.cattle.io/workloadselector: deployment-descprod-dptest
+  name: dptest
+  namespace: descprod
+  resourceVersion: '488974439'
+  uid: 190ba262-1974-4655-a571-29c3a9583695
+spec:
+  paused: true
+  progressDeadlineSeconds: 600
+  replicas: 0
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: deployment-descprod-dptest
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        cattle.io/timestamp: '2023-01-17T22:09:54Z'
+        nersc.gov/collab_uids: ''
+        nersc.gov/gid: '96594'
+        nersc.gov/gids: 60152,57177,96414,96594
+        nersc.gov/roles: user
+        nersc.gov/uid: '96594'
+        nersc.gov/username: dladams
+      creationTimestamp: null
+      labels:
+        workload.user.cattle.io/workloadselector: deployment-descprod-dptest
+    spec:
+      affinity: {}
+      containers:
+        - env:
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  key: GOOGLE_CLIENT_ID
+                  name: descprod-secrets
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: GOOGLE_CLIENT_SECRET
+                  name: descprod-secrets
+            - name: SFAPI_ID
+              valueFrom:
+                secretKeyRef:
+                  key: SFAPI_ID
+                  name: descprod-secrets
+            - name: SFAPI_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: SFAPI_KEY
+                  name: descprod-secrets
+          image: registry.hub.docker.com/dladams/dptest:01
+          imagePullPolicy: Always
+          name: dptest
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - CHOWN
+                - DAC_OVERRIDE
+                - FOWNER
+                - NET_BIND_SERVICE
+                - SETGID
+                - SETUID
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+          stdin: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          tty: true
+          volumeMounts:
+            - mountPath: /mnt/dpvol01
+              name: dpvol01
+            - mountPath: /mnt/dpvol02
+              name: dpvol02
+      dnsConfig: {}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: dpvol01
+          persistentVolumeClaim:
+            claimName: dpvol01
+        - name: dpvol02
+          persistentVolumeClaim:
+            claimName: dpvol02
+status:
+  conditions:
+    - lastTransitionTime: '2023-01-18T21:33:34Z'
+      lastUpdateTime: '2023-01-18T21:33:34Z'
+      message: Deployment is paused
+      reason: DeploymentPaused
+      status: Unknown
+      type: Progressing
+    - lastTransitionTime: '2023-06-17T16:55:13Z'
+      lastUpdateTime: '2023-06-17T16:55:13Z'
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: 'True'
+      type: Available
+  observedGeneration: 4
